@@ -1,47 +1,61 @@
 import { useParams, Link } from "react-router-dom";
+import AuthLayout from "../../components/AuthLayout";
 
 const messageMap = {
   login: {
     title: "ログインしました",
     body: "ようこそ！ログインが完了しました。",
     backTo: { to: "/login", label: "ログインへ戻る" },
+    variant: "success",
   },
   signup: {
     title: "登録しました",
     body: "アカウント登録が完了しました。ログインしてください。",
     backTo: { to: "/login", label: "ログインへ進む" },
+    variant: "success",
   },
   reset: {
     title: "パスワード再設定",
     body: "再設定用リンクをメールに送信しました。メールをご確認ください。",
     backTo: { to: "/login", label: "ログインへ戻る" },
+    variant: "info",
   },
   resend: {
     title: "認証メールを再送しました",
     body: "認証メールを再送しました。受信トレイをご確認ください。",
     backTo: { to: "/login", label: "ログインへ戻る" },
+    variant: "info",
   },
   google: {
     title: "Googleログイン",
     body: "Googleでのログイン機能は準備中です。",
     backTo: { to: "/login", label: "ログインへ戻る" },
+    variant: "warning",
   },
   line: {
     title: "LINEログイン",
     body: "LINEでのログイン機能は準備中です。",
     backTo: { to: "/login", label: "ログインへ戻る" },
+    variant: "warning",
   },
   facebook: {
     title: "Facebookログイン",
     body: "Facebookでのログイン機能は準備中です。",
     backTo: { to: "/login", label: "ログインへ戻る" },
+    variant: "warning",
   },
 } as const;
 
 type MessageType = keyof typeof messageMap;
+type Variant = "success" | "info" | "warning" | "danger";
 
 function isMessageType(v: string | undefined): v is MessageType {
   return !!v && v in messageMap;
+}
+
+function toAlertVariant(v: Variant) {
+  // Bootstrap 5: alert-success / alert-info / alert-warning / alert-danger
+  return `alert alert-${v}`;
 }
 
 export default function MessagePage() {
@@ -53,24 +67,24 @@ export default function MessagePage() {
         title: "メッセージ",
         body: `不明な type です: ${type ?? "(なし)"}`,
         backTo: { to: "/login", label: "ログインへ戻る" },
+        variant: "danger" as const,
       };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
-      <div className="w-full max-w-md rounded-md border border-gray-200 bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-bold text-gray-900">{message.title}</h1>
-        <p className="mt-2 text-gray-600">{message.body}</p>
+    <AuthLayout subtitle="メッセージ" brandHref="/login">
+      <div className={toAlertVariant(message.variant)} role="alert">
+        <div className="fw-bold">{message.title}</div>
+        <div className="mt-2">{message.body}</div>
+      </div>
 
-        <Link
-          className="mt-4 inline-block text-blue-600 hover:underline"
-          to={message.backTo.to}
-        >
+      <div className="d-grid gap-2">
+        <Link className="btn btn-outline-primary" to={message.backTo.to}>
           {message.backTo.label}
         </Link>
 
         {/* デバッグ表示（不要なら削除OK） */}
-        <p className="mt-6 text-xs text-gray-400">type: {type}</p>
+        <div className="text-muted small text-center">type: {type ?? "(なし)"}</div>
       </div>
-    </div>
+    </AuthLayout>
   );
 }
