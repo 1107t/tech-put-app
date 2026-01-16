@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { MdEmail, MdLock } from 'react-icons/md';
 import "./styles/login-page.css";
 
 const AdminLoginPage: React.FC = () => {
@@ -16,7 +17,6 @@ const AdminLoginPage: React.FC = () => {
       console.log('ユーザーログイン情報:', { email, password, rememberMe });
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // ログイン成功後の処理（ダッシュボードへ遷移など）
       navigate('/admin/dashboard');
       
     } catch (error) {
@@ -38,7 +38,7 @@ const AdminLoginPage: React.FC = () => {
             
             {errors.length > 0 && (
               <div className="alert alert-danger">
-                <ul>
+                <ul className="mb-0">
                   {errors.map((error, index) => (
                     <li key={index}>{error}</li>
                   ))}
@@ -58,11 +58,9 @@ const AdminLoginPage: React.FC = () => {
                   autoComplete="email"
                   required
                 />
-                <div className="input-group-append">
-                  <div className="input-group-text">
-                    <span className="fas fa-envelope"></span>
-                  </div>
-                </div>
+                <span className="input-group-text">
+                  <MdEmail />
+                </span>
               </div>
 
               <div className="input-group mb-3">
@@ -75,35 +73,35 @@ const AdminLoginPage: React.FC = () => {
                   autoComplete="current-password"
                   required
                 />
-                <div className="input-group-append">
-                  <div className="input-group-text">
-                    <span className="fas fa-lock"></span>
-                  </div>
-                </div>
+                <span className="input-group-text">
+                  <MdLock />
+                </span>
               </div>
 
               <div className="row">
                 <div className="col-8">
-                  <div className="icheck-primary">
+                  <div className="form-check">
                     <input
+                      className="form-check-input"
                       type="checkbox"
                       id="remember_me"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
                     />
-                    <label htmlFor="remember_me">ログイン状態を保持する</label>
+                    <label className="form-check-label" htmlFor="remember_me">
+                      ログイン状態を保持する
+                    </label>
                   </div>
                 </div>
                 <div className="col-4">
-                  <button type="submit" className="btn btn-primary btn-block">
+                  <button type="submit" className="btn btn-primary w-100">
                     ログイン
                   </button>
                 </div>
               </div>
             </form>
 
-            <br />
-            <div>
+            <div className="mt-3">
               <p className="mb-1">
                 <Link to="/admin/password/forgot">パスワードを忘れた場合</Link>
               </p>
