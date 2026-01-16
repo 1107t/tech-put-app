@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './LoginPage.css'; // CSSをインポート
+import { useNavigate, Link } from 'react-router-dom';
+import './styles/login-page.css';
 
 interface LoginFormData {
   email: string;
@@ -47,8 +47,8 @@ const AdminLogin: React.FC<LoginProps> = ({
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center min-vh-100" style={{ backgroundColor: '#e8eef3' }}>
-      <div className="card shadow-sm custom-login-card" style={{ width: '400px' }}>
+    <div className="d-flex justify-content-center align-items-center min-vh-100 custom-login-background">
+      <div className="card shadow-sm custom-login-card">
         {/* ヘッダー */}
         <div className="card-header text-center custom-login-header py-4">
           <h1 className="mb-0 custom-login-title">
@@ -79,11 +79,10 @@ const AdminLogin: React.FC<LoginProps> = ({
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="form-control"
+                  className="form-control custom-input-field"
                   placeholder="メールアドレス"
                   required
                   autoFocus
-                  style={{ borderRight: 'none' }}
                 />
                 <span className="input-group-text custom-input-icon">
                   📧
@@ -99,10 +98,9 @@ const AdminLogin: React.FC<LoginProps> = ({
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="form-control"
+                  className="form-control custom-input-field"
                   placeholder="パスワード"
                   required
-                  style={{ borderRight: 'none' }}
                 />
                 <span className="input-group-text custom-input-icon">
                   🔒
@@ -140,12 +138,12 @@ const AdminLogin: React.FC<LoginProps> = ({
           {/* リンク */}
           <div className="custom-links">
             <div className="d-flex flex-column gap-2 pb-3">
-              <a href="/signup" className="text-decoration-none">アカウント登録</a>
-              <a href="/password-reset" className="text-decoration-none">パスワードを忘れましたか？</a>
-              <a href="/resend-confirmation" className="text-decoration-none">認証メールの再送信</a>
-              <a href="/auth/google" className="text-decoration-none">Googleでログイン</a>
-              <a href="/auth/line" className="text-decoration-none">Lineでログイン</a>
-              <a href="/auth/facebook" className="text-decoration-none">Facebookでログイン</a>
+              <Link to="/signup" className="text-decoration-none">アカウント登録</Link>
+              <Link to="/password-reset" className="text-decoration-none">パスワードを忘れましたか?</Link>
+              <Link to="/resend-confirmation" className="text-decoration-none">認証メールの再送信</Link>
+              <Link to="/auth/google" className="text-decoration-none">Googleでログイン</Link>
+              <Link to="/auth/line" className="text-decoration-none">Lineでログイン</Link>
+              <Link to="/auth/facebook" className="text-decoration-none">Facebookでログイン</Link>
             </div>
           </div>
         </div>

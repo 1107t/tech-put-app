@@ -1,0 +1,64 @@
+/* LoginPage.css */
+
+/* カード全体のスタイル */
+.custom-login-card {
+  border-radius: 8px;
+  border: none;
+}
+
+/* ヘッダー部分 */
+.custom-login-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  border-radius: 8px 8px 0 0;
+}
+
+/* タイトル */
+.custom-login-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+}
+
+/* サブタイトル */
+.custom-subtitle {
+  color: #666;
+  font-weight: 500;
+}
+
+/* 入力フィールドのアイコン部分 */
+.custom-input-icon {
+  background-color: white;
+  border-left: none;
+}
+
+/* リンクセクション */
+.custom-links {
+  border-top: 1px solid #dee2e6;
+  padding-top: 1rem;
+}
+
+.custom-links a {
+  color: #007bff;
+  font-size: 0.9rem;
+}
+
+.custom-links a:hover {
+  color: #0056b3;
+  text-decoration: underline !important;
+}
+/* ページ全体を中央配置 */
+.login-page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding: 1rem;
+}
+
+/* カードの最大幅を設定 */
+.custom-login-card {
+  width: 100%;
+  max-width: 450px;
+}
