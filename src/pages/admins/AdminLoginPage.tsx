@@ -1,113 +1,146 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { MdEmail, MdLock } from 'react-icons/md';
-import "./styles/login-page.css";
+import { useNavigate, Link } from 'react-router-dom';
 
-const AdminLoginPage: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
-  const [errors, setErrors] = useState<string[]>([]);
-  const navigate = useNavigate();
+interface LoginFormData {
+  email: string;
+  password: string;
+  rememberMe: boolean;
+}
 
-  const handleLogin = async (e: React.FormEvent) => {
+interface LoginProps {
+  onSubmit: (data: LoginFormData) => Promise<void>;
+  errorMessages?: string[];
+  showRememberMe?: boolean;
+}
+
+const AdminLogin: React.FC<LoginProps> = ({ 
+  onSubmit, 
+  errorMessages = [],
+  showRememberMe = true 
+}) => {
+  const [formData, setFormData] = useState<LoginFormData>({
+    email: '',
+    password: '',
+    rememberMe: false,
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+    setIsSubmitting(true);
     try {
-      console.log('ユーザーログイン情報:', { email, password, rememberMe });
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      navigate('/admin/dashboard');
-      
+      await onSubmit(formData);
     } catch (error) {
-      setErrors(['ログインに失敗しました。メールアドレスとパスワードを確認してください。']);
+      console.error('Login error:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="login-page-container">
-      <div className="register-box">
-        <div className="card card-outline card-primary">
-          <div className="card-header text-center">
-            <Link to="/" className="h1">
-              <b>TecPutt</b>
-            </Link>
+    <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
+      <div className="col-12 col-sm-8 col-md-6 col-lg-4">
+        <div className="card shadow-sm">
+          {/* ヘッダー */}
+          <div className="card-header text-center bg-white border-bottom py-4">
+            <h1 className="mb-0 h4 fw-normal">
+              Nature Technology
+            </h1>
+            <p className="mb-0 h5 fw-normal">管理者ログイン画面</p>
           </div>
+
+          {/* サブタイトル */}
           <div className="card-body">
-            <p className="login-box-msg">管理者用ログイン</p>
-            
-            {errors.length > 0 && (
-              <div className="alert alert-danger">
-                <ul className="mb-0">
-                  {errors.map((error, index) => (
-                    <li key={index}>{error}</li>
-                  ))}
-                </ul>
+            <p className="text-center h6 mb-4">ログインしましょう！</p>
+
+            {/* エラーメッセージ */}
+            {errorMessages.length > 0 && (
+              <div className="alert alert-danger" role="alert">
+                {errorMessages.map((message, index) => (
+                  <div key={index}>{message}</div>
+                ))}
               </div>
             )}
 
-            <form onSubmit={handleLogin}>
-              <div className="input-group mb-3">
-                <input
-                  type="email"
-                  className="form-control"
-                  placeholder="メールアドレス"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  autoFocus
-                  autoComplete="email"
-                  required
-                />
-                <span className="input-group-text">
-                  <MdEmail />
-                </span>
-              </div>
-
-              <div className="input-group mb-3">
-                <input
-                  type="password"
-                  className="form-control"
-                  placeholder="パスワード"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
-                  required
-                />
-                <span className="input-group-text">
-                  <MdLock />
-                </span>
-              </div>
-
-              <div className="row">
-                <div className="col-8">
-                  <div className="form-check">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      id="remember_me"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                    />
-                    <label className="form-check-label" htmlFor="remember_me">
-                      ログイン状態を保持する
-                    </label>
-                  </div>
-                </div>
-                <div className="col-4">
-                  <button type="submit" className="btn btn-primary w-100">
-                    ログイン
-                  </button>
+            {/* フォーム */}
+            <form onSubmit={handleSubmit}>
+              {/* メールアドレス */}
+              <div className="mb-3">
+                <div className="input-group">
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="form-control"
+                    placeholder="メールアドレス"
+                    required
+                    autoFocus
+                  />
+                  <span className="input-group-text bg-white">
+                    📧
+                  </span>
                 </div>
               </div>
+
+              {/* パスワード */}
+              <div className="mb-3">
+                <div className="input-group">
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="form-control"
+                    placeholder="パスワード"
+                    required
+                  />
+                  <span className="input-group-text bg-white">
+                    🔒
+                  </span>
+                </div>
+              </div>
+
+              {/* Remember Me */}
+              {showRememberMe && (
+                <div className="form-check mb-3">
+                  <input
+                    type="checkbox"
+                    name="rememberMe"
+                    id="rememberMe"
+                    checked={formData.rememberMe}
+                    onChange={handleChange}
+                    className="form-check-input"
+                  />
+                  <label className="form-check-label" htmlFor="rememberMe">
+                    ログインを記憶する
+                  </label>
+                </div>
+              )}
+
+              {/* ログインボタン */}
+              <button
+                type="submit"
+                className="btn btn-primary w-100 mb-3"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'ログイン中...' : 'ログイン'}
+              </button>
             </form>
 
-            <div className="mt-3">
-              <p className="mb-1">
-                <Link to="/admin/password/forgot">パスワードを忘れた場合</Link>
-              </p>
-              <p className="mb-0">
-                <Link to="/admin/signup">新規登録</Link>
-              </p>
+            {/* リンク */}
+            <div className="d-flex flex-column gap-2">
+              <Link to="/signup" className="text-decoration-none text-primary">アカウント登録</Link>
+              <Link to="/password-reset" className="text-decoration-none text-primary">パスワードを忘れましたか?</Link>
+              <Link to="/resend-confirmation" className="text-decoration-none text-primary">認証メールの再送信</Link>
             </div>
           </div>
         </div>
@@ -116,4 +149,4 @@ const AdminLoginPage: React.FC = () => {
   );
 };
 
-export default AdminLoginPage;
+export default AdminLogin;

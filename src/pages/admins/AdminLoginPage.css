@@ -19,13 +19,14 @@
 }
 
 .card-header {
-  background-color: transparent;
+  background-color: #fff;  /* transparent から #fff に変更 */
   border-bottom: 1px solid rgba(0,0,0,.125);
   padding: .75rem 1.25rem;
 }
 
 .card-body {
   padding: 1.25rem;
+  background-color: #fff;  /* 追加：明示的に白背景を指定 */
 }
 
 .login-box-msg {
