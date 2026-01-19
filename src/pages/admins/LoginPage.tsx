@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 interface LoginFormData {
   email: string;
@@ -7,16 +7,27 @@ interface LoginFormData {
   rememberMe: boolean;
 }
 
-interface LoginProps {
-  onSubmit: (data: LoginFormData) => Promise<void>;
-  errorMessages?: string[];
-  showRememberMe?: boolean;
+interface ErrorMessage {
+  id: number;
+  message: string;
 }
 
-const AdminLogin: React.FC<LoginProps> = ({ 
+interface LoginProps {
+  onSubmit: (data: LoginFormData) => Promise<void>;
+  errorMessages?: ErrorMessage[];
+  showRememberMe?: boolean;
+  title?: string;
+  subtitle?: string;
+  showSocialLogin?: boolean;
+}
+
+const LoginPage: React.FC<LoginProps> = ({ 
   onSubmit, 
   errorMessages = [],
-  showRememberMe = true 
+  showRememberMe = true,
+  title = "TecPutt",
+  subtitle = "tech out put!",
+  showSocialLogin = true
 }) => {
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
@@ -50,21 +61,20 @@ const AdminLogin: React.FC<LoginProps> = ({
       <div className="col-12 col-sm-8 col-md-6 col-lg-4">
         <div className="card shadow-sm">
           {/* ヘッダー */}
-          <div className="card-header text-center bg-light py-4">
-            <h1 className="mb-0 h2 fw-bold text-dark">
-              TecPutt
-            </h1>
+          <div className="card-header text-center bg-white border-bottom py-4">
+            <h1 className="mb-0 h4 fw-normal">{title}</h1>
+            <p className="mb-0 h5 fw-normal">{subtitle}</p>
           </div>
 
           {/* サブタイトル */}
           <div className="card-body">
-            <p className="text-center h5 mb-4 text-muted">tech out put!</p>
+            <p className="text-center h6 mb-4">ログインしましょう！</p>
 
             {/* エラーメッセージ */}
             {errorMessages.length > 0 && (
               <div className="alert alert-danger" role="alert">
-                {errorMessages.map((message, index) => (
-                  <div key={index}>{message}</div>
+                {errorMessages.map((error) => (
+                  <div key={error.id}>{error.message}</div>
                 ))}
               </div>
             )}
@@ -140,9 +150,13 @@ const AdminLogin: React.FC<LoginProps> = ({
               <Link to="/signup" className="text-decoration-none text-primary">アカウント登録</Link>
               <Link to="/password-reset" className="text-decoration-none text-primary">パスワードを忘れましたか?</Link>
               <Link to="/resend-confirmation" className="text-decoration-none text-primary">認証メールの再送信</Link>
-              <Link to="/auth/google" className="text-decoration-none text-primary">Googleでログイン</Link>
-              <Link to="/auth/line" className="text-decoration-none text-primary">Lineでログイン</Link>
-              <Link to="/auth/facebook" className="text-decoration-none text-primary">Facebookでログイン</Link>
+              {showSocialLogin && (
+                <>
+                  <Link to="/auth/google" className="text-decoration-none text-primary">Googleでログイン</Link>
+                  <Link to="/auth/line" className="text-decoration-none text-primary">Lineでログイン</Link>
+                  <Link to="/auth/facebook" className="text-decoration-none text-primary">Facebookでログイン</Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -151,4 +165,4 @@ const AdminLogin: React.FC<LoginProps> = ({
   );
 };
 
-export default AdminLogin;
+export default LoginPage;

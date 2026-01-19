@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import LoginPage from './LoginPage';
 
 interface LoginFormData {
   email: string;
@@ -7,145 +8,68 @@ interface LoginFormData {
   rememberMe: boolean;
 }
 
-interface LoginProps {
-  onSubmit: (data: LoginFormData) => Promise<void>;
-  errorMessages?: string[];
-  showRememberMe?: boolean;
+interface ErrorMessage {
+  id: number;
+  message: string;
 }
 
-const AdminLogin: React.FC<LoginProps> = ({ 
-  onSubmit, 
-  errorMessages = [],
-  showRememberMe = true 
-}) => {
-  const [formData, setFormData] = useState<LoginFormData>({
-    email: '',
-    password: '',
-    rememberMe: false,
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+const AdminLogin: React.FC = () => {
+  const navigate = useNavigate();
+  const [errorMessages, setErrorMessages] = useState<ErrorMessage[]>([]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const handleSubmit = async (data: LoginFormData) => {
     try {
-      await onSubmit(formData);
+      // 管理者ログインAPIを呼び出す
+      const response = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+          remember_me: data.rememberMe,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        
+        // エラーメッセージをIDと共にセット
+        const errors: ErrorMessage[] = errorData.errors.map((msg: string, index: number) => ({
+          id: Date.now() + index,
+          message: msg
+        }));
+        
+        setErrorMessages(errors);
+        return;
+      }
+
+      const result = await response.json();
+      
+      // ログイン成功時の処理
+      console.log('ログイン成功:', result);
+      
+      // 管理画面のダッシュボードにリダイレクト
+      navigate('/admin/dashboard');
+      
     } catch (error) {
       console.error('Login error:', error);
-    } finally {
-      setIsSubmitting(false);
+      setErrorMessages([
+        { id: Date.now(), message: 'ネットワークエラーが発生しました。もう一度お試しください。' }
+      ]);
     }
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
-      <div className="col-12 col-sm-8 col-md-6 col-lg-4">
-        <div className="card shadow-sm">
-          {/* ヘッダー */}
-          <div className="card-header text-center bg-white border-bottom py-4">
-            <h1 className="mb-0 h4 fw-normal">
-              Nature Technology
-            </h1>
-            <p className="mb-0 h5 fw-normal">管理者ログイン画面</p>
-          </div>
-
-          {/* サブタイトル */}
-          <div className="card-body">
-            <p className="text-center h6 mb-4">ログインしましょう！</p>
-
-            {/* エラーメッセージ */}
-            {errorMessages.length > 0 && (
-              <div className="alert alert-danger" role="alert">
-                {errorMessages.map((message, index) => (
-                  <div key={index}>{message}</div>
-                ))}
-              </div>
-            )}
-
-            {/* フォーム */}
-            <form onSubmit={handleSubmit}>
-              {/* メールアドレス */}
-              <div className="mb-3">
-                <div className="input-group">
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="form-control"
-                    placeholder="メールアドレス"
-                    required
-                    autoFocus
-                  />
-                  <span className="input-group-text bg-white">
-                    📧
-                  </span>
-                </div>
-              </div>
-
-              {/* パスワード */}
-              <div className="mb-3">
-                <div className="input-group">
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="form-control"
-                    placeholder="パスワード"
-                    required
-                  />
-                  <span className="input-group-text bg-white">
-                    🔒
-                  </span>
-                </div>
-              </div>
-
-              {/* Remember Me */}
-              {showRememberMe && (
-                <div className="form-check mb-3">
-                  <input
-                    type="checkbox"
-                    name="rememberMe"
-                    id="rememberMe"
-                    checked={formData.rememberMe}
-                    onChange={handleChange}
-                    className="form-check-input"
-                  />
-                  <label className="form-check-label" htmlFor="rememberMe">
-                    ログインを記憶する
-                  </label>
-                </div>
-              )}
-
-              {/* ログインボタン */}
-              <button
-                type="submit"
-                className="btn btn-primary w-100 mb-3"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'ログイン中...' : 'ログイン'}
-              </button>
-            </form>
-
-            {/* リンク */}
-            <div className="d-flex flex-column gap-2">
-              <Link to="/signup" className="text-decoration-none text-primary">アカウント登録</Link>
-              <Link to="/password-reset" className="text-decoration-none text-primary">パスワードを忘れましたか?</Link>
-              <Link to="/resend-confirmation" className="text-decoration-none text-primary">認証メールの再送信</Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <LoginPage
+      onSubmit={handleSubmit}
+      errorMessages={errorMessages}
+      title="Nature Technology"
+      subtitle="管理者ログイン画面"
+      showSocialLogin={false}
+      showRememberMe={true}
+    />
   );
 };
 
