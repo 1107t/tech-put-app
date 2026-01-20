@@ -1,40 +1,15 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
-import AdminLogin from './pages/admins/LoginPage';
-import SignUpPage from './pages/admins/SignUpPage';
+import { Routes, Route, Navigate } from 'react-router-dom';
+
+// ユーザー用ページ
+import LoginPage from './pages/users/LoginPage';
+import SignUpPage from './pages/users/SignUpPage';
+import Passreset from './pages/users/Passreset';
+import MessagePage from './pages/users/MessagePage';
+import DashboardPage from './pages/DashboardPage';
+
+// 管理者用ページ
 import AdminLoginPage from './pages/admins/AdminLoginPage';
-
-
-const Dashboard = () => {
-  return (
-    <div style={{ padding: '20px' }}>
-      <h1>ダッシュボード</h1>
-      <p>ログインに成功しました!</p>
-    </div>
-  );
-};
-
-// ユーザーログインページ用のコンポーネント
-const UserLoginPageWrapper = () => {
-  const navigate = useNavigate();
-
-  const handleLogin = async (data: any) => {
-    try {
-      console.log('ユーザーログイン情報:', data);
-      await new Promise(resolve => setTimeout(resolve, 500));
-      navigate('/dashboard');
-    } catch (error) {
-      console.error('Login failed:', error);
-    }
-  };
-
-  return (
-    <AdminLogin 
-      onSubmit={handleLogin}
-      errorMessages={[]}
-    />
-  );
-};
 
 // 管理者用ダッシュボード
 const AdminDashboard = () => {
@@ -46,26 +21,25 @@ const AdminDashboard = () => {
   );
 };
 
-// /admin/login用のラッパー（AdminLoginPageを直接表示）
-const AdminLoginPageWrapper = () => {
-  return <AdminLoginPage />;
-};
-
-function App() {
+export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* ユーザー用ルート */}
-        <Route path="/" element={<UserLoginPageWrapper />} />
-        <Route path="/signup" element={<SignUpPage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        
-        {/* 管理者用ルート */}
-        <Route path="/admin/login" element={<AdminLoginPageWrapper />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      {/* デフォルトルート */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
+
+      {/* ユーザー用ルート */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignUpPage />} />
+      <Route path="/reset" element={<Passreset />} />
+      <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="/message/:type" element={<MessagePage />} />
+
+      {/* 管理者用ルート */}
+      <Route path="/admin/login" element={<AdminLoginPage />} />
+      <Route path="/admin/dashboard" element={<AdminDashboard />} />
+
+      {/* 404ページ */}
+      <Route path="*" element={<div className="p-4">Not Found</div>} />
+    </Routes>
   );
 }
-
-export default App;

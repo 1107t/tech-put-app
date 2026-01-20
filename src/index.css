@@ -1,3 +1,15 @@
+/* Bootstrap前提の最小CSS */
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #f8f9fa; /* Bootstrapのbg-light相当 */
+  color: #212529;
+}
+
 .register-page {
   display: flex;
   align-items: center;
