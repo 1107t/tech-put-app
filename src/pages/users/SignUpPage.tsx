@@ -1,29 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
+import { MailIcon, LockIcon } from "../../components/Icons";
 
 function UserIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth={2}>
       <path d="M20 21a8 8 0 0 0-16 0" />
       <circle cx="12" cy="8" r="4" />
-    </svg>
-  );
-}
-
-function MailIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth={2}>
-      <path d="M4 6h16v12H4z" />
-      <path d="M4 8l8 5 8-5" />
-    </svg>
-  );
-}
-
-function LockIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth={2}>
-      <path d="M7 11V8a5 5 0 0 1 10 0v3" />
-      <path d="M6 11h12v10H6z" />
     </svg>
   );
 }
