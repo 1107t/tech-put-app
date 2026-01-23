@@ -6,7 +6,7 @@ import LoginPage from './pages/users/LoginPage';
 import SignUpPage from './pages/users/SignUpPage';
 import Passreset from './pages/users/Passreset';
 import MessagePage from './pages/users/MessagePage';
-import DashboardPage from './pages/DashboardPage';
+
 
 // 管理者用ページ
 import AdminLoginPage from './pages/admins/AdminLoginPage';
@@ -31,7 +31,6 @@ export default function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/reset" element={<Passreset />} />
-      <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/message/:type" element={<MessagePage />} />
 
       {/* 管理者用ルート */}
