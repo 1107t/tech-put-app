@@ -6,11 +6,9 @@ import UserSignUpPage from './pages/users/SignUpPage';
 import UserMessagePage from './pages/users/MessagePage';
 import UserPassreset from './pages/users/Passreset';
 
-
 // 管理者用ページ
 import AdminLoginPage from './pages/admins/AdminLoginPage';
-import AdminSignUpPage from './pages/admins/SignUpPage';
-
+import AdminSignUpPage from './pages/admins/SignUpPage';  // ← ここを SignUpPage に修正
 
 function AppRoutes() {
   return (
@@ -21,7 +19,6 @@ function AppRoutes() {
         <Route path="/signup" element={<UserSignUpPage />} />
         <Route path="/message" element={<UserMessagePage />} />
         <Route path="/passreset" element={<UserPassreset />} />
-        
 
         {/* 管理者用ルート */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
