@@ -37,3 +37,28 @@
   width: 28px;
   height: 28px;
 }
+
+.user-dashboard__nav {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.user-dashboard__nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #e8e8e8;
+  text-decoration: none;
+}
+
+.user-dashboard__nav-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.user-dashboard__nav-icon {
+  opacity: 0.9;
+}

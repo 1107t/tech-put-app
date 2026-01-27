@@ -5,7 +5,7 @@ import SignUpPage from "./pages/users/SignUpPage";
 import Passreset from "./pages/users/Passreset";
 import MessagePage from "./pages/users/MessagePage";
 
-import DashboardPage from "./pages/DashboardPage";
+import DashboardPage from "./pages/users/DashboardPage";
 import UserHomePage from "./pages/users/UserHomePage";
 import UserDetailPage from "./pages/users/UserDetailPage";
 
