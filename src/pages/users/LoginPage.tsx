@@ -6,22 +6,22 @@ import { MailIcon, LockIcon } from "../../components/Icons"; // ✅ 追加
 export default function LoginPage() {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    (async () => {
-      try {
+  //useEffect(() => {
+    //(async () => {
+      //try {
         // TODO: Rails API連携 - ログイン状態の確認やユーザー情報の取得
         // TODO: Rails の正しいエンドポイントに修正（例: /api/v1/users/me など）
-        const res = await fetch("/api/users");
+        //const res = await fetch("/api/users");
 
-        if (res.ok) {
+       // if (res.ok) {
           // 例: すでにログイン済みならダッシュボードへ
-          navigate("/dashboard", { replace: true });
-        }
-      } catch {
+         // navigate("/dashboard", { replace: true });
+        //}
+      //} catch {
         // 未ログイン/通信失敗なら何もしない（ログインフォーム表示）
-      }
-    })();
-  }, [navigate]);
+      //}
+   // })();
+  //}, [navigate]);
 
   // 入力値
   const [email, setEmail] = useState("");
