@@ -18,7 +18,7 @@ export default function DashboardPage() {
   return (
     <div className="d-flex user-dashboard">
       <aside className="user-dashboard__sidebar">
-        <div className="fw-bold mb-3">ネイテク</div>
+        <div className="fw-bold mb-3">Tec-Putt</div>
 
         <div className="user-dashboard__profile">
           <span>test_user</span>
