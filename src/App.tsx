@@ -1,19 +1,30 @@
+// src/App.tsx
 import { Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/users/LoginPage";
 import SignUpPage from "./pages/users/SignUpPage";
 import Passreset from "./pages/users/Passreset";
 import MessagePage from "./pages/users/MessagePage";
 
+import DashboardPage from "./pages/DashboardPage";
+import UserHomePage from "./pages/users/UserHomePage";
+import UserDetailPage from "./pages/users/UserDetailPage";
+
 export default function App() {
   return (
     <Routes>
-      {/* 最初に開いたら login へ */}
       <Route path="/" element={<Navigate to="/login" replace />} />
 
       {/* users */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/reset" element={<Passreset />} />
+
+      {/* dashboard */}
+      <Route path="/dashboard" element={<DashboardPage />} />
+
+      {/* ✅ 仕様：ダッシュボード→ユーザー専用→ユーザー詳細 */}
+      <Route path="/users/:id" element={<UserHomePage />} />
+      <Route path="/users/:id/detail" element={<UserDetailPage />} />
 
       {/* メッセージ */}
       <Route path="/message/:type" element={<MessagePage />} />

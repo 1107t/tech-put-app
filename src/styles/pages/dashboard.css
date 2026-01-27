@@ -1,0 +1,39 @@
+/* =========================
+   Dashboard (user)
+   ========================= */
+
+.user-dashboard {
+  min-height: 100vh;
+}
+
+.user-dashboard__sidebar {
+  width: 280px;
+  background: #222;
+  color: #fff;
+  padding: 16px;
+}
+
+.user-dashboard__profile {
+  margin-bottom: 20px;
+}
+
+.user-dashboard__profile-link {
+  color: #fff;
+  text-decoration: none;
+}
+
+.user-dashboard__profile-link:hover {
+  text-decoration: underline;
+}
+
+.user-dashboard__divider {
+  height: 2px;
+  background: red;
+  margin-top: 8px;
+}
+
+/* 指摘の「直書きの丸アイコン(28px)」が将来必要なら */
+.user-dashboard__avatar-28 {
+  width: 28px;
+  height: 28px;
+}
