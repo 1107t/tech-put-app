@@ -3,6 +3,12 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getCurrentUser, logout } from "../../lib/usersStore";
 import type { User } from "../../lib/users";
+import {
+  GridIcon,
+  ListIcon,
+  UserIcon,
+  PlusSquareIcon,
+} from "../../components/Icons"; //
 
 export default function DashboardPage() {
   const nav = useNavigate();
@@ -34,19 +40,27 @@ export default function DashboardPage() {
           </Link>
           <div className="user-dashboard__divider" />
         </div>
-        <div className="user-dashboard__profile">
-          メモ一覧
-        </div>
-        <div className="user-dashboard__profile">
-          プロフィール一覧
-          <div className="" />
-        </div>
-        <div className="user-dashboard__profile">
-          プロフィール作成
-          <div className="user-dashboard__profile" />
-        </div>
-        <div className="user-dashboard__profile">
-          メモ作成
+
+        <div className="user-dashboard__nav">
+          <Link className="user-dashboard__nav-item" to="/memos">
+            <GridIcon className="user-dashboard__nav-icon" size={18} />
+            <span>メモ一覧</span>
+          </Link>
+
+          <Link className="user-dashboard__nav-item" to="/profiles">
+            <ListIcon className="user-dashboard__nav-icon" size={18} />
+            <span>プロフィール一覧</span>
+          </Link>
+
+          <Link className="user-dashboard__nav-item" to="/profiles/new">
+            <UserIcon className="user-dashboard__nav-icon" size={18} />
+            <span>プロフィール作成</span>
+          </Link>
+
+          <Link className="user-dashboard__nav-item" to="/memos/new">
+            <PlusSquareIcon className="user-dashboard__nav-icon" size={18} />
+            <span>メモ作成</span>
+          </Link>
         </div>
         <button className="btn btn-light w-100" onClick={onLogout}>
           ログアウト
