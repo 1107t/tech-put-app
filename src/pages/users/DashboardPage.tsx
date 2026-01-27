@@ -34,7 +34,20 @@ export default function DashboardPage() {
           </Link>
           <div className="user-dashboard__divider" />
         </div>
-
+        <div className="user-dashboard__profile">
+          メモ一覧
+        </div>
+        <div className="user-dashboard__profile">
+          プロフィール一覧
+          <div className="" />
+        </div>
+        <div className="user-dashboard__profile">
+          プロフィール作成
+          <div className="user-dashboard__profile" />
+        </div>
+        <div className="user-dashboard__profile">
+          メモ作成
+        </div>
         <button className="btn btn-light w-100" onClick={onLogout}>
           ログアウト
         </button>
