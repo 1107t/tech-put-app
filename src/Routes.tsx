@@ -18,11 +18,13 @@ function AppRoutes() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<UserSignUpPage />} />
         <Route path="/message" element={<UserMessagePage />} />
-        <Route path="/passreset" element={<UserPassreset />} />
+        
 
         {/* 管理者用ルート */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin/signup" element={<AdminSignUpPage />} />
+        <Route path="/admin/message/:type" element={<UserMessagePage />} />
+        <Route path="/admin/reset" element={<UserPassreset />} />
         <Route path="/admin/dashboard" element={<div>管理者ダッシュボード（未実装）</div>} />
 
         {/* デフォルトルート */}

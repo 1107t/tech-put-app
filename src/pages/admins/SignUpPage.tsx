@@ -165,7 +165,7 @@ const SignUpPage: React.FC = () => {
 
             {/* リンク */}
             <div className="d-flex flex-column gap-2">
-              <Link to="/login" className="text-decoration-none">ログイン</Link>
+              <Link to="/admin/login" className="text-decoration-none">ログイン</Link>
               <Link to="/password-reset" className="text-decoration-none">認証メールの再送信</Link>
               <Link to="/auth/google" className="text-decoration-none">Googleでログイン</Link>
               <Link to="/auth/line" className="text-decoration-none">Lineでログイン</Link>
