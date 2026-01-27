@@ -1,28 +1,33 @@
-// src/pages/users/LoginPage.tsx
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
-import { MailIcon, LockIcon } from "../../components/Icons";
-
-import { getCurrentUserId, login } from "../../lib/usersStore";
+import { MailIcon, LockIcon } from "../../components/Icons"; // ✅ 追加
 
 export default function LoginPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
     (async () => {
-      // ✅ いまは localforage のログイン状態で判定（後で Rails API に差し替え）
-      const id = await getCurrentUserId();
-      if (id) navigate("/dashboard", { replace: true });
+      try {
+        // TODO: Rails API連携 - ログイン状態の確認やユーザー情報の取得
+        // TODO: Rails の正しいエンドポイントに修正（例: /api/v1/users/me など）
+        const res = await fetch("/api/users");
 
-      // TODO: Rails API連携 - ログイン状態の確認やユーザー情報の取得
-      // const res = await fetch("/api/users/me");
+        if (res.ok) {
+          // 例: すでにログイン済みならダッシュボードへ
+          navigate("/dashboard", { replace: true });
+        }
+      } catch {
+        // 未ログイン/通信失敗なら何もしない（ログインフォーム表示）
+      }
     })();
   }, [navigate]);
 
+  // 入力値
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // UI状態
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -37,13 +42,17 @@ export default function LoginPage() {
         throw new Error("メールアドレスとパスワードを入力してください。");
       }
 
-      if (remember) localStorage.setItem("remember_email", email);
-      else localStorage.removeItem("remember_email");
+      if (remember) {
+        localStorage.setItem("remember_email", email);
+      } else {
+        localStorage.removeItem("remember_email");
+      }
 
-      await login(email, password);
       navigate("/dashboard", { replace: true });
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : "不明なエラーが発生しました。");
+      const msg =
+        err instanceof Error ? err.message : "不明なエラーが発生しました。";
+      setErrorMsg(msg);
     } finally {
       setLoading(false);
     }
@@ -55,17 +64,45 @@ export default function LoginPage() {
       brandHref="/login"
       footer={
         <ul className="list-unstyled mb-0 d-grid gap-1">
-          <li><Link className="link-primary text-decoration-none" to="/signup">アカウント登録</Link></li>
-          <li><Link className="link-primary text-decoration-none" to="/reset">パスワードを忘れましたか？</Link></li>
-          <li><Link className="link-primary text-decoration-none" to="/message/resend">認証メールの再送信</Link></li>
-          <li><Link className="link-primary text-decoration-none" to="/message/google">Googleでのログイン</Link></li>
-          <li><Link className="link-primary text-decoration-none" to="/message/line">LINEでのログイン</Link></li>
-          <li><Link className="link-primary text-decoration-none" to="/message/facebook">Facebookでのログイン</Link></li>
+          <li>
+            <Link className="link-primary text-decoration-none" to="/signup">
+              アカウント登録
+            </Link>
+          </li>
+          <li>
+            <Link className="link-primary text-decoration-none" to="/reset">
+              パスワードを忘れましたか？
+            </Link>
+          </li>
+          <li>
+            <Link className="link-primary text-decoration-none" to="/message/resend">
+              認証メールの再送信
+            </Link>
+          </li>
+          <li>
+            <Link className="link-primary text-decoration-none" to="/message/google">
+              Googleでのログイン
+            </Link>
+          </li>
+          <li>
+            <Link className="link-primary text-decoration-none" to="/message/line">
+              LINEでのログイン
+            </Link>
+          </li>
+          <li>
+            <Link className="link-primary text-decoration-none" to="/message/facebook">
+              Facebookでのログイン
+            </Link>
+          </li>
         </ul>
       }
     >
       <form onSubmit={handleSubmit} className="d-grid gap-3">
-        {errorMsg && <div className="alert alert-danger py-2 mb-0" role="alert">{errorMsg}</div>}
+        {errorMsg && (
+          <div className="alert alert-danger py-2 mb-0" role="alert">
+            {errorMsg}
+          </div>
+        )}
 
         <div>
           <label className="form-label fw-semibold">メールアドレス</label>
@@ -79,7 +116,9 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
             />
-            <span className="input-group-text text-muted"><MailIcon /></span>
+            <span className="input-group-text text-muted">
+              <MailIcon />
+            </span>
           </div>
         </div>
 
@@ -95,7 +134,9 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
             />
-            <span className="input-group-text text-muted"><LockIcon /></span>
+            <span className="input-group-text text-muted">
+              <LockIcon />
+            </span>
           </div>
         </div>
 
