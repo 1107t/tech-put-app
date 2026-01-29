@@ -3,7 +3,7 @@ import LoginPage from "./pages/users/LoginPage";
 import SignUpPage from "./pages/users/SignUpPage";
 import Passreset from "./pages/users/Passreset";
 import MessagePage from "./pages/users/MessagePage";
-import DashboardPage from "./pages/DashboardPage";
+import DashboardPage from "./pages/users/DashboardPage";
 
 export default function App() {
   return (

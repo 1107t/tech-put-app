@@ -1,0 +1,64 @@
+/* =========================
+   Dashboard (user)
+   ========================= */
+
+.user-dashboard {
+  min-height: 100vh;
+}
+
+.user-dashboard__sidebar {
+  width: 280px;
+  background: #222;
+  color: #fff;
+  padding: 16px;
+}
+
+.user-dashboard__profile {
+  margin-bottom: 20px;
+}
+
+.user-dashboard__profile-link {
+  color: #fff;
+  text-decoration: none;
+}
+
+.user-dashboard__profile-link:hover {
+  text-decoration: underline;
+}
+
+.user-dashboard__divider {
+  height: 2px;
+  background: red;
+  margin-top: 8px;
+}
+
+/* 指摘の「直書きの丸アイコン(28px)」が将来必要なら */
+.user-dashboard__avatar-28 {
+  width: 28px;
+  height: 28px;
+}
+
+.user-dashboard__nav {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.user-dashboard__nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #e8e8e8;
+  text-decoration: none;
+}
+
+.user-dashboard__nav-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.user-dashboard__nav-icon {
+  opacity: 0.9;
+}
