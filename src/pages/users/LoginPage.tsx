@@ -2,23 +2,16 @@ import { useEffect, useState, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
 import { MailIcon, LockIcon } from "../../components/Icons"; // ✅ 追加
+import { getCurrentUserId } from "../../lib/usersStore";
 
 export default function LoginPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
     (async () => {
-      try {
-        // TODO: Rails API連携 - ログイン状態の確認やユーザー情報の取得
-        // TODO: Rails の正しいエンドポイントに修正（例: /api/v1/users/me など）
-        const res = await fetch("/api/users");
-
-        if (res.ok) {
-          // 例: すでにログイン済みならダッシュボードへ
-          navigate("/dashboard", { replace: true });
-        }
-      } catch {
-        // 未ログイン/通信失敗なら何もしない（ログインフォーム表示）
+      const id = await getCurrentUserId();
+      if (id) {
+        navigate("/dashboard", { replace: true });
       }
     })();
   }, [navigate]);
