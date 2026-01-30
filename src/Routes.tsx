@@ -14,6 +14,9 @@ function AppRoutes() {
   return (
     <Router>
       <Routes>
+        {/* ルートパスから /login へリダイレクト（最初に配置） */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+
         {/* 一般ユーザー用ルート */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<UserSignUpPage />} />

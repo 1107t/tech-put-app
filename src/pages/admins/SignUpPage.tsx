@@ -44,7 +44,7 @@ const SignUpPage: React.FC = () => {
           {/* ヘッダー */}
           <div className="card-header text-center bg-white border-bottom-0 pt-4 pb-2">
             <h1 className="mb-0 h2 fw-bold text-decoration-underline" style={{ textDecorationColor: '#0d6efd', textDecorationThickness: '3px' }}>
-              Nature Technology
+              TECH-PUT
             </h1>
           </div>
 
