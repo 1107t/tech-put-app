@@ -22,6 +22,7 @@ export default function SignUpPage() {
 
   const onSignup = async (e: FormEvent) => {
     e.preventDefault();
+    if (saving) return;
     setMsg(null);
 
     if (!agree) return setMsg("利用規約に同意してください。");
