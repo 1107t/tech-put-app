@@ -1,15 +1,7 @@
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
-
-function MailIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth={2}>
-      <path d="M4 6h16v12H4z" />
-      <path d="M4 8l8 5 8-5" />
-    </svg>
-  );
-}
+import { MailIcon } from "../../components/Icons";
 
 export default function Passreset() {
   const navigate = useNavigate();

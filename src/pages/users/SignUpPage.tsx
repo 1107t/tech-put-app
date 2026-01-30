@@ -6,6 +6,7 @@ import { UserIcon, MailIcon, LockIcon } from "../../components/Icons";
 import { createUser, login } from "../../lib/usersStore";
 import { Gender, type GenderValue } from "../../lib/users";
 
+
 export default function SignUpPage() {
   const navigate = useNavigate();
 

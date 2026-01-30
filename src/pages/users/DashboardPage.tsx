@@ -1,94 +1,61 @@
-import { Link } from "react-router-dom";
-
-type Lesson = {
-  id: string;
-  title: string;
-  category: string;
-  done: boolean;
-};
-
-const lessons: Lesson[] = [
-  { id: "1", title: "システム開発とは", category: "システム開発", done: true },
-  { id: "2", title: "HTML_CSS編(1) 簡単なホームページを作ってみよう。", category: "HTML", done: true },
-  { id: "3", title: "HTML_CSS編(2) 簡単なホームページを作ってみよう。", category: "CSS", done: true },
-  { id: "4", title: "HTML_CSS編(3) 簡単なホームページを作ってみよう。", category: "HTML,CSS", done: true },
-];
+// src/pages/users/DashboardPage.tsx
+import { Link, useNavigate } from "react-router-dom";
+import "../../styles/pages/dashboard.css";
+import {
+  GridIcon,
+  ListIcon,
+  UserIcon,
+  PlusSquareIcon,
+} from "../../components/Icons";
 
 export default function DashboardPage() {
+  const nav = useNavigate();
+
+  const onLogout = () => {
+    nav("/login", { replace: true });
+  };
+
   return (
-    <div className="d-flex" style={{ minHeight: "100vh" }}>
-      {/* Sidebar */}
-      <aside
-        className="text-white p-3"
-        style={{ width: 260, background: "#1f2937" }}
-      >
-        <div className="d-flex align-items-center gap-2 mb-4">
-          <div
-            className="rounded-circle bg-secondary"
-            style={{ width: 28, height: 28 }}
-          />
-          <div className="fw-bold">TecPutt</div>
+    <div className="d-flex user-dashboard">
+      <aside className="user-dashboard__sidebar">
+        <div className="fw-bold mb-3">Tec-Putt</div>
+
+        <div className="user-dashboard__profile">
+          <span>test_user</span>
+          <div className="user-dashboard__divider" />
         </div>
 
-        <div className="small text-uppercase text-white-50 mb-2">e-learning</div>
+        <div className="user-dashboard__nav">
+          <Link className="user-dashboard__nav-item" to="/memos">
+            <GridIcon className="user-dashboard__nav-icon" size={18} />
+            <span>メモ一覧</span>
+          </Link>
 
-        <nav className="d-grid gap-1">
-          <Link className="btn btn-sm btn-dark text-start" to="/dashboard">
-            記事一覧
+          <Link className="user-dashboard__nav-item" to="/profiles">
+            <ListIcon className="user-dashboard__nav-icon" size={18} />
+            <span>プロフィール一覧</span>
           </Link>
-          <Link className="btn btn-sm btn-dark text-start" to="/profiles">
-            プロフィール一覧
+
+          <Link className="user-dashboard__nav-item" to="/profiles/new">
+            <UserIcon className="user-dashboard__nav-icon" size={18} />
+            <span>プロフィール作成</span>
           </Link>
-          <Link className="btn btn-sm btn-dark text-start" to="/videos">
-            動画投稿一覧
+
+          <Link className="user-dashboard__nav-item" to="/memos/new">
+            <PlusSquareIcon className="user-dashboard__nav-icon" size={18} />
+            <span>メモ作成</span>
           </Link>
-          <Link className="btn btn-sm btn-dark text-start" to="/tweets">
-            つぶやき一覧
-          </Link>
-          <Link className="btn btn-sm btn-dark text-start" to="/inquiries">
-            問い合わせ
-          </Link>
-        </nav>
+        </div>
+
+        <button className="btn btn-light w-100 mt-3" onClick={onLogout}>
+          ログアウト
+        </button>
       </aside>
 
-      {/* Main */}
-      <main className="flex-grow-1 bg-light">
-        {/* Top bar */}
-        <div className="d-flex justify-content-end align-items-center p-3 border-bottom bg-white">
-          <div
-            className="rounded-circle bg-secondary"
-            style={{ width: 28, height: 28 }}
-            title="user"
-          />
-        </div>
-
-        <div className="p-4">
-          <h1 className="h4 mb-4">e-learning一覧</h1>
-
-          <div className="d-grid gap-3" style={{ maxWidth: 640 }}>
-            {lessons.map((l) => (
-              <div key={l.id} className="card shadow-sm">
-                <div className="card-body">
-                  <div className="d-flex align-items-start justify-content-between">
-                    <div className="fw-bold">{l.title}</div>
-                    {l.done && (
-                      <span className="badge text-bg-secondary">完了</span>
-                    )}
-                  </div>
-
-                  <div className="text-muted small mt-2">{l.category}</div>
-
-                  <div className="mt-3">
-                    {/* 実際の詳細ページがあるなら /lessons/:id にしてOK */}
-                    <Link className="btn btn-primary btn-sm" to={`/lessons/${l.id}`}>
-                      記事を見る
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      <main className="flex-grow-1 p-4">
+        <h1 className="h4">DashBoard</h1>
+        <p className="text-muted">すでにログインしています。</p>
+        <h2 className="h3 mt-4">投稿した記事一覧</h2>
       </main>
     </div>
   );

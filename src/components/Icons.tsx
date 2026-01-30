@@ -45,16 +45,7 @@ export function LockIcon({ size = 18, ...props }: IconProps) {
   );
 }
 
-export function UserIcon({ size = 18, ...props }: IconProps) {
-  return (
-    <BaseSvg size={size} {...props}>
-      <path d="M20 21a8 8 0 0 0-16 0" />
-      <path d="M12 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4z" />
-    </BaseSvg>
-  );
-}
-
-// （必要なら後で）サイドバー用
+// ✅ ここからサイドバー用
 export function GridIcon({ size = 18, ...props }: IconProps) {
   return (
     <BaseSvg size={size} {...props}>
@@ -75,6 +66,15 @@ export function ListIcon({ size = 18, ...props }: IconProps) {
       <path d="M3 6h.01" />
       <path d="M3 12h.01" />
       <path d="M3 18h.01" />
+    </BaseSvg>
+  );
+}
+
+export function UserIcon({ size = 18, ...props }: IconProps) {
+  return (
+    <BaseSvg size={size} {...props}>
+      <path d="M20 21a8 8 0 0 0-16 0" />
+      <path d="M12 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4z" />
     </BaseSvg>
   );
 }
