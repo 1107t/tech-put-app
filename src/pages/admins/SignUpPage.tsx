@@ -152,6 +152,14 @@ const SignUpPage: React.FC = () => {
                   <Link to="/terms" className="text-decoration-none">利用規約</Link>に同意する
                 </label>
               </div>
+               
+              {/* agree */}
+              <div className="form-check d-flex justify-content-center">
+                <input id="agree" type="checkbox" className="form-check-input" required />
+                <label htmlFor="agree" className="form-check-label fw-semibold ms-2">
+                  利用規約に同意する
+                </label>
+              </div>
 
               {/* 登録ボタン */}
               <button
@@ -163,14 +171,11 @@ const SignUpPage: React.FC = () => {
               </button>
             </form>
 
-            {/* リンク */}
-            <div className="d-flex flex-column gap-2">
-              <Link to="/admin/login" className="text-decoration-none">ログイン</Link>
-              <Link to="/password-reset" className="text-decoration-none">認証メールの再送信</Link>
-              <Link to="/auth/google" className="text-decoration-none">Googleでログイン</Link>
-              <Link to="/auth/line" className="text-decoration-none">Lineでログイン</Link>
-              <Link to="/auth/facebook" className="text-decoration-none">Facebookでログイン</Link>
-            </div>
+            <div className="text-center">
+              <Link className="link-primary text-decoration-none" to="/admin/login">
+                ログインへ戻る
+              </Link>
+            </div> 
           </div>
         </div>
       </div>

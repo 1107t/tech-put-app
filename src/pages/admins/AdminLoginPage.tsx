@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const AdminLoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -62,7 +62,7 @@ const AdminLoginPage: React.FC = () => {
               </div>
             )}
 
-            <p className="text-center mb-4">ログインしましょう！</p>
+            <p className="text-center mb-4">ログインしましょう!</p>
 
             <form onSubmit={handleSubmit}>
               {/* メールアドレス */}
@@ -125,9 +125,24 @@ const AdminLoginPage: React.FC = () => {
 
             {/* リンク */}
             <div className="d-flex flex-column gap-2">
-              <a href="/admin/signup" className="text-decoration-none">アカウント登録</a>
-              <a href="/admin/reset" className="text-decoration-none">パスワードを忘れましたか?</a>
-              <a href="/admin/resend" className="text-decoration-none">認証メールの再送信</a>
+              <Link to="/admin/signup" className="link-primary text-decoration-none">
+                アカウント登録
+              </Link>
+              <Link to="/admin/reset" className="link-primary text-decoration-none">
+                パスワードを忘れましたか?
+              </Link>
+              <Link to="/admin/message/resend" className="link-primary text-decoration-none">
+                認証メールの再送信
+              </Link>
+              <Link to="/message/google" className="link-primary text-decoration-none">
+                Googleでのログイン
+              </Link>
+              <Link to="/message/line" className="link-primary text-decoration-none">
+                LINEでのログイン
+              </Link>
+              <Link to="/message/facebook" className="link-primary text-decoration-none">
+                Facebookでのログイン
+              </Link>
             </div>
           </div>
         </div>
