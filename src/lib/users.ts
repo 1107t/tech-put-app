@@ -22,8 +22,8 @@ export type User = {
   id: string;
   name: string;
   email: string;
-  birthday: string; // YYYY-MM-DD
+  birthday: string;
   gender: GenderValue;
-  password: string; // 学習用（本番NG）
-  createdAt: string; // ISO
+  password: string;
+  createdAt: string;
 };

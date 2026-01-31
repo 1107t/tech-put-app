@@ -25,7 +25,7 @@ export async function createUser(newUser: User) {
   const exists = users.some(
     (u) => u.email.toLowerCase() === newUser.email.toLowerCase()
   );
-  if (exists) throw new Error("このメールアドレスは既に登録されています。");
+  if (exists) throw new Error("そのメールアドレスは既に登録されています。");
 
   users.push(newUser);
   await setUsers(users);

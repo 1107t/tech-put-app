@@ -1,20 +1,22 @@
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
-import { MailIcon, LockIcon } from "../../components/Icons"; // ✅ 追加
-import { getCurrentUserId } from "../../lib/usersStore";
+import { MailIcon, LockIcon } from "../../components/Icons";
+import { getCurrentUserId, login, logout } from "../../lib/usersStore";
 
 export default function LoginPage() {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    (async () => {
-      const id = await getCurrentUserId();
-      if (id) {
-        navigate("/dashboard", { replace: true });
-      }
-    })();
-  }, [navigate]);
+useEffect(() => {
+  (async () => {
+    const saved = localStorage.getItem("remember_email");
+    if (saved) setEmail(saved);
+
+    const id = await getCurrentUserId();
+    if (id) navigate("/dashboard", { replace: true });
+  })();
+}, [navigate]);
+
 
   // 入力値
   const [email, setEmail] = useState("");
@@ -35,11 +37,11 @@ export default function LoginPage() {
         throw new Error("メールアドレスとパスワードを入力してください。");
       }
 
-      if (remember) {
-        localStorage.setItem("remember_email", email);
-      } else {
-        localStorage.removeItem("remember_email");
-      }
+      if (remember) localStorage.setItem("remember_email", email);
+      else localStorage.removeItem("remember_email");
+
+      //  登録済みユーザーだけ通す（localforage照合）
+      await login(email, password);
 
       navigate("/dashboard", { replace: true });
     } catch (err) {
@@ -68,7 +70,10 @@ export default function LoginPage() {
             </Link>
           </li>
           <li>
-            <Link className="link-primary text-decoration-none" to="/message/resend">
+            <Link
+              className="link-primary text-decoration-none"
+              to="/message/resend"
+            >
               認証メールの再送信
             </Link>
           </li>
@@ -147,7 +152,11 @@ export default function LoginPage() {
           </label>
         </div>
 
-        <button type="submit" className="btn btn-primary btn-lg w-100" disabled={loading}>
+        <button
+          type="submit"
+          className="btn btn-primary btn-lg w-100"
+          disabled={loading}
+        >
           {loading ? "ログイン中..." : "ログイン"}
         </button>
       </form>
