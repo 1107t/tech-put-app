@@ -9,6 +9,9 @@ import UserPassreset from './pages/users/Passreset';
 // 管理者用ページ
 import AdminLoginPage from './pages/admins/AdminLoginPage';
 import AdminSignUpPage from './pages/admins/SignUpPage';
+import AdminMessagePage from './pages/admins/MessagePage';
+import AdminPassreset from './pages/admins/Passreset';
+import AdminPage from './pages/adminpage';
 
 function AppRoutes() {
   return (
@@ -26,9 +29,10 @@ function AppRoutes() {
         {/* 管理者用ルート */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin/signup" element={<AdminSignUpPage />} />
-        <Route path="/admin/message/:type" element={<UserMessagePage />} />
-        <Route path="/admin/reset" element={<UserPassreset />} />
+        <Route path="/admin/message/:type" element={<AdminMessagePage />} />
+        <Route path="/admin/reset" element={<AdminPassreset />} />
         <Route path="/admin/dashboard" element={<div>管理者ダッシュボード（未実装）</div>} />
+        <Route path="/adminpage" element={<AdminPage />} />
 
         {/* 404ページ */}
         <Route path="*" element={<div>404 - ページが見つかりません</div>} />

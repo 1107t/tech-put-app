@@ -9,7 +9,7 @@ export default function Passreset() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch("/api/users"); // ← 後で正しいパスに直す
+        const res = await fetch("/api/admin/users"); // 管理者用APIに修正
         console.log(await res.json());
       } catch (e) {
         console.log("fetch skipped:", e);
@@ -19,18 +19,30 @@ export default function Passreset() {
 
   const onSend = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate("/message/resend");
+    navigate("/admin/message/resend"); // 管理者用メッセージページに修正
   };
 
   return (
     <AuthLayout
       subtitle="パスワード再設定"
-      brandHref="/reset"
+      brandHref="/admin/reset" // 管理者用に修正
       footer={
         <ul className="list-unstyled mb-0 d-grid gap-1">
-          <li><Link className="link-primary text-decoration-none" to="/admin/signup">アカウント登録</Link></li>
-          <li><Link className="link-primary text-decoration-none" to="/admin/login">ログイン</Link></li>
-          <li><Link className="link-primary text-decoration-none" to="/message/resend">認証メールの再送信</Link></li>
+          <li>
+            <Link className="link-primary text-decoration-none" to="/admin/signup">
+              アカウント登録
+            </Link>
+          </li>
+          <li>
+            <Link className="link-primary text-decoration-none" to="/admin/login">
+              ログイン
+            </Link>
+          </li>
+          <li>
+            <Link className="link-primary text-decoration-none" to="/admin/message/resend">
+              認証メールの再送信
+            </Link>
+          </li>
         </ul>
       }
     >

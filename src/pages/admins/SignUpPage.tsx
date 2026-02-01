@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { addUser, getUserByEmail } from '../../utils/indexedDB';
 
 interface SignUpFormData {
   name: string;
@@ -18,6 +19,8 @@ const SignUpPage: React.FC = () => {
     passwordConfirmation: '',
     agreeTerms: false,
   });
+  const [error, setError] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -25,15 +28,61 @@ const SignUpPage: React.FC = () => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
     }));
+    // エラーメッセージをクリア
+    if (error) setError('');
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError('');
+    setLoading(true);
+
     try {
-      console.log('新規登録情報:', formData);
-      navigate('/dashboard');
+      // バリデーション
+      if (formData.password !== formData.passwordConfirmation) {
+        setError('パスワードが一致しません');
+        setLoading(false);
+        return;
+      }
+
+      if (formData.password.length < 6) {
+        setError('パスワードは6文字以上で入力してください');
+        setLoading(false);
+        return;
+      }
+
+      // メールアドレスの重複チェック
+      const existingUser = await getUserByEmail(formData.email);
+      if (existingUser) {
+        setError('このメールアドレスは既に登録されています');
+        setLoading(false);
+        return;
+      }
+
+      // ユーザー登録
+      const userId = await addUser({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        createdAt: new Date().toISOString(),
+      });
+
+      console.log('登録成功！ユーザーID:', userId);
+      
+      // ログイン状態を保存（sessionStorage使用）
+      sessionStorage.setItem('currentUser', JSON.stringify({
+        id: userId,
+        email: formData.email,
+        name: formData.name,
+      }));
+
+      // adminpageへ遷移
+      navigate('/adminpage');
     } catch (error) {
       console.error('Registration failed:', error);
+      setError('登録に失敗しました。もう一度お試しください。');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -51,6 +100,13 @@ const SignUpPage: React.FC = () => {
           {/* サブタイトル */}
           <div className="card-body pt-2">
             <p className="text-center mb-4">アカウント登録を行いましょう！</p>
+
+            {/* エラーメッセージ */}
+            {error && (
+              <div className="alert alert-danger" role="alert">
+                {error}
+              </div>
+            )}
 
             {/* フォーム */}
             <form onSubmit={handleSubmit}>
@@ -104,7 +160,7 @@ const SignUpPage: React.FC = () => {
                     value={formData.password}
                     onChange={handleChange}
                     className="form-control"
-                    placeholder="パスワード"
+                    placeholder="パスワード（6文字以上）"
                     autoComplete="new-password"
                     required
                   />
@@ -138,7 +194,7 @@ const SignUpPage: React.FC = () => {
               </div>
 
               {/* 利用規約チェックボックス */}
-              <div className="form-check mb-3">
+              <div className="form-check mb-3 d-flex justify-content-center">
                 <input
                   type="checkbox"
                   id="agreeTerms"
@@ -148,16 +204,8 @@ const SignUpPage: React.FC = () => {
                   className="form-check-input"
                   required
                 />
-                <label className="form-check-label" htmlFor="agreeTerms">
+                <label className="form-check-label fw-semibold ms-2" htmlFor="agreeTerms">
                   <Link to="/terms" className="text-decoration-none">利用規約</Link>に同意する
-                </label>
-              </div>
-               
-              {/* agree */}
-              <div className="form-check d-flex justify-content-center">
-                <input id="agree" type="checkbox" className="form-check-input" required />
-                <label htmlFor="agree" className="form-check-label fw-semibold ms-2">
-                  利用規約に同意する
                 </label>
               </div>
 
@@ -165,9 +213,9 @@ const SignUpPage: React.FC = () => {
               <button
                 type="submit"
                 className="btn btn-primary w-100 mb-3"
-                disabled={!formData.agreeTerms}
+                disabled={!formData.agreeTerms || loading}
               >
-                アカウント登録
+                {loading ? '登録中...' : 'アカウント登録'}
               </button>
             </form>
 
