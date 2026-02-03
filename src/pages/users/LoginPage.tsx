@@ -1,27 +1,12 @@
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
-import { MailIcon, LockIcon } from "../../components/Icons"; // ✅ 追加
+import { MailIcon, LockIcon } from "../../components/Icons";
+import { getCurrentUserId, login } from "../../lib/usersStore";
 
 export default function LoginPage() {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    (async () => {
-      try {
-        // TODO: Rails API連携 - ログイン状態の確認やユーザー情報の取得
-        // TODO: Rails の正しいエンドポイントに修正（例: /api/v1/users/me など）
-        const res = await fetch("/api/users");
-
-        if (res.ok) {
-          // 例: すでにログイン済みならダッシュボードへ
-          navigate("/dashboard", { replace: true });
-        }
-      } catch {
-        // 未ログイン/通信失敗なら何もしない（ログインフォーム表示）
-      }
-    })();
-  }, [navigate]);
 
   // 入力値
   const [email, setEmail] = useState("");
@@ -31,6 +16,16 @@ export default function LoginPage() {
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const saved = localStorage.getItem("remember_email");
+      if (saved) setEmail(saved);
+
+      const id = await getCurrentUserId();
+      if (id) navigate("/dashboard", { replace: true });
+    })();
+  }, [navigate]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -42,11 +37,11 @@ export default function LoginPage() {
         throw new Error("メールアドレスとパスワードを入力してください。");
       }
 
-      if (remember) {
-        localStorage.setItem("remember_email", email);
-      } else {
-        localStorage.removeItem("remember_email");
-      }
+      if (remember) localStorage.setItem("remember_email", email);
+      else localStorage.removeItem("remember_email");
+
+      //  登録済みユーザーだけ通す（localforage照合）
+      await login(email, password);
 
       navigate("/dashboard", { replace: true });
     } catch (err) {
@@ -75,7 +70,10 @@ export default function LoginPage() {
             </Link>
           </li>
           <li>
-            <Link className="link-primary text-decoration-none" to="/message/resend">
+            <Link
+              className="link-primary text-decoration-none"
+              to="/message/resend"
+            >
               認証メールの再送信
             </Link>
           </li>
@@ -154,7 +152,11 @@ export default function LoginPage() {
           </label>
         </div>
 
-        <button type="submit" className="btn btn-primary btn-lg w-100" disabled={loading}>
+        <button
+          type="submit"
+          className="btn btn-primary btn-lg w-100"
+          disabled={loading}
+        >
           {loading ? "ログイン中..." : "ログイン"}
         </button>
       </form>

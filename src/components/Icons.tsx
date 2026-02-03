@@ -1,4 +1,3 @@
-// src/components/Icons.tsx
 import type React from "react";
 
 type IconProps = React.SVGProps<SVGSVGElement> & {
