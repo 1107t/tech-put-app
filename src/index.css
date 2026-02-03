@@ -99,9 +99,3 @@ body {
   border-color: #bd2130;
 }
 
-@media (max-width: 576px) {
-  .register-box {
-    width: 90%;
-    margin-top: 20px;
-  }
-}
