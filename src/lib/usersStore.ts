@@ -19,8 +19,6 @@ async function setUsers(users: User[]) {
 
 export async function createUser(newUser: User) {
   const users = await getUsers();
-  console.log("[usersStore] existing users:", users.map(u => u.email));
-  console.log("[usersStore] new email:", newUser.email);
 
   const exists = users.some(
     (u) => u.email.toLowerCase() === newUser.email.toLowerCase()

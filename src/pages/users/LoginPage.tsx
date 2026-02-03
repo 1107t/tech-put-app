@@ -2,20 +2,10 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
 import { MailIcon, LockIcon } from "../../components/Icons";
-import { getCurrentUserId, login, logout } from "../../lib/usersStore";
+import { getCurrentUserId, login } from "../../lib/usersStore";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-
-useEffect(() => {
-  (async () => {
-    const saved = localStorage.getItem("remember_email");
-    if (saved) setEmail(saved);
-
-    const id = await getCurrentUserId();
-    if (id) navigate("/dashboard", { replace: true });
-  })();
-}, [navigate]);
 
 
   // 入力値
@@ -26,6 +16,16 @@ useEffect(() => {
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const saved = localStorage.getItem("remember_email");
+      if (saved) setEmail(saved);
+
+      const id = await getCurrentUserId();
+      if (id) navigate("/dashboard", { replace: true });
+    })();
+  }, [navigate]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
