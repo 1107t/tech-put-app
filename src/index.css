@@ -9,3 +9,93 @@ body {
   background: #f8f9fa; /* Bootstrapのbg-light相当 */
   color: #212529;
 }
+
+.register-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #e9ecef;
+}
+
+.register-box {
+  width: 360px;
+}
+
+.card {
+  box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+  margin-bottom: 1rem;
+}
+
+.card-outline {
+  border-top: 3px solid;
+}
+
+.card-primary.card-outline {
+  border-top-color: #007bff;
+}
+
+.card-header {
+  background-color: transparent;
+  border-bottom: 1px solid rgba(0,0,0,.125);
+  padding: .75rem 1.25rem;
+}
+
+.card-body {
+  padding: 1.25rem;
+}
+
+.login-box-msg {
+  margin: 0 0 10px 0;
+  padding: 0;
+  text-align: center;
+}
+
+.input-group-text {
+  background-color: #e9ecef;
+  border: 1px solid #ced4da;
+  border-left: 0;
+  color: #495057;
+}
+
+.input-group .form-control {
+  border-right: 0;
+}
+
+.input-group .form-control:focus {
+  box-shadow: none;
+  border-color: #ced4da;
+}
+
+.input-group .form-control:focus + .input-group-append .input-group-text {
+  border-color: #80bdff;
+}
+
+.icheck-primary {
+  display: flex;
+  align-items: center;
+}
+
+.icheck-primary input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+.btn-block {
+  display: block;
+  width: 100%;
+}
+
+.social-auth-links .btn {
+  margin-bottom: 10px;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+}
+
