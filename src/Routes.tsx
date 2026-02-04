@@ -5,6 +5,7 @@ import LoginPage from './pages/users/LoginPage';
 import UserSignUpPage from './pages/users/SignUpPage';
 import UserMessagePage from './pages/users/MessagePage';
 import UserPassreset from './pages/users/Passreset';
+import DashboardPage from './pages/users/DashboardPage'; 
 
 // 管理者用ページ
 import AdminLoginPage from './pages/admins/AdminLoginPage';
@@ -25,6 +26,7 @@ function AppRoutes() {
         <Route path="/signup" element={<UserSignUpPage />} />
         <Route path="/message/:type" element={<UserMessagePage />} />
         <Route path="/reset" element={<UserPassreset />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
 
         {/* 管理者用ルート */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
