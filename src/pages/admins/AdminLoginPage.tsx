@@ -3,29 +3,32 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
 import { MailIcon, LockIcon } from "../../components/Icons";
-import { getCurrentAdminId, adminLogin } from "../../lib/adminStore";
+import { adminLogin } from "../../lib/adminStore";
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
 
-  // 入力値
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  // UI状態
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    (async () => {
+    let cancelled = false;
+
+    const loadRememberedEmail = () => {
+      if (cancelled) return;
       const saved = localStorage.getItem("admin_remember_email");
       if (saved) setEmail(saved);
+    };
 
-      const id = await getCurrentAdminId();
-      if (id) navigate("/admin/dashboard", { replace: true });
-    })();
-  }, [navigate]);
+    loadRememberedEmail();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -40,7 +43,6 @@ export default function AdminLoginPage() {
       if (remember) localStorage.setItem("admin_remember_email", email);
       else localStorage.removeItem("admin_remember_email");
 
-      // 管理者ログイン
       await adminLogin(email, password);
 
       navigate("/admin/dashboard", { replace: true });
