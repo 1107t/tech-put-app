@@ -12,6 +12,7 @@ import AdminLoginPage from './pages/admins/AdminLoginPage';
 import AdminSignUpPage from './pages/admins/SignUpPage';
 import AdminMessagePage from './pages/admins/MessagePage';
 import AdminPassreset from './pages/admins/Passreset';
+import AdminDashboardPage from './pages/admins/AdminDashboardPage';
 import AdminPage from './pages/adminpage';
 
 function AppRoutes() {
@@ -33,7 +34,7 @@ function AppRoutes() {
         <Route path="/admin/signup" element={<AdminSignUpPage />} />
         <Route path="/admin/message/:type" element={<AdminMessagePage />} />
         <Route path="/admin/reset" element={<AdminPassreset />} />
-        <Route path="/admin/dashboard" element={<div>管理者ダッシュボード（未実装）</div>} />
+        <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
         <Route path="/adminpage" element={<AdminPage />} />
 
         {/* 404ページ */}
