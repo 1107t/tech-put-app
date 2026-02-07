@@ -1,18 +1,7 @@
 // src/pages/admin/AdminDashboardPage.tsx
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { type Admin } from "../../lib/adminStore";
-import localforage from "localforage";
-
-const adminSessionStorage = localforage.createInstance({
-  name: "tech-put-admin",
-  storeName: "session",
-});
-
-const adminStorage = localforage.createInstance({
-  name: "tech-put-admin",
-  storeName: "admins",
-});
+import { getCurrentAdmin, adminLogout, type Admin } from "../../lib/adminStore";
 
 const Icon = ({ path, fillRule }: { path: string | string[]; fillRule?: "evenodd" }) => (
   <svg width="16" height="16" fill="currentColor" className="me-2" viewBox="0 0 16 16">
@@ -42,15 +31,7 @@ export default function AdminDashboardPage() {
     let cancelled = false;
 
     (async () => {
-      const adminId = await adminSessionStorage.getItem<string>("admin_id");
-      if (cancelled) return;
-      
-      if (!adminId) {
-        navigate("/admin/login", { replace: true });
-        return;
-      }
-
-      const currentAdmin = await adminStorage.getItem<Admin>(`admin:${adminId}`);
+      const currentAdmin = await getCurrentAdmin();
       if (cancelled) return;
       
       if (!currentAdmin) {
@@ -68,8 +49,8 @@ export default function AdminDashboardPage() {
   }, [navigate]);
 
   const handleLogout = async () => {
-    await adminSessionStorage.removeItem("admin_id");
-    window.location.href = "/admin/login";
+    await adminLogout();
+    navigate("/admin/login", { replace: true });
   };
 
   if (loading) {
