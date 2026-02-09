@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
 import { MailIcon } from "../../components/Icons";
@@ -6,26 +5,15 @@ import { MailIcon } from "../../components/Icons";
 export default function Passreset() {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch("/api/admin/users"); // 管理者用APIに修正
-        console.log(await res.json());
-      } catch (e) {
-        console.log("fetch skipped:", e);
-      }
-    })();
-  }, []);
-
   const onSend = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate("/admin/message/resend"); // 管理者用メッセージページに修正
+    navigate("/admin/message/resend");
   };
 
   return (
     <AuthLayout
       subtitle="パスワード再設定"
-      brandHref="/admin/reset" // 管理者用に修正
+      brandHref="/admin/reset"
       footer={
         <ul className="list-unstyled mb-0 d-grid gap-1">
           <li>
