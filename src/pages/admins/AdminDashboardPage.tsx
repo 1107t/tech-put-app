@@ -1,4 +1,4 @@
-// src/pages/admin/AdminDashboardPage.tsx
+// src/pages/admins/AdminDashboardPage.tsx
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { getCurrentAdmin, adminLogout, type Admin } from "../../lib/adminStore";

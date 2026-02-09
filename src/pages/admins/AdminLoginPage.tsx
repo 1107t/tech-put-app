@@ -1,4 +1,4 @@
-// src/pages/admin/AdminLoginPage.tsx
+// src/pages/admins/AdminLoginPage.tsx
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
