@@ -14,10 +14,7 @@ import AdminMessagePage from './pages/admins/MessagePage';
 import AdminPassreset from './pages/admins/Passreset';
 import AdminDashboardPage from './pages/admins/AdminDashboardPage';
 import AdminPage from './pages/adminpage';
-import CourseManagementPage from "./pages/admins/CourseManagementPage";
-
-// ルート設定内に追加
-<Route path="/admin/courses" element={<CourseManagementPage />} />
+import AdminDetail from './pages/admins/AdminDetail';
 
 function AppRoutes() {
   return (
@@ -40,7 +37,7 @@ function AppRoutes() {
         <Route path="/admin/reset" element={<AdminPassreset />} />
         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
         <Route path="/adminpage" element={<AdminPage />} />
-        <Route path="/admin/courses" element={<CourseManagementPage />} />
+        <Route path="/admin/:id" element={<AdminDetail />} />
 
         {/* 404ページ */}
         <Route path="*" element={<div>404 - ページが見つかりません</div>} />
