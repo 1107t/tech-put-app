@@ -47,6 +47,12 @@ export default function AdminDetail() {
         return;
       }
 
+      // URLのIDがcurrent userのIDと一致しない場合、正しいURLへリダイレクト
+      if (id !== currentAdmin.id) {
+        navigate(`/admin/${currentAdmin.id}`, { replace: true });
+        return;
+      }
+
       setAdmin(currentAdmin);
       setLoading(false);
     })();
@@ -54,7 +60,7 @@ export default function AdminDetail() {
     return () => {
       cancelled = true;
     };
-  }, [navigate]);
+  }, [navigate, id]);
 
   const handleLogout = async () => {
     await adminLogout();
@@ -192,9 +198,9 @@ export default function AdminDetail() {
                 style={{ fontSize: "20px", fontWeight: "500" }}
               >
                 管理者詳細{" "}
-                {id && (
+                {admin && (
                   <span className="text-muted" style={{ fontSize: "14px" }}>
-                    （ID: {id}）
+                    （ID: {admin.id}）
                   </span>
                 )}
               </h4>
