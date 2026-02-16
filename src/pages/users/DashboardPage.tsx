@@ -4,12 +4,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { getCurrentUser, logout } from "../../lib/usersStore";
 import type { User } from "../../lib/users";
 import "../../styles/pages/dashboard.css";
-import {
-  GridIcon,
-  ListIcon,
-  UserIcon,
-  PlusSquareIcon,
-} from "../../components/Icons";
 
 type Lesson = {
   id: string;
@@ -30,17 +24,22 @@ export default function DashboardPage() {
   const [me, setMe] = useState<User | null>(null);
 
   useEffect(() => {
-    (async () => {
+    const fetchUser = async () => {
       const u = await getCurrentUser();
+      console.log("currentUser:", u);
+
       if (!u) {
         navigate("/login", { replace: true });
         return;
       }
+
       setMe(u);
-    })();
+    };
+
+    fetchUser();
   }, [navigate]);
 
-  const handleLogout = async () => {
+    const handleLogout = async () => {
     await logout();
     navigate("/login", { replace: true });
   };
@@ -48,12 +47,11 @@ export default function DashboardPage() {
   if (!me) return null;
 
   return (
-    <div className="d-flex" style={{ minHeight: "100vh" }}>
-      {/* Sidebar */}
-      <aside className="text-white p-3" style={{ width: 260, background: "#1f2937" }}>
-        <div className="d-flex align-items-center gap-2 mb-4">
-          <div className="rounded-circle bg-secondary" style={{ width: 28, height: 28 }} />
-          <div className="fw-bold">TecPutt</div>
+    <div className="d-flex user-dashboard">
+      <aside className="user-dashboard__sidebar">
+        <div className="d-flex align-items-center gap-2 mb-3">
+          <div className="rounded-circle bg-secondary user-dashboard__sidebar_size" />
+          <div className="fw-bold">TechPutt</div>
         </div>
 
         <div className="user-dashboard__profile">
@@ -63,10 +61,12 @@ export default function DashboardPage() {
           <div className="user-dashboard__divider" />
         </div>
 
-        <div className="small text-uppercase text-white-50 mb-2">e-learning</div>
+        <div className="small text-uppercase text-white-50 user-dashboard__nav-title">
+          e-learning
+        </div>
 
         <nav className="d-grid gap-1">
-          <Link className="btn btn-sm btn-dark text-start" to="/dashboard">
+          <Link className="btn btn-sm btn-dark text-start user-dashboard__nav-item" to="/dashboard">
             記事一覧
           </Link>
           <Link className="btn btn-sm btn-dark text-start" to="/profiles">
@@ -83,7 +83,11 @@ export default function DashboardPage() {
           </Link>
         </nav>
 
-        <button className="btn btn-light w-100 mt-3" onClick={handleLogout}>
+        <button
+          type="button"
+          className="btn btn-link text-white w-100 mt-3"
+          onClick={logout}
+        >
           ログアウト
         </button>
       </aside>
@@ -91,33 +95,42 @@ export default function DashboardPage() {
       {/* Main */}
       <main className="flex-grow-1 bg-light">
         <div className="d-flex justify-content-end align-items-center p-3 border-bottom bg-white">
-          <div className="rounded-circle bg-secondary" style={{ width: 28, height: 28 }} title="user" />
+          <div
+            className="rounded-circle bg-secondary user-dashboard__header-avatar"
+            title="user"
+          />
         </div>
 
         <div className="p-4">
           <h1 className="h4 mb-4">e-learning一覧</h1>
 
-          <div className="d-grid gap-3" style={{ maxWidth: 640 }}>
+          <div className="d-grid gap-3 user-dashboard__content">
             {lessons.map((l) => (
               <div key={l.id} className="card shadow-sm">
                 <div className="card-body">
                   <div className="d-flex align-items-start justify-content-between">
                     <div className="fw-bold">{l.title}</div>
-                    {l.done && <span className="badge text-bg-secondary">完了</span>}
+                    {l.done && (
+                      <span className="badge text-bg-secondary">完了</span>
+                    )}
                   </div>
 
                   <div className="text-muted small mt-2">{l.category}</div>
 
                   <div className="mt-3">
-                    <Link className="btn btn-primary btn-sm" to={`/lessons/${l.id}`}>
+                    <Link
+                      className="btn btn-primary btn-sm"
+                      to={`/lessons/${l.id}`}
+                    >
                       記事を見る
                     </Link>
                   </div>
                 </div>
               </div>
             ))}
-          </div>
+           </div>
         </div>
+
       </main>
     </div>
   );
