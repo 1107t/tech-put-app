@@ -6,23 +6,19 @@ import { getCurrentAdmin, adminLogout, type Admin } from "../../lib/adminStore";
 const SidebarItem = ({
   label,
   to,
-  active,
 }: {
   label: string;
   to: string;
-  active?: boolean;
 }) => (
-  <li className="mb-2">
+  <li className="mb-1">
     <Link
       to={to}
-      className={`text-white text-decoration-none d-flex align-items-center py-2 px-3 rounded ${
-        active ? "bg-secondary" : ""
-      }`}
+      className="text-white text-decoration-none d-flex align-items-center py-2 px-3 rounded"
       style={{ fontSize: "14px" }}
+      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#2a2a2a")}
+      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
     >
-      <span className="me-2" style={{ fontSize: "10px" }}>
-        ■
-      </span>
+      <span className="me-2" style={{ fontSize: "10px" }}>■</span>
       {label}
     </Link>
   </li>
@@ -34,6 +30,7 @@ export default function AdminDetail() {
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -47,7 +44,6 @@ export default function AdminDetail() {
         return;
       }
 
-      // URLのIDがcurrent userのIDと一致しない場合、正しいURLへリダイレクト
       if (id !== currentAdmin.id) {
         navigate(`/admin/${currentAdmin.id}`, { replace: true });
         return;
@@ -78,22 +74,15 @@ export default function AdminDetail() {
   }
 
   const menuItems = [
-    {
-      label: "記事一覧",
-      to: "/admin/articles",
-    },
-    {
-      label: "動画投稿一覧",
-      to: "/admin/videos",
-    },
-    {
-      label: "登録ユーザー一覧",
-      to: "/admin/users",
-    },
-    {
-      label: "問い合わせ一覧",
-      to: "/admin/inquiries",
-    },
+    { label: "記事一覧", to: "/admin/articles" },
+    { label: "動画投稿一覧", to: "/admin/videos" },
+    { label: "登録ユーザー一覧", to: "/admin/users" },
+    { label: "問い合わせ一覧", to: "/admin/inquiries" },
+  ];
+
+  const infoItems = [
+    { label: "名前：", value: admin?.name },
+    { label: "メールアドレス：", value: admin?.email },
   ];
 
   return (
@@ -111,13 +100,8 @@ export default function AdminDetail() {
             top: 0,
           }}
         >
-          <div
-            className="mb-4 pb-3"
-            style={{ borderBottom: "1px solid #2a2a2a" }}
-          >
-            <h5 className="mb-0" style={{ fontSize: "16px" }}>
-              管理画面
-            </h5>
+          <div className="mb-4 pb-3" style={{ borderBottom: "1px solid #2a2a2a" }}>
+            <h5 className="mb-0" style={{ fontSize: "16px" }}>管理画面</h5>
           </div>
 
           {/* 検索ボックス */}
@@ -129,27 +113,14 @@ export default function AdminDetail() {
                 placeholder="検索..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                style={{
-                  backgroundColor: "#2a2a2a",
-                  border: "none",
-                  color: "#fff",
-                }}
+                style={{ backgroundColor: "#2a2a2a", border: "none", color: "#fff" }}
               />
               <button
                 className="btn"
                 type="button"
-                style={{
-                  backgroundColor: "#2a2a2a",
-                  border: "none",
-                  color: "#fff",
-                }}
+                style={{ backgroundColor: "#2a2a2a", border: "none", color: "#fff" }}
               >
-                <svg
-                  width="16"
-                  height="16"
-                  fill="currentColor"
-                  viewBox="0 0 16 16"
-                >
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                   <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
                 </svg>
               </button>
@@ -164,18 +135,10 @@ export default function AdminDetail() {
           </ul>
 
           {/* フッター */}
-          <div
-            className="mt-auto pt-3"
-            style={{ borderTop: "1px solid #2a2a2a" }}
-          >
-            <p
-              className="text-muted mb-0"
-              style={{ fontSize: "11px", lineHeight: "1.5" }}
-            >
-              Copyright © 2014-2021
-              <br />
-              AdminLTE.io
-              <br />
+          <div className="mt-auto pt-3" style={{ borderTop: "1px solid #2a2a2a" }}>
+            <p className="text-muted mb-0" style={{ fontSize: "11px", lineHeight: "1.5" }}>
+              Copyright © 2014-2021<br />
+              AdminLTE.io<br />
               All rights reserved.
             </p>
           </div>
@@ -185,70 +148,49 @@ export default function AdminDetail() {
         <div className="flex-grow-1" style={{ marginLeft: "250px" }}>
           {/* ヘッダー */}
           <div
-            className="d-flex justify-content-between align-items-center px-4 py-3"
+            className="d-flex justify-content-between align-items-center px-4"
             style={{
               backgroundColor: "#ffffff",
               borderBottom: "1px solid #dee2e6",
-              boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
+              height: "50px",
             }}
           >
-            <div>
-              <h4
-                className="mb-0"
-                style={{ fontSize: "20px", fontWeight: "500" }}
+            {/* 左側：ハンバーガー＋タイトル */}
+            <div className="d-flex align-items-center">
+              <svg
+                width="18"
+                height="18"
+                fill="#6c757d"
+                viewBox="0 0 16 16"
+                className="me-3"
+                style={{ cursor: "pointer" }}
               >
-                管理者詳細{" "}
-                {admin && (
-                  <span className="text-muted" style={{ fontSize: "14px" }}>
-                    （ID: {admin.id}）
-                  </span>
-                )}
-              </h4>
-              <small className="text-muted" style={{ fontSize: "13px" }}>
-                ようこそ、{admin?.name || admin?.email}さん
-              </small>
+                <path
+                  fillRule="evenodd"
+                  d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"
+                />
+              </svg>
+              <span style={{ fontSize: "15px", color: "#333" }}>管理者詳細画面</span>
             </div>
 
-            {/* 右側のアイコン群 */}
-            <div className="d-flex align-items-center gap-3">
-              {/* ログアウトボタン */}
-              <button
-                className="btn btn-outline-danger btn-sm"
-                onClick={handleLogout}
-                type="button"
-                style={{
-                  fontSize: "13px",
-                  padding: "6px 16px",
-                  borderRadius: "4px",
-                }}
-              >
-                ログアウト
-              </button>
-
-              {/* アカウントアイコン */}
-              <div className="dropdown">
+            {/* 右側：アカウントアイコン＋ドロップダウン */}
+            <div className="d-flex align-items-center">
+              <div className="position-relative">
                 <button
-                  className="btn btn-link text-decoration-none p-0 d-flex align-items-center"
+                  className="btn p-0 border-0"
                   type="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                  style={{ border: "none" }}
+                  onClick={() => setDropdownOpen((prev) => !prev)}
                 >
                   <div
                     className="rounded-circle d-flex align-items-center justify-content-center"
                     style={{
                       width: "36px",
                       height: "36px",
-                      background:
-                        "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                      cursor: "pointer",
                     }}
                   >
-                    <svg
-                      width="20"
-                      height="20"
-                      fill="white"
-                      viewBox="0 0 16 16"
-                    >
+                    <svg width="20" height="20" fill="white" viewBox="0 0 16 16">
                       <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
                       <path
                         fillRule="evenodd"
@@ -257,44 +199,79 @@ export default function AdminDetail() {
                     </svg>
                   </div>
                 </button>
-                <ul className="dropdown-menu dropdown-menu-end">
-                  <li>
-                    <div className="dropdown-item-text">
-                      <div style={{ fontSize: "14px", fontWeight: "600" }}>
-                        {admin?.name || "アカウント"}
-                      </div>
-                      <div style={{ fontSize: "12px", color: "#6c757d" }}>
-                        {admin?.email}
-                      </div>
-                    </div>
-                  </li>
-                  <li>
-                    <hr className="dropdown-divider" />
-                  </li>
-                  <li>
-                    <button
-                      className="dropdown-item"
-                      onClick={handleLogout}
-                      type="button"
+
+                {dropdownOpen && (
+                  <>
+                    <div
+                      style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000 }}
+                      onClick={() => setDropdownOpen(false)}
+                    />
+                    <div
+                      className="shadow-sm"
+                      style={{
+                        position: "absolute",
+                        top: "100%",
+                        right: 0,
+                        marginTop: "4px",
+                        minWidth: "200px",
+                        backgroundColor: "#fff",
+                        border: "1px solid #dee2e6",
+                        borderRadius: "6px",
+                        zIndex: 1001,
+                        overflow: "hidden",
+                      }}
                     >
-                      ログアウト
-                    </button>
-                  </li>
-                </ul>
+                      <div style={{ padding: "10px 16px" }}>
+                        <div style={{ fontSize: "14px", fontWeight: "600" }}>
+                          {admin?.name || "アカウント"}
+                        </div>
+                      </div>
+                      <hr style={{ margin: 0, borderColor: "#dee2e6" }} />
+                      <Link
+                        to={`/admin/${admin?.id}`}
+                        className="d-block text-decoration-none"
+                        style={{ padding: "8px 16px", fontSize: "14px", color: "#0d6efd" }}
+                        onClick={() => setDropdownOpen(false)}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f8f9fa")}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                      >
+                        詳細画面
+                      </Link>
+                      <Link
+                        to="/admin/stocks"
+                        className="d-block text-decoration-none"
+                        style={{ padding: "8px 16px", fontSize: "14px", color: "#0d6efd" }}
+                        onClick={() => setDropdownOpen(false)}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f8f9fa")}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                      >
+                        ストック一覧
+                      </Link>
+                      <hr style={{ margin: 0, borderColor: "#dee2e6" }} />
+                      <button
+                        className="d-block w-100 text-start border-0 bg-transparent"
+                        onClick={() => { setDropdownOpen(false); handleLogout(); }}
+                        type="button"
+                        style={{ padding: "8px 16px", fontSize: "14px", color: "#0d6efd", cursor: "pointer" }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f8f9fa")}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                      >
+                        ログアウト
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
 
-          {/* メインコンテンツエリア */}
+          {/* コンテンツエリア */}
           <div className="p-4">
-            {/* 管理者詳細画面（中央配置） */}
             <div className="row justify-content-center">
-              <div className="col-md-6 col-lg-5">
+              <div className="col-md-5 col-lg-4">
                 <div className="card shadow-sm">
-                  <div
-                    className="card-body d-flex flex-column"
-                    style={{ minHeight: "500px" }}
-                  >
+                  <div className="card-body d-flex flex-column" style={{ minHeight: "380px" }}>
+                    {/* カードタイトル */}
                     <div
                       className="text-center pb-3 mb-4"
                       style={{ borderBottom: "1px solid #e9ecef" }}
@@ -302,25 +279,19 @@ export default function AdminDetail() {
                       <h5 className="mb-0">管理者詳細画面</h5>
                     </div>
 
-                    <div className="d-flex flex-column align-items-center justify-content-center flex-grow-1">
+                    <div className="d-flex flex-column align-items-start flex-grow-1">
                       {/* アバター */}
-                      <div className="position-relative mb-4">
+                      <div className="position-relative mb-3 align-self-center">
                         <div
                           className="rounded-circle d-flex align-items-center justify-content-center"
                           style={{
                             width: "120px",
                             height: "120px",
-                            background:
-                              "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
                           }}
                         >
-                          <svg
-                            width="70"
-                            height="70"
-                            fill="white"
-                            viewBox="0 0 16 16"
-                          >
+                          <svg width="70" height="70" fill="white" viewBox="0 0 16 16">
                             <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
                             <path
                               fillRule="evenodd"
@@ -329,7 +300,7 @@ export default function AdminDetail() {
                           </svg>
                         </div>
 
-                        {/* 追加ボタン */}
+                        {/* ＋ボタン */}
                         <button
                           className="btn btn-primary rounded-circle p-0 position-absolute"
                           style={{
@@ -338,40 +309,36 @@ export default function AdminDetail() {
                             bottom: "0",
                             right: "0",
                             border: "3px solid white",
-                            boxShadow: "0 2px 6px rgba(0, 0, 0, 0.2)",
+                            boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
                           }}
                         >
-                          <svg
-                            width="20"
-                            height="20"
-                            fill="white"
-                            viewBox="0 0 16 16"
-                          >
+                          <svg width="20" height="20" fill="white" viewBox="0 0 16 16">
                             <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
                           </svg>
                         </button>
                       </div>
 
-                      {/* 管理者情報 */}
-                      <div className="text-center">
-                        {admin?.name && (
-                          <h6
-                            className="mb-2"
-                            style={{
-                              fontSize: "18px",
-                              fontWeight: "600",
-                              color: "#333",
-                            }}
-                          >
-                            {admin.name}
-                          </h6>
-                        )}
-                        <p
-                          className="text-muted mb-0"
-                          style={{ fontSize: "15px" }}
-                        >
-                          {admin?.email}
-                        </p>
+                      {/* 管理者情報（左詰め・アイコン直下） */}
+                      <div className="w-100 px-3">
+                        {infoItems.map((item, index) => (
+                          item.value && (
+                            <div
+                              key={index}
+                              className="d-flex align-items-center py-3"
+                              style={{ borderBottom: "1px solid #e9ecef" }}
+                            >
+                              <span
+                                className="text-muted"
+                                style={{ fontSize: "14px", minWidth: "120px" }}
+                              >
+                                {item.label}
+                              </span>
+                              <span style={{ fontSize: "14px", color: "#333" }}>
+                                {item.value}
+                              </span>
+                            </div>
+                          )
+                        ))}
                       </div>
                     </div>
                   </div>
