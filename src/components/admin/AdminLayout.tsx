@@ -7,14 +7,14 @@ import HeaderItem from "./HeaderItem";
 type Props = {
   admin: Admin | null;
   onLogout: () => void;
-  children: React.ReactNode; // 各ページ固有のコンテンツ
+  children: React.ReactNode;
 };
 
 const menuItems = [
-  { label: "記事一覧", to: "/admin/articles" },
-  { label: "動画投稿一覧", to: "/admin/videos" },
-  { label: "登録ユーザー一覧", to: "/admin/users" },
-  { label: "問い合わせ一覧", to: "/admin/inquiries" },
+  { id: 1, label: "記事一覧", to: "/admin/articles" },
+  { id: 2, label: "動画投稿一覧", to: "/admin/videos" },
+  { id: 3, label: "登録ユーザー一覧", to: "/admin/users" },
+  { id: 4, label: "問い合わせ一覧", to: "/admin/inquiries" },
 ];
 
 export default function AdminLayout({ admin, onLogout, children }: Props) {
@@ -65,8 +65,8 @@ export default function AdminLayout({ admin, onLogout, children }: Props) {
 
           {/* メニュー項目 */}
           <ul className="list-unstyled flex-grow-1">
-            {menuItems.map((item, index) => (
-              <SidebarItem key={index} label={item.label} to={item.to} />
+            {menuItems.map((item) => (
+              <SidebarItem key={item.id} label={item.label} to={item.to} />
             ))}
           </ul>
 

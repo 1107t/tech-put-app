@@ -39,8 +39,8 @@ export default function AdminDetail() {
   }
 
   const infoItems = [
-    { label: "名前：", value: admin?.name },
-    { label: "メールアドレス：", value: admin?.email },
+    { id: 1, label: "名前：", value: admin?.name },
+    { id: 2, label: "メールアドレス：", value: admin?.email },
   ];
 
   return (
@@ -78,9 +78,9 @@ export default function AdminDetail() {
                   </button>
                 </div>
                 <div className="w-100 px-3">
-                  {infoItems.map((item, index) => (
+                  {infoItems.map((item) => (
                     item.value && (
-                      <div key={index} className="d-flex align-items-center py-3" style={{ borderBottom: "1px solid #e9ecef" }}>
+                      <div key={item.id} className="d-flex align-items-center py-3" style={{ borderBottom: "1px solid #e9ecef" }}>
                         <span className="text-muted" style={{ fontSize: "14px", minWidth: "120px" }}>{item.label}</span>
                         <span style={{ fontSize: "14px", color: "#333" }}>{item.value}</span>
                       </div>
