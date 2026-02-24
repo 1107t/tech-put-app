@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 export const ADMIN_KEY_PREFIX = "admin:";        // admin:{adminId} -> Admin
 export const EMAIL_INDEX_PREFIX = "email:";      // email:{email}   -> adminId
 export const SESSION_ADMIN_ID_KEY = "admin_id";  // session: current admin id
+export const ADMIN_COUNTER_KEY = "admin_counter"; // 連番カウンター
 
 // 管理者用のストレージインスタンス
 const adminStorage = localforage.createInstance({
@@ -25,6 +26,14 @@ export interface Admin {
   password: string; // ハッシュ化されたパスワード
   name: string;
   createdAt: string;
+}
+
+// 次の連番IDを取得・インクリメント
+async function getNextAdminId(): Promise<string> {
+  const currentCounter = await adminStorage.getItem<number>(ADMIN_COUNTER_KEY);
+  const nextId = (currentCounter ?? 0) + 1;
+  await adminStorage.setItem(ADMIN_COUNTER_KEY, nextId);
+  return String(nextId);
 }
 
 // メールアドレスからadminIdを取得
@@ -52,8 +61,11 @@ export async function registerAdmin(
   // パスワードのハッシュ化
   const hashedPassword = await bcrypt.hash(password, 10);
 
+  // 連番IDを取得
+  const newId = await getNextAdminId();
+
   const newAdmin: Admin = {
-    id: crypto.randomUUID(),
+    id: newId,
     email,
     password: hashedPassword,
     name,
