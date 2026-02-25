@@ -15,6 +15,7 @@ import AdminPassreset from './pages/admins/Passreset';
 import AdminDashboardPage from './pages/admins/AdminDashboardPage';
 import AdminPage from './pages/adminpage';
 import AdminDetail from './pages/admins/AdminDetail';
+import AdminUsersPage from './pages/admins/AdminUsersPage';
 
 function AppRoutes() {
   return (
@@ -38,7 +39,7 @@ function AppRoutes() {
         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
         <Route path="/admin/articles" element={<div>記事一覧ページ（未実装）</div>} />
         <Route path="/admin/videos" element={<div>動画投稿一覧ページ（未実装）</div>} />
-        <Route path="/admin/users" element={<div>登録ユーザー一覧ページ（未実装）</div>} />
+        <Route path="/admin/users" element={<AdminUsersPage />} />
         <Route path="/admin/inquiries" element={<div>問い合わせ一覧ページ（未実装）</div>} />
 
         {/* 管理者詳細（動的パスは固定パスの後に定義） */}
