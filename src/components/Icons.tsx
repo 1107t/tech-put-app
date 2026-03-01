@@ -88,3 +88,33 @@ export function PlusSquareIcon({ size = 18, ...props }: IconProps) {
     </BaseSvg>
   );
 }
+
+export function AvatarIcon({ size = 40 }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id="avatarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#5f9cff" />
+          <stop offset="100%" stopColor="#6f5bff" />
+        </linearGradient>
+      </defs>
+
+      {/* 外側の丸（グラデーション） */}
+      <circle cx="50" cy="50" r="50" fill="url(#avatarGradient)" style={{ filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))" }} />
+
+      {/* 顔 */}
+      <circle cx="50" cy="38" r="18" fill="white" />
+
+      {/* 肩 */}
+      <path
+        d="M20 85c5-20 20-28 30-28s25 8 30 28"
+        fill="white"
+      />
+    </svg>
+  );
+}

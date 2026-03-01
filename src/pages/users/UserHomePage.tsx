@@ -7,12 +7,13 @@ import {
   ListIcon,
   UserIcon,
   PlusSquareIcon,
+  AvatarIcon
 } from "../../components/Icons"; //
 
 export default function DashboardPage() {
   const nav = useNavigate();
   const [me, setMe] = useState<User | null>(null);
-
+  const [open, setOpen] = useState(false);
   useEffect(() => {
     (async () => {
       const u = await getCurrentUser();
@@ -36,7 +37,11 @@ export default function DashboardPage() {
   return (
     <div className="d-flex user-dashboard">
       <aside className="user-dashboard__sidebar">
-        <div className="fw-bold mb-3">TechPutt</div>
+        <div className="fw-bold mb-3">
+          <button className="dropdown-item" onClick={goDashboard}>
+            TechPutt
+          </button>
+        </div>
 
         <div className="user-dashboard__profile">
           <Link to={`/users/${me.id}`} className="user-dashboard__profile-link">
@@ -68,34 +73,80 @@ export default function DashboardPage() {
         </div>
 
       </aside>
+      <main className="flex-grow-1 bg-light">
+        <div className="d-flex justify-content-between align-items-center p-3 bg-white border-bottom">
+          <h1 className="h5 mb-0">投稿した記事一覧</h1>
 
-      <main className="flex-grow-1 p-4">
-        <div className="d-flex justify-left align-items-center mb-5 p-3 bg-white gap-3">
-          <button className="btn btn-m text-gray-100 p-0" onClick={goDashboard}>
-            Dashboard
-          </button>
+          <div className="position-relative">
+            <button
+              className="btn p-0 border-0 bg-transparent"
+              onClick={() => setOpen(!open)}
+            >
+              <AvatarIcon size={42}  />
+            </button>
 
-          <button className="btn btn-m text-gray-100 p-0" onClick={handleLogout}>
-            ログアウト
-          </button>
+            {open && (
+              <div className="dropdown-menu show position-absolute end-0 mt-2">
+                <button className="dropdown-item" onClick={goDashboard}>
+                  ダッシュボード
+                </button>
+                <button className="dropdown-item text-danger" onClick={handleLogout}>
+                  ログアウト
+                </button>
+              </div>
+            )}
+          </div>
         </div>
+        <div className="d-flex justify-content-center mt-5">
+            <div className="card shadow-sm" style={{ width: "420px" }}>
+              <div className="card-body text-center">
 
-        <h1 className="h4">DashBoard</h1>
-        <p className="text-muted">すでにログインしています。</p>
+                <h3 className="mb-4">ユーザー詳細画面</h3>
 
-        <h2 className="h3 mt-4">投稿した記事一覧</h2>
+                <AvatarIcon size={90} />
 
-              <div className="border-top border-bottom py-3 d-flex justify-content-between">
-        <div className="fw-bold" style={{ width: "35%" }}>
-          タイトル
-        </div>
-        <div className="fw-bold" style={{ width: "35%" }}>
-          サブタイトル
-        </div>
-        <div className="fw-bold text-end" style={{ width: "30%" }}>
-          投稿日
-        </div>
-      </div>
+                <div className="mt-3 fw-bold">
+                  <UserIcon size={16} className="me-2" />
+                  {me.name}
+                </div>
+
+              <div className="d-flex justify-content-center gap-4 mt-3">
+                <div>
+                  <div>0</div>
+                  <small className="text-muted">フォロー</small>
+                </div>
+                <div>
+                  <div>0</div>
+                  <small className="text-muted">フォロワー</small>
+                </div>
+              </div>
+
+              <hr />
+
+              <div className="text-start mt-3">
+                <p>
+                  📧 {me.email}
+                </p>
+                <p>
+                  🎂 {me.birthday}
+                </p>
+              </div>
+
+              <div className="d-flex justify-content-between mt-4">
+                <button className="btn btn-success btn-sm">
+                  投稿記事
+                </button>
+                <button className="btn btn-danger btn-sm">
+                  投稿動画
+                </button>
+                <button className="btn btn-info btn-sm text-white">
+                  投稿つぶやき
+                </button>
+              </div>
+
+            </div>
+          </div>
+          </div>
       </main>
     </div>
   );
