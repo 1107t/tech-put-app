@@ -4,15 +4,16 @@ import { useNavigate } from "react-router-dom";
 import {
   getCurrentAdmin,
   adminLogout,
-  getAllAdmins,
   type Admin,
 } from "../../lib/adminStore";
+import { getUsers } from "../../lib/usersStore"; // ← 追加
+import type { User } from "../../lib/users";      // ← 追加
 import AdminLayout from "../../components/admin/AdminLayout";
 
 export default function AdminUsersPage() {
   const navigate = useNavigate();
   const [admin, setAdmin] = useState<Admin | null>(null);
-  const [admins, setAdmins] = useState<Admin[]>([]);
+  const [users, setUsers] = useState<User[]>([]);  // ← admins → users に変更
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,8 +27,8 @@ export default function AdminUsersPage() {
       }
       setAdmin(currentAdmin);
 
-      const allAdmins = await getAllAdmins();
-      if (!cancelled) setAdmins(allAdmins);
+      const allUsers = await getUsers(); // ← getAllAdmins() から変更
+      if (!cancelled) setUsers(allUsers);
 
       setLoading(false);
     })();
@@ -71,17 +72,17 @@ export default function AdminUsersPage() {
             </tr>
           </thead>
           <tbody>
-            {admins.length === 0 ? (
+            {users.length === 0 ? (
               <tr>
                 <td colSpan={5} className="text-center text-muted py-4">
                   登録されているユーザーがいません
                 </td>
               </tr>
             ) : (
-              admins.map((a) => (
-                <tr key={a.id}>
-                  <td>{a.name}</td>
-                  <td>{a.email}</td>
+              users.map((u) => ( // ← admins.map((a) から変更
+                <tr key={u.id}>
+                  <td>{u.name}</td>
+                  <td>{u.email}</td>
                   <td className="text-muted">0</td>
                   <td className="text-muted">0</td>
                   <td className="text-center">
