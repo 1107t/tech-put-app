@@ -6,14 +6,14 @@ import {
   adminLogout,
   type Admin,
 } from "../../lib/adminStore";
-import { getUsers } from "../../lib/usersStore"; // ← 追加
-import type { User } from "../../lib/users";      // ← 追加
+import { getUsers } from "../../lib/usersStore";
+import type { User } from "../../lib/users";
 import AdminLayout from "../../components/admin/AdminLayout";
 
 export default function AdminUsersPage() {
   const navigate = useNavigate();
   const [admin, setAdmin] = useState<Admin | null>(null);
-  const [users, setUsers] = useState<User[]>([]);  // ← admins → users に変更
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,10 +27,11 @@ export default function AdminUsersPage() {
       }
       setAdmin(currentAdmin);
 
-      const allUsers = await getUsers(); // ← getAllAdmins() から変更
-      if (!cancelled) setUsers(allUsers);
-
-      setLoading(false);
+      const allUsers = await getUsers();
+      if (!cancelled) {
+        setUsers(allUsers);
+        setLoading(false); // アンマウント後のstate更新を防ぐため、if (!cancelled) の中に移動
+      }
     })();
     return () => {
       cancelled = true;
@@ -79,10 +80,10 @@ export default function AdminUsersPage() {
                 </td>
               </tr>
             ) : (
-              users.map((u) => ( // ← admins.map((a) から変更
-                <tr key={u.id}>
-                  <td>{u.name}</td>
-                  <td>{u.email}</td>
+              users.map((user) => (
+                <tr key={user.id}>
+                  <td>{user.name}</td>
+                  <td>{user.email}</td>
                   <td className="text-muted">0</td>
                   <td className="text-muted">0</td>
                   <td className="text-center">
