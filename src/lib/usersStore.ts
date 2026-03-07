@@ -2,7 +2,7 @@
 import localforage from "localforage";
 import type { User } from "./users";
 
-localforage.config({
+const userStorage = localforage.createInstance({
   name: "tech-put-app",
   storeName: "app_storage",
 });
@@ -10,11 +10,12 @@ localforage.config({
 const USERS_KEY = "users";
 const CURRENT_USER_ID_KEY = "currentUserId";
 
-async function getUsers(): Promise<User[]> {
-  return (await localforage.getItem<User[]>(USERS_KEY)) ?? [];
+export async function getUsers(): Promise<User[]> {
+  return (await userStorage.getItem<User[]>(USERS_KEY)) ?? [];
 }
+
 async function setUsers(users: User[]) {
-  await localforage.setItem(USERS_KEY, users);
+  await userStorage.setItem(USERS_KEY, users);
 }
 
 export async function createUser(newUser: User) {
@@ -46,16 +47,16 @@ export async function login(email: string, password: string) {
   if (!user || user.password !== password) {
     throw new Error("メールアドレスまたはパスワードが違います。");
   }
-  await localforage.setItem(CURRENT_USER_ID_KEY, user.id);
+  await userStorage.setItem(CURRENT_USER_ID_KEY, user.id);
   return user;
 }
 
 export async function logout() {
-  await localforage.removeItem(CURRENT_USER_ID_KEY);
+  await userStorage.removeItem(CURRENT_USER_ID_KEY);
 }
 
 export async function getCurrentUserId(): Promise<string | null> {
-  return (await localforage.getItem<string>(CURRENT_USER_ID_KEY)) ?? null;
+  return (await userStorage.getItem<string>(CURRENT_USER_ID_KEY)) ?? null;
 }
 
 export async function getCurrentUser() {
