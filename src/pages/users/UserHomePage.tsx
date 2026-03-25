@@ -9,8 +9,9 @@ import {
   PlusSquareIcon,
   AvatarIcon
 } from "../../components/Icons"; //
+import UserProfilePage from "../users/UserProfilePage";
 
-export default function DashboardPage() {
+export default function UserHomePage() {
   const nav = useNavigate();
   const [me, setMe] = useState<User | null>(null);
   const [open, setOpen] = useState(false);
@@ -25,6 +26,10 @@ export default function DashboardPage() {
 
   const goDashboard = () => {
     nav("/dashboard", { replace: true });
+  };
+
+  const goMyPage = () => {
+    nav("/mypage");
   };
 
   const handleLogout = async () => {
@@ -87,6 +92,9 @@ export default function DashboardPage() {
 
             {open && (
               <div className="dropdown-menu show position-absolute end-0 mt-2">
+                <button className="dropdown-item" onClick={goMyPage}>
+                  マイページ
+                </button>
                 <button className="dropdown-item" onClick={goDashboard}>
                   ダッシュボード
                 </button>

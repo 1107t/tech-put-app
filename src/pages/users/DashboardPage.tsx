@@ -4,6 +4,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { getCurrentUser, logout } from "../../lib/usersStore";
 import type { User } from "../../lib/users";
 import "../../styles/pages/dashboard.css";
+import {
+  GridIcon,
+  ListIcon,
+  UserIcon,
+  PlusSquareIcon,
+  AvatarIcon
+} from "../../components/Icons";
+
 
 type Lesson = {
   id: string;
@@ -22,7 +30,14 @@ const lessons: Lesson[] = [
 export default function DashboardPage() {
   const navigate = useNavigate();
   const [me, setMe] = useState<User | null>(null);
+  const [open, setOpen] = useState(false);
+  const goMyPage = () => {
+    navigate(`/users/${me?.id}`);
+  };
 
+  const goDashboard = () => {
+    navigate("/dashboard");
+  };
   useEffect(() => {
     const fetchUser = async () => {
       const u = await getCurrentUser();
@@ -65,42 +80,62 @@ export default function DashboardPage() {
           e-learning
         </div>
 
-        <nav className="d-grid gap-1">
-          <Link className="btn btn-sm btn-dark text-start user-dashboard__nav-item" to="/dashboard">
-            記事一覧
+        <div className="user-dashboard__nav">
+          <Link className="user-dashboard__nav-item" to="/memos">
+            <GridIcon className="user-dashboard__nav-icon" size={18} />
+            <span>記事一覧</span>
           </Link>
-          <Link className="btn btn-sm btn-dark text-start" to="/profiles">
-            プロフィール一覧
-          </Link>
-          <Link className="btn btn-sm btn-dark text-start" to="/videos">
-            動画投稿一覧
-          </Link>
-          <Link className="btn btn-sm btn-dark text-start" to="/tweets">
-            つぶやき一覧
-          </Link>
-          <Link className="btn btn-sm btn-dark text-start" to="/inquiries">
-            問い合わせ
-          </Link>
-        </nav>
 
-        <button
-          type="button"
-          className="btn btn-link text-white w-100 mt-3"
-          onClick={logout}
-        >
-          ログアウト
-        </button>
+          <Link className="user-dashboard__nav-item" to="/profiles">
+            <ListIcon className="user-dashboard__nav-icon" size={18} />
+            <span>プロフィール一覧</span>
+          </Link>
+
+          <Link className="user-dashboard__nav-item" to="/profiles/new">
+            <UserIcon className="user-dashboard__nav-icon" size={18} />
+            <span>動画投稿一覧</span>
+          </Link>
+
+          <Link className="user-dashboard__nav-item" to="/memos/new">
+            <PlusSquareIcon className="user-dashboard__nav-icon" size={18} />
+            <span>つぶやき一覧</span>
+          </Link>
+
+          <Link className="user-dashboard__nav-item" to="/memos/new">
+            <PlusSquareIcon className="user-dashboard__nav-icon" size={18} />
+            <span>問い合わせ</span>
+          </Link>
+        </div>
       </aside>
 
       {/* Main */}
       <main className="flex-grow-1 bg-light">
-        <div className="d-flex justify-content-end align-items-center p-3 border-bottom bg-white">
-          <div
-            className="rounded-circle bg-secondary user-dashboard__header-avatar"
-            title="user"
-          />
-        </div>
+      <div className="d-flex justify-content-between align-items-center p-3 bg-white border-bottom">
+          <h1 className="h5 mb-0">投稿した記事一覧</h1>
 
+          <div className="position-relative">
+            <button
+              className="btn p-0 border-0 bg-transparent"
+              onClick={() => setOpen(!open)}
+            >
+              <AvatarIcon size={42}  />
+            </button>
+
+            {open && (
+              <div className="dropdown-menu show position-absolute end-0 mt-2">
+                <button className="dropdown-item" onClick={goDashboard}>
+                  マイページ
+                </button>
+                <button className="dropdown-item" onClick={goDashboard}>
+                  ダッシュボード
+                </button>
+                <button className="dropdown-item text-danger" onClick={handleLogout}>
+                  ログアウト
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
         <div className="p-4">
           <h1 className="h4 mb-4">e-learning一覧</h1>
 
