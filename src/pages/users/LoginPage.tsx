@@ -2,7 +2,8 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
 import { MailIcon, LockIcon } from "../../components/Icons";
-import { getCurrentUserId, login } from "../../lib/usersStore";
+import { getCurrentUser, login } from "../../lib/usersStore";
+import axios from "axios";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -22,8 +23,8 @@ export default function LoginPage() {
       const saved = localStorage.getItem("remember_email");
       if (saved) setEmail(saved);
 
-      const id = await getCurrentUserId();
-      if (id) navigate("/dashboard", { replace: true });
+      const user = await getCurrentUser();
+      if (user) navigate("/dashboard", { replace: true });
     })();
   }, [navigate]);
 
@@ -45,9 +46,12 @@ export default function LoginPage() {
 
       navigate("/dashboard", { replace: true });
     } catch (err) {
-      const msg =
-        err instanceof Error ? err.message : "不明なエラーが発生しました。";
-      setErrorMsg(msg);
+      if (axios.isAxiosError(err)) {
+        const msg = err.response?.data?.error ?? "ログインに失敗しました。";
+        setErrorMsg(msg);
+      } else {
+        setErrorMsg(err instanceof Error ? err.message : "不明なエラーが発生しました。");
+      }
     } finally {
       setLoading(false);
     }

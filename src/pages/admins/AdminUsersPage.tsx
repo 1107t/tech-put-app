@@ -1,19 +1,16 @@
-// src/pages/admins/AdminUsersPage.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  getCurrentAdmin,
-  adminLogout,
-  type Admin,
-} from "../../lib/adminStore";
+import { getCurrentAdmin, adminLogout, type Admin } from "../../lib/adminStore";
 import { getUsers } from "../../lib/usersStore";
 import type { User } from "../../lib/users";
 import AdminLayout from "../../components/admin/AdminLayout";
 
+type AdminUser = User & { articlesCount: number; postsCount: number }
+
 export default function AdminUsersPage() {
   const navigate = useNavigate();
   const [admin, setAdmin] = useState<Admin | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,7 +24,7 @@ export default function AdminUsersPage() {
       }
       setAdmin(currentAdmin);
 
-      const allUsers = await getUsers();
+      const allUsers = await getUsers() as AdminUser[];
       if (!cancelled) {
         setUsers(allUsers);
         setLoading(false); // アンマウント後のstate更新を防ぐため、if (!cancelled) の中に移動
@@ -84,8 +81,8 @@ export default function AdminUsersPage() {
                 <tr key={user.id}>
                   <td>{user.name}</td>
                   <td>{user.email}</td>
-                  <td className="text-muted">0</td>
-                  <td className="text-muted">0</td>
+                  <td className="text-muted">{user.articlesCount}</td>
+                  <td className="text-muted">{user.postsCount}</td>
                   <td className="text-center">
                     <button className="btn btn-sm btn-link text-secondary p-0">
                       ⋮

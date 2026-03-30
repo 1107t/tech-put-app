@@ -1,10 +1,10 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
-import { v4 as uuid } from "uuid";
 import { UserIcon, MailIcon, LockIcon } from "../../components/Icons";
-import { createUser, login } from "../../lib/usersStore";
+import { signup } from "../../lib/usersStore";
 import { Gender, type GenderValue } from "../../lib/users";
+import axios from "axios";
 
 
 export default function SignUpPage() {
@@ -35,22 +35,16 @@ export default function SignUpPage() {
     try {
       setSaving(true);
 
-      await createUser({
-        id: uuid(),
-        name,
-        email,
-        birthday,
-        gender,
-        password, // 学習用（本番NG）
-        createdAt: new Date().toISOString(),
-      });
-
-      // 登録後にログイン扱いにしたいなら（任意）
-      await login(email, password);
+      await signup({ name, email, password, birthday, gender });
 
       navigate("/message/signup", { replace: true });
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : "登録に失敗しました。");
+      if (axios.isAxiosError(err)) {
+        const errors = err.response?.data?.errors;
+        setMsg(Array.isArray(errors) ? errors.join(" / ") : "登録に失敗しました。");
+      } else {
+        setMsg(err instanceof Error ? err.message : "登録に失敗しました。");
+      }
     } finally {
       setSaving(false);
     }
