@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { addUser, getUserByEmail } from '../../utils/indexedDB';
+import { useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
+//import AuthLayout from "../../components/AuthLayout";
+import { MailIcon, LockIcon } from "../../components/Icons";
+import { registerAdmin } from "../../lib/adminStore";
 
 interface SignUpFormData {
   name: string;
@@ -10,77 +12,56 @@ interface SignUpFormData {
   agreeTerms: boolean;
 }
 
-const SignUpPage: React.FC = () => {
+export default function AdminSignUpPage() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<SignUpFormData>({
-    name: '',
-    email: '',
-    password: '',
-    passwordConfirmation: '',
+    name: "",
+    email: "",
+    password: "",
+    passwordConfirmation: "",
     agreeTerms: false,
   });
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === "checkbox" ? checked : value,
     }));
     // エラーメッセージをクリア
-    if (error) setError('');
+    if (error) setError("");
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
       // バリデーション
       if (formData.password !== formData.passwordConfirmation) {
-        setError('パスワードが一致しません');
+        setError("パスワードが一致しません");
         setLoading(false);
         return;
       }
 
       if (formData.password.length < 6) {
-        setError('パスワードは6文字以上で入力してください');
+        setError("パスワードは6文字以上で入力してください");
         setLoading(false);
         return;
       }
 
-      // メールアドレスの重複チェック
-      const existingUser = await getUserByEmail(formData.email);
-      if (existingUser) {
-        setError('このメールアドレスは既に登録されています');
-        setLoading(false);
-        return;
-      }
+      // 管理者登録
+      await registerAdmin(formData.email, formData.password, formData.name);
 
-      // ユーザー登録
-      const userId = await addUser({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        createdAt: new Date().toISOString(),
-      });
-
-      console.log('登録成功！ユーザーID:', userId);
-      
-      // ログイン状態を保存（sessionStorage使用）
-      sessionStorage.setItem('currentUser', JSON.stringify({
-        id: userId,
-        email: formData.email,
-        name: formData.name,
-      }));
-
-      // adminpageへ遷移
-      navigate('/adminpage');
-    } catch (error) {
-      console.error('Registration failed:', error);
-      setError('登録に失敗しました。もう一度お試しください。');
+      console.log("管理者登録成功！");
+      alert("管理者アカウントを登録しました!");
+      navigate("/admin/login");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "登録に失敗しました。もう一度お試しください。";
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -92,14 +73,21 @@ const SignUpPage: React.FC = () => {
         <div className="card shadow-sm">
           {/* ヘッダー */}
           <div className="card-header text-center bg-white border-bottom-0 pt-4 pb-2">
-            <h1 className="mb-0 h2 fw-bold text-decoration-underline" style={{ textDecorationColor: '#0d6efd', textDecorationThickness: '3px' }}>
+            <h1
+              className="mb-0 h2 fw-bold text-decoration-underline"
+              style={{
+                textDecorationColor: "#0d6efd",
+                textDecorationThickness: "3px",
+              }}
+            >
               TECH-PUT
             </h1>
+            <p className="text-muted mt-2">管理者アカウント登録</p>
           </div>
 
           {/* サブタイトル */}
           <div className="card-body pt-2">
-            <p className="text-center mb-4">アカウント登録を行いましょう！</p>
+            <p className="text-center mb-4">アカウント登録を行いましょう!</p>
 
             {/* エラーメッセージ */}
             {error && (
@@ -119,12 +107,17 @@ const SignUpPage: React.FC = () => {
                     value={formData.name}
                     onChange={handleChange}
                     className="form-control"
-                    placeholder="名前（フルネーム）"
+                    placeholder="名前(フルネーム)"
                     required
                   />
                   <span className="input-group-text bg-light">
-                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                      <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+                    <svg
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z" />
                     </svg>
                   </span>
                 </div>
@@ -144,9 +137,7 @@ const SignUpPage: React.FC = () => {
                     required
                   />
                   <span className="input-group-text bg-light">
-                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                      <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.708 2.825L15 11.105V5.383zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741zM1 11.105l4.708-2.897L1 5.383v5.722z"/>
-                    </svg>
+                    <MailIcon />
                   </span>
                 </div>
               </div>
@@ -160,14 +151,12 @@ const SignUpPage: React.FC = () => {
                     value={formData.password}
                     onChange={handleChange}
                     className="form-control"
-                    placeholder="パスワード（6文字以上）"
+                    placeholder="パスワード(6文字以上)"
                     autoComplete="new-password"
                     required
                   />
                   <span className="input-group-text bg-light">
-                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                      <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
-                    </svg>
+                    <LockIcon />
                   </span>
                 </div>
               </div>
@@ -186,9 +175,7 @@ const SignUpPage: React.FC = () => {
                     required
                   />
                   <span className="input-group-text bg-light">
-                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                      <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
-                    </svg>
+                    <LockIcon />
                   </span>
                 </div>
               </div>
@@ -204,8 +191,14 @@ const SignUpPage: React.FC = () => {
                   className="form-check-input"
                   required
                 />
-                <label className="form-check-label fw-semibold ms-2" htmlFor="agreeTerms">
-                  <Link to="/terms" className="text-decoration-none">利用規約</Link>に同意する
+                <label
+                  className="form-check-label fw-semibold ms-2"
+                  htmlFor="agreeTerms"
+                >
+                  <Link to="/terms" className="text-decoration-none">
+                    利用規約
+                  </Link>
+                  に同意する
                 </label>
               </div>
 
@@ -215,20 +208,21 @@ const SignUpPage: React.FC = () => {
                 className="btn btn-primary w-100 mb-3"
                 disabled={!formData.agreeTerms || loading}
               >
-                {loading ? '登録中...' : 'アカウント登録'}
+                {loading ? "登録中..." : "アカウント登録"}
               </button>
             </form>
 
             <div className="text-center">
-              <Link className="link-primary text-decoration-none" to="/admin/login">
+              <Link
+                className="link-primary text-decoration-none"
+                to="/admin/login"
+              >
                 ログインへ戻る
               </Link>
-            </div> 
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
-};
-
-export default SignUpPage;
+}

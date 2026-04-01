@@ -35,12 +35,20 @@ function AppRoutes() {
         <Route path="/users/:id" element={<UserHomePage />} />
         <Route path="/mypage" element={<UserProfilePage  />} />
 
-        {/* 管理者用ルート */}
+        {/* 管理者用ルート（固定パスを先に定義） */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin/signup" element={<AdminSignUpPage />} />
         <Route path="/admin/message/:type" element={<AdminMessagePage />} />
         <Route path="/admin/reset" element={<AdminPassreset />} />
-        <Route path="/admin/dashboard" element={<div>管理者ダッシュボード（未実装）</div>} />
+        <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+        <Route path="/admin/articles" element={<div>記事一覧ページ（未実装）</div>} />
+        <Route path="/admin/videos" element={<div>動画投稿一覧ページ（未実装）</div>} />
+        <Route path="/admin/users" element={<AdminUsersPage />} />
+        <Route path="/admin/inquiries" element={<div>問い合わせ一覧ページ（未実装）</div>} />
+
+        {/* 管理者詳細（動的パスは固定パスの後に定義） */}
+        <Route path="/admin/:id" element={<AdminDetail />} />
+
         <Route path="/adminpage" element={<AdminPage />} />
 
         {/* 404ページ */}
