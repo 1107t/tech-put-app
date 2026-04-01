@@ -49,7 +49,6 @@ export async function login(email: string, password: string) {
   await localforage.setItem(CURRENT_USER_ID_KEY, user.id);
   return user;
 }
-
 export async function logout() {
   await localforage.removeItem(CURRENT_USER_ID_KEY);
 }

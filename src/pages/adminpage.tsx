@@ -14,7 +14,7 @@ const AdminPage: React.FC = () => {
   useEffect(() => {
     // sessionStorageからユーザー情報を取得
     const userStr = sessionStorage.getItem('currentUser');
-    
+
     if (!userStr) {
       // ログインしていなければログインページへ
       navigate('/admin/login');

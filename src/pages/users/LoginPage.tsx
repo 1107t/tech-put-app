@@ -126,7 +126,7 @@ export default function LoginPage() {
             <input
               type="password"
               required
-              className="form-control"
+              className="form-control text-muted"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -142,7 +142,7 @@ export default function LoginPage() {
           <input
             id="remember_me"
             type="checkbox"
-            className="form-check-input"
+            className="form-check-inputtext-muted"
             checked={remember}
             onChange={(e) => setRemember(e.target.checked)}
             disabled={loading}
