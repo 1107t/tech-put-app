@@ -9,13 +9,15 @@ import DashboardPage from './pages/users/DashboardPage';
 import UserHomePage from './pages/users/UserHomePage';
 import UserProfilePage from './pages/users/UserProfilePage';
 
-
 // 管理者用ページ
 import AdminLoginPage from './pages/admins/AdminLoginPage';
 import AdminSignUpPage from './pages/admins/SignUpPage';
 import AdminMessagePage from './pages/admins/MessagePage';
 import AdminPassreset from './pages/admins/Passreset';
+import AdminDashboardPage from './pages/admins/AdminDashboardPage';
 import AdminPage from './pages/adminpage';
+import AdminDetail from './pages/admins/AdminDetail';
+import AdminUsersPage from './pages/admins/AdminUsersPage';
 
 function AppRoutes() {
   return (

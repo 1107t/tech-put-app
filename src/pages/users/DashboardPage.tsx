@@ -41,16 +41,12 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchUser = async () => {
       const u = await getCurrentUser();
-      console.log("currentUser:", u);
-
       if (!u) {
         navigate("/login", { replace: true });
         return;
       }
-
       setMe(u);
     };
-
     fetchUser();
   }, [navigate]);
 
