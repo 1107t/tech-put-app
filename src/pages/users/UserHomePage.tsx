@@ -8,8 +8,7 @@ import {
   UserIcon,
   PlusSquareIcon,
   AvatarIcon
-} from "../../components/Icons"; //
-import UserProfilePage from "../users/UserProfilePage";
+} from "../../components/Icons";
 
 export default function UserHomePage() {
   const nav = useNavigate();

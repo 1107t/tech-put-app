@@ -50,9 +50,9 @@ export default function DashboardPage() {
     fetchUser();
   }, [navigate]);
 
-    const handleLogout = async () => {
+  const handleLogout = async () => {
     await logout();
-    navigate("/login", { replace: true });
+    goMyPage();
   };
 
   if (!me) return null;
@@ -119,11 +119,8 @@ export default function DashboardPage() {
 
             {open && (
               <div className="dropdown-menu show position-absolute end-0 mt-2">
-                <button className="dropdown-item" onClick={goDashboard}>
+                <button className="dropdown-item" onClick={goMyPage}>
                   マイページ
-                </button>
-                <button className="dropdown-item" onClick={goDashboard}>
-                  ダッシュボード
                 </button>
                 <button className="dropdown-item text-danger" onClick={handleLogout}>
                   ログアウト
