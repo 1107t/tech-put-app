@@ -24,6 +24,27 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+// 401 レスポンス時に全トークンを削除してログインページへリダイレクト
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401) {
+      const url = err.config?.url ?? ''
+      const isAdmin = url.includes('/admin/')
+      const isManager = url.includes('/manager/')
+      tokenStorage.clearAll()
+      if (isAdmin) {
+        window.location.href = '/admin/login'
+      } else if (isManager) {
+        window.location.href = '/manager/login'
+      } else {
+        window.location.href = '/login'
+      }
+    }
+    return Promise.reject(err)
+  }
+)
+
 // ロール別の api インスタンス（ヘッダーを明示的に指定したい場合に使用）
 export function apiWithToken(token: string) {
   return axios.create({
