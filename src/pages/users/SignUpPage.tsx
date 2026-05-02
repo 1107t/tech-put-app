@@ -1,3 +1,5 @@
+// src/pages/users/SignUpPage.tsx
+// 受講生（一般ユーザー）の新規登録画面。名前・メール・生年月日・性別・パスワードを入力してアカウントを作成する。
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";

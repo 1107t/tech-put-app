@@ -1,3 +1,5 @@
+// src/pages/users/LoginPage.tsx
+// 受講生（一般ユーザー）のログイン画面。メール・パスワード照合後にダッシュボードへ遷移する。
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";

@@ -1,3 +1,5 @@
+// src/pages/admins/MessagePage.tsx
+// 管理者側の各種メッセージ/完了画面（ログイン・各種SNSログイン・認証メール再送など）。URLのtypeパラメータでタイトルを切り替える。
 import { useParams, Link } from "react-router-dom";
 
 export default function MessagePage() {

@@ -1,3 +1,5 @@
+// src/pages/admins/SignUpPage.tsx
+// 管理者アカウントの新規登録画面。名前・メール・パスワードを入力して管理者を作成し、ログイン画面へ遷移する。
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 //import AuthLayout from "../../components/AuthLayout";

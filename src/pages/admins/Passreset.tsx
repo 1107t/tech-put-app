@@ -1,3 +1,5 @@
+// src/pages/admins/Passreset.tsx
+// 管理者側のパスワード再設定画面。登録済みメールアドレスに再設定案内を送信する（送信後は完了画面へ遷移）。
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
 import { MailIcon } from "../../components/Icons";

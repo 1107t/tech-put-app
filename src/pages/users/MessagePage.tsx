@@ -1,3 +1,5 @@
+// src/pages/users/MessagePage.tsx
+// 受講生側の各種完了メッセージ画面（登録完了・ログイン完了など）。URLのtypeパラメータでメッセージを切り替える。
 import { useParams, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
 import { logout } from "../../lib/usersStore";

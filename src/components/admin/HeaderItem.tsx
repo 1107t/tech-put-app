@@ -1,4 +1,6 @@
 // src/components/admin/HeaderItem.tsx
+// 管理者画面のヘッダーコンポーネント。ハンバーガーメニュー・タイトル・
+// アカウントアイコン（クリックでドロップダウン表示）を描画する。
 import { Link } from "react-router-dom";
 import { type Admin } from "../../lib/adminStore";
 

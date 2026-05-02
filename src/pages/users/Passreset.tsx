@@ -1,3 +1,5 @@
+// src/pages/users/Passreset.tsx
+// 受講生側のパスワード再設定画面。登録済みメールアドレスに再設定案内を送信する（送信後は完了画面へ遷移）。
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";

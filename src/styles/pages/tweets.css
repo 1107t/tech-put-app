@@ -1,0 +1,55 @@
+/* =========================
+   Tweets Page (user)
+   ========================= */
+
+/* 投稿フォームカードの角丸 */
+.tweets-page__form-card {
+  border-radius: 8px;
+}
+
+/* つぶやきカード: ホバー時にシャドウを強調してインタラクティブ感を出す */
+.tweets-page__tweet-card {
+  border-radius: 8px;
+  transition: box-shadow 0.15s ease;
+}
+
+.tweets-page__tweet-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ユーザーアバター（画像未実装のため背景色で代替） */
+.tweets-page__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #9ca3af;
+  flex-shrink: 0;
+}
+
+/* 「・・・」メニューボタン */
+.tweets-page__menu-btn {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 1.2rem;
+  line-height: 1;
+  padding: 0 4px;
+  cursor: pointer;
+}
+
+/* コメント・いいねなどのアクションボタン共通スタイル */
+.tweets-page__action-btn {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 0.85rem;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tweets-page__action-btn:hover {
+  color: #374151;
+}

@@ -1,4 +1,6 @@
-// src/pages/admins/AdminLoginPage.tsx
+// src/pages/admins/AdminLoginPage.tsx 【修正】
+// 管理者ログインページ。メール・パスワードで認証し /admin/dashboard へ遷移する。
+// 「ログインを記録する」チェック時は localStorage にメールアドレスを保存して次回入力を省略する。
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
@@ -14,6 +16,7 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // マウント時: localStorage に保存されたメールアドレスがあれば復元する
   useEffect(() => {
     let cancelled = false;
 
@@ -30,6 +33,7 @@ export default function AdminLoginPage() {
     };
   }, []);
 
+  // フォーム送信時: バリデーション → remember処理 → adminLogin → ダッシュボードへ遷移
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMsg(null);
@@ -40,6 +44,7 @@ export default function AdminLoginPage() {
         throw new Error("メールアドレスとパスワードを入力してください。");
       }
 
+      // チェック有りならメールを保存、なしなら削除
       if (remember) localStorage.setItem("admin_remember_email", email);
       else localStorage.removeItem("admin_remember_email");
 
