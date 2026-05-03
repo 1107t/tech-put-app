@@ -1,12 +1,12 @@
 import { api, tokenStorage } from './api'
-import type { User } from './users'
+import type { User, GenderValue } from './userTypes'
 
 export async function signup(params: {
   name: string
   email: string
   password: string
   birthday?: string
-  gender?: number
+  gender?: GenderValue
 }): Promise<User> {
   const res = await api.post<{ token: string; user: User }>('/auth/signup', params)
   tokenStorage.setUser(res.data.token)
@@ -34,9 +34,4 @@ export async function getCurrentUser(): Promise<User | null> {
     tokenStorage.removeUser()
     return null
   }
-}
-
-export async function getUsers(): Promise<User[]> {
-  const res = await api.get<{ users: User[] }>('/admin/users')
-  return res.data.users
 }

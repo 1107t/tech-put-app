@@ -1,6 +1,6 @@
 // src/components/admin/HeaderItem.tsx
 import { Link } from "react-router-dom";
-import { type Admin } from "../../lib/adminStore";
+import { type Admin } from "../../lib/adminApi";
 
 type Props = {
   admin: Admin | null;

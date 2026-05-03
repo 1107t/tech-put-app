@@ -1,11 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCurrentAdmin, adminLogout, type Admin } from "../../lib/adminStore";
-import { getUsers } from "../../lib/usersStore";
-import type { User } from "../../lib/users";
+import { getCurrentAdmin, adminLogout, getUsers, type Admin } from "../../lib/adminApi";
+import type { AdminUser } from "../../lib/userTypes";
 import AdminLayout from "../../components/admin/AdminLayout";
-
-type AdminUser = User & { articlesCount: number; postsCount: number }
 
 export default function AdminUsersPage() {
   const navigate = useNavigate();

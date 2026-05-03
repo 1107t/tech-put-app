@@ -1,8 +1,8 @@
 // src/pages/users/DashboardPage.tsx
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getCurrentUser, logout } from "../../lib/usersStore";
-import type { User } from "../../lib/users";
+import { getCurrentUser, logout } from "../../lib/userApi";
+import type { User } from "../../lib/userTypes";
 import "../../styles/pages/dashboard.css";
 import {
   GridIcon,

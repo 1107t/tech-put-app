@@ -14,12 +14,16 @@ export const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
-// リクエスト時にトークンを自動付与（ユーザー→管理者→マネージャーの優先順位）
+// リクエスト時にトークンを自動付与（URL パスでロールを判定）
 api.interceptors.request.use((config) => {
   const userToken    = localStorage.getItem(TOKEN_KEYS.user)
   const adminToken   = localStorage.getItem(TOKEN_KEYS.admin)
   const managerToken = localStorage.getItem(TOKEN_KEYS.manager)
-  const token = userToken ?? adminToken ?? managerToken
+  const url = config.url ?? ''
+  let token: string | null = null
+  if (url.includes('/admin/'))        token = adminToken
+  else if (url.includes('/manager/')) token = managerToken
+  else                                token = userToken
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
@@ -44,6 +48,13 @@ api.interceptors.response.use(
     return Promise.reject(err)
   }
 )
+
+export function getApiErrorMessage(err: unknown, fallback = '不明なエラーが発生しました。'): string {
+  if (axios.isAxiosError(err)) {
+    return err.response?.data?.error ?? err.response?.data?.errors?.join(' / ') ?? fallback
+  }
+  return err instanceof Error ? err.message : fallback
+}
 
 // ロール別の api インスタンス（ヘッダーを明示的に指定したい場合に使用）
 export function apiWithToken(token: string) {

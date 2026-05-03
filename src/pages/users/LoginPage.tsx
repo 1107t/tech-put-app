@@ -2,8 +2,8 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
 import { MailIcon, LockIcon } from "../../components/Icons";
-import { getCurrentUser, login } from "../../lib/usersStore";
-import axios from "axios";
+import { getCurrentUser, login } from "../../lib/userApi";
+import { getApiErrorMessage } from "../../lib/api";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -41,17 +41,11 @@ export default function LoginPage() {
       if (remember) localStorage.setItem("remember_email", email);
       else localStorage.removeItem("remember_email");
 
-      //  登録済みユーザーだけ通す（localforage照合）
       await login(email, password);
 
       navigate("/dashboard", { replace: true });
     } catch (err) {
-      if (axios.isAxiosError(err)) {
-        const msg = err.response?.data?.error ?? "ログインに失敗しました。";
-        setErrorMsg(msg);
-      } else {
-        setErrorMsg(err instanceof Error ? err.message : "不明なエラーが発生しました。");
-      }
+      setErrorMsg(getApiErrorMessage(err, "ログインに失敗しました。"));
     } finally {
       setLoading(false);
     }

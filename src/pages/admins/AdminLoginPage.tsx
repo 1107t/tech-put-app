@@ -2,8 +2,8 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
 import { MailIcon, LockIcon } from "../../components/Icons";
-import { adminLogin, getCurrentAdmin } from "../../lib/adminStore";
-import axios from "axios";
+import { adminLogin, getCurrentAdmin } from "../../lib/adminApi";
+import { getApiErrorMessage } from "../../lib/api";
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
@@ -40,12 +40,7 @@ export default function AdminLoginPage() {
 
       navigate("/admin/dashboard", { replace: true });
     } catch (err) {
-      if (axios.isAxiosError(err)) {
-        const msg = err.response?.data?.error ?? "ログインに失敗しました。";
-        setErrorMsg(msg);
-      } else {
-        setErrorMsg(err instanceof Error ? err.message : "不明なエラーが発生しました。");
-      }
+      setErrorMsg(getApiErrorMessage(err, "ログインに失敗しました。"));
     } finally {
       setLoading(false);
     }
