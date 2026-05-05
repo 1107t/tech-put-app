@@ -1,8 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import AuthLayout from "../../components/AuthLayout";
+import AuthLayout from "../../components/user/AuthLayout";
 import { v4 as uuid } from "uuid";
-import { UserIcon, MailIcon, LockIcon } from "../../components/Icons";
+import { UserIcon, MailIcon, LockIcon } from "../../components/user/Icons";
 import { createUser, login } from "../../lib/usersStore";
 import { Gender, type GenderValue } from "../../lib/users";
 

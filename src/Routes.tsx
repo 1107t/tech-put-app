@@ -6,8 +6,7 @@ import UserSignUpPage from './pages/users/SignUpPage';
 import UserMessagePage from './pages/users/MessagePage';
 import UserPassreset from './pages/users/Passreset';
 import DashboardPage from './pages/users/DashboardPage';
-import UserHomePage from './pages/users/UserHomePage';
-import UserProfilePage from './pages/users/UserProfilePage';
+import UserHomePage from './pages/users/UserDetailPage';
 
 // 管理者用ページ
 import AdminLoginPage from './pages/admins/AdminLoginPage';
@@ -33,7 +32,6 @@ function AppRoutes() {
         <Route path="/reset" element={<UserPassreset />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/users/:id" element={<UserHomePage />} />
-        <Route path="/mypage" element={<UserProfilePage  />} />
 
         {/* 管理者用ルート（固定パスを先に定義） */}
         <Route path="/admin/login" element={<AdminLoginPage />} />

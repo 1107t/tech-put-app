@@ -26,4 +26,5 @@ export type User = {
   gender: GenderValue;
   password: string;
   createdAt: string;
+  goal?: string;
 };

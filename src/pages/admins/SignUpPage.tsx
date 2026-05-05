@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 //import AuthLayout from "../../components/AuthLayout";
-import { MailIcon, LockIcon } from "../../components/Icons";
+import { MailIcon, LockIcon } from "../../components/user/Icons";
 import { registerAdmin } from "../../lib/adminStore";
 
 interface SignUpFormData {

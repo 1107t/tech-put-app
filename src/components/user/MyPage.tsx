@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCurrentUser } from "../../lib/usersStore";
 import type { User } from "../../lib/users";
-import { AvatarIcon } from "../../components/Icons";
+import { AvatarIcon } from "./Icons";
 
-export default function UserProfilePage() {
+export default function MyPage() {
   const nav = useNavigate();
   const [me, setMe] = useState<User | null>(null);
 
@@ -21,7 +21,6 @@ export default function UserProfilePage() {
   return (
     <div className="d-flex justify-content-center mt-5">
       <div className="card shadow" style={{ width: "420px" }}>
-        
         {/* タイトル */}
         <div className="card-header text-center fw-bold fs-5">
           ユーザー詳細画面
@@ -73,7 +72,7 @@ export default function UserProfilePage() {
           {/* 学習目的 */}
           <div className="mb-4">
             <small className="text-muted">学習目的</small>
-            <div>{ "ー"}</div>
+            <div>{me.goal || "ー"}</div>
           </div>
 
           {/* ボタン */}

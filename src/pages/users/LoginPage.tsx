@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import AuthLayout from "../../components/AuthLayout";
-import { MailIcon, LockIcon } from "../../components/Icons";
+import AuthLayout from "../../components/user/AuthLayout";
+import { MailIcon, LockIcon } from "../../components/user/Icons";
 import { getCurrentUserId, login } from "../../lib/usersStore";
 
 export default function LoginPage() {
