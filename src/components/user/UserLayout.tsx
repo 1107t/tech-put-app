@@ -10,7 +10,7 @@ import {
   ListIcon,
   UserIcon,
   PlusSquareIcon,
-} from "./Icons";
+} from "../../components/Icons";
 
 
 type Props = {

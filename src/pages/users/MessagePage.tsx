@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import AuthLayout from "../../components/user/AuthLayout";
+import AuthLayout from "../../components/AuthLayout";
 import { logout } from "../../lib/usersStore";
 
 

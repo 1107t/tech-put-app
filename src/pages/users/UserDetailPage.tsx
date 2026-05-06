@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { getCurrentUser, logout } from "../../lib/usersStore";
 import type { User } from "../../lib/users";
 import UserLayout from "../../components/user/UserLayout";
-import { AvatarIcon, UserIcon } from "../../components/user/Icons";
+import { AvatarIcon, UserIcon } from "../../components/Icons";
 
 export default function UserDetailPage() {
   const nav = useNavigate();

@@ -1,6 +1,6 @@
 // src/components/HeaderBar.tsx
 import { useState } from "react";
-import { AvatarIcon } from "./Icons";
+import { AvatarIcon } from "../../components/Icons";
 
 type Props = {
   onMyPage: () => void;

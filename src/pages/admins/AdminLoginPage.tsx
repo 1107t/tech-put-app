@@ -1,8 +1,8 @@
 // src/pages/admins/AdminLoginPage.tsx
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import AuthLayout from "../../components/user/AuthLayout";
-import { MailIcon, LockIcon } from "../../components/user/Icons";
+import AuthLayout from "../../components/AuthLayout";
+import { MailIcon, LockIcon } from "../../components/Icons";
 import { adminLogin } from "../../lib/adminStore";
 
 export default function AdminLoginPage() {

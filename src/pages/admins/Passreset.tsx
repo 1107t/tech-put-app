@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
-import AuthLayout from "../../components/user/AuthLayout";
-import { MailIcon } from "../../components/user/Icons";
+import AuthLayout from "../../components/AuthLayout";
+import { MailIcon } from "../../components/Icons";
 
 export default function Passreset() {
   const navigate = useNavigate();

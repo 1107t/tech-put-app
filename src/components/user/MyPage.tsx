@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCurrentUser } from "../../lib/usersStore";
 import type { User } from "../../lib/users";
-import { AvatarIcon } from "./Icons";
+import { AvatarIcon } from "../../components/Icons";
 
 export default function MyPage() {
   const nav = useNavigate();
