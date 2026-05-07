@@ -1,3 +1,10 @@
+/* デザイントークン */
+:root {
+  --shell-bg-admin: #1a1a1a;
+  --shell-bg-user: #1f2937;
+  --shell-text: #ffffff;
+}
+
 /* Bootstrap前提の最小CSS */
 html,
 body {

@@ -30,7 +30,7 @@ export default function AdminLayout({ admin, onLogout, children }: Props) {
           style={{
             width: "250px",
             minHeight: "100vh",
-            backgroundColor: "#1a1a1a",
+            backgroundColor: "var(--shell-bg-admin)",
             position: "fixed",
             left: 0,
             top: 0,
