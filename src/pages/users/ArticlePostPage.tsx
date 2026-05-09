@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCurrentUser, logout } from "../../lib/usersStore";
 import type { User } from "../../lib/users";
@@ -86,14 +86,13 @@ export default function ArticlePostPage() {
             placeholder="本文"
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            style={{ minHeight: 500 }}
           />
         </div>
         <div className="article-preview-pane">
           <div className="fw-semibold mb-1 small border-bottom pb-1">プレビュー</div>
           <div
             className="border p-2 bg-white article-preview-box"
-            style={{ height: editorHeight }}
+            style={{ "--preview-height": `${editorHeight}px` } as React.CSSProperties}
           >
             <ReactMarkdown>{body}</ReactMarkdown>
           </div>
