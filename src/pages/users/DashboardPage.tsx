@@ -1,8 +1,5 @@
-// src/pages/users/DashboardPage.tsx
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { getCurrentUser, logout } from "../../lib/usersStore";
-import type { User } from "../../lib/users";
+import { Link } from "react-router-dom";
+import { dashboardMenu } from "../../lib/userMenus";
 import "../../styles/pages/dashboard.css";
 import UserLayout from "../../components/user/UserLayout";
 
@@ -21,29 +18,8 @@ const lessons: Lesson[] = [
 ];
 
 export default function DashboardPage() {
-  const navigate = useNavigate();
-  const [me, setMe] = useState<User | null>(null);
-
-  useEffect(() => {
-    (async () => {
-      const u = await getCurrentUser();
-      if (!u) {
-        navigate("/login", { replace: true });
-        return;
-      }
-      setMe(u);
-    })();
-  }, [navigate]);
-
-  const handleLogout = async () => {
-    await logout();
-    navigate("/login", { replace: true });
-  };
-
-  if (!me) return null;
-
   return (
-    <UserLayout me={me} onLogout={handleLogout}>
+    <UserLayout menu={dashboardMenu}>
       <h1 className="h4 mb-4">e-learning一覧</h1>
 
       <div className="d-grid gap-3 lesson-list">

@@ -1,22 +1,16 @@
 import { Link } from "react-router-dom";
 import type { User } from "../../lib/users";
+import type { MenuItem } from "../../lib/userMenus";
 import "../../styles/components/userLayout.css";
 import "../../styles/components/userAvatar.css";
 
 type Props = {
   me?: User;
+  items: MenuItem[];
   onLogout: () => void;
 };
 
-const menuItems = [
-  { id: 1, label: "記事一覧", to: "/dashboard" },
-  { id: 2, label: "プロフィール一覧", to: "/profiles" },
-  { id: 3, label: "動画投稿一覧", to: "/videos" },
-  { id: 4, label: "つぶやき一覧", to: "/tweets" },
-  { id: 5, label: "問い合わせ", to: "/inquiries" },
-];
-
-export default function UserSidebar({ me, onLogout }: Props) {
+export default function UserSidebar({ me, items, onLogout }: Props) {
   return (
     <aside className="user-sidebar">
       <div className="d-flex align-items-center gap-2 mb-4">
@@ -36,8 +30,8 @@ export default function UserSidebar({ me, onLogout }: Props) {
       <div className="small text-uppercase text-white-50 mb-2">e-learning</div>
 
       <nav className="d-grid gap-1">
-        {menuItems.map((item) => (
-          <Link key={item.id} className="btn btn-sm btn-dark text-start" to={item.to}>
+        {items.map((item) => (
+          <Link key={item.to} className="btn btn-sm btn-dark text-start" to={item.to}>
             {item.label}
           </Link>
         ))}

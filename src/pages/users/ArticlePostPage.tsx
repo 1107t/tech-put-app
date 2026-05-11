@@ -1,46 +1,26 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useCallback, useLayoutEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCurrentUser, logout } from "../../lib/usersStore";
-import type { User } from "../../lib/users";
+import { dashboardMenu } from "../../lib/userMenus";
 import UserLayout from "../../components/user/UserLayout";
 import ReactMarkdown from "react-markdown";
 import "../../styles/pages/articlePost.css";
 
 export default function ArticlePostPage() {
   const navigate = useNavigate();
-  const [me, setMe] = useState<User | null>(null);
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [body, setBody] = useState("");
   const [editorHeight, setEditorHeight] = useState<number>(500);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [textareaEl, setTextareaEl] = useState<HTMLTextAreaElement | null>(null);
+
+  const textareaRef = useCallback((el: HTMLTextAreaElement | null) => setTextareaEl(el), []);
 
   useLayoutEffect(() => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-    setEditorHeight(textarea.offsetHeight);
-    const observer = new ResizeObserver(() => {
-      setEditorHeight(textarea.offsetHeight);
-    });
-    observer.observe(textarea);
+    if (!textareaEl) return;
+    const observer = new ResizeObserver(() => setEditorHeight(textareaEl.offsetHeight));
+    observer.observe(textareaEl);
     return () => observer.disconnect();
-  }, [me]);
-
-  useEffect(() => {
-    (async () => {
-      const u = await getCurrentUser();
-      if (!u) {
-        navigate("/login", { replace: true });
-        return;
-      }
-      setMe(u);
-    })();
-  }, [navigate]);
-
-  const handleLogout = async () => {
-    await logout();
-    navigate("/login", { replace: true });
-  };
+  }, [textareaEl]);
 
   const handleSubmit = () => {
     console.log("記事投稿:", { title, subtitle, body });
@@ -50,10 +30,8 @@ export default function ArticlePostPage() {
     navigate("/dashboard");
   };
 
-  if (!me) return null;
-
   return (
-    <UserLayout me={me} headerTitle="投稿した記事一覧" onLogout={handleLogout}>
+    <UserLayout menu={dashboardMenu} headerTitle="投稿した記事一覧">
       <h2 className="h5 mb-4">記事投稿</h2>
 
       <div className="mb-3">
@@ -76,7 +54,6 @@ export default function ArticlePostPage() {
         />
       </div>
 
-      {/* Editor / Preview split */}
       <div className="d-flex gap-3 mb-4">
         <div className="article-editor-pane">
           <div className="fw-semibold mb-1 small border-bottom pb-1">エディター</div>
@@ -99,7 +76,6 @@ export default function ArticlePostPage() {
         </div>
       </div>
 
-      {/* Buttons */}
       <div className="d-flex justify-content-end gap-2">
         <button className="btn btn-primary" onClick={handleSubmit}>
           投稿

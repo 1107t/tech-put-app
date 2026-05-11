@@ -4,7 +4,7 @@
   min-width: 0;
 }
 
-.article-editor-textarea {
+textarea.form-control.article-editor-textarea {
   resize: vertical;
   min-height: 500px;
 }
