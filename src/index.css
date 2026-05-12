@@ -1,4 +1,9 @@
 /* Bootstrap前提の最小CSS */
+:root {
+  --shell-bg-user: #1f2937;
+  --shell-text: #ffffff;
+}
+
 html,
 body {
   height: 100%;

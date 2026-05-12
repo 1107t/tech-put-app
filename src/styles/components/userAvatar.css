@@ -1,0 +1,15 @@
+.user-avatar {
+  border-radius: 50%;
+  background: #6c757d;
+  flex-shrink: 0;
+}
+
+.user-avatar--sm {
+  width: 28px;
+  height: 28px;
+}
+
+.user-avatar--md {
+  width: 36px;
+  height: 36px;
+}
