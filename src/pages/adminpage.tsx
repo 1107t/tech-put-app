@@ -1,17 +1,12 @@
-// src/pages/adminpage.tsx
-// 旧管理者ダッシュボードページ（sessionStorageを使った旧実装）。
-// 現在はAdminDashboardPage.tsxに移行済みのため、参考・比較用として残している。
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// このページが使用するユーザー情報の型定義
 interface CurrentUser {
   id: number;
   email: string;
   name: string;
 }
 
-// 管理者ページコンポーネント（sessionStorageからログイン情報を読み込む旧方式）
 const AdminPage: React.FC = () => {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
@@ -35,7 +30,6 @@ const AdminPage: React.FC = () => {
     }
   }, [navigate]);
 
-  // ログアウト処理：sessionStorageからユーザー情報を削除してログインページへ遷移
   const handleLogout = () => {
     sessionStorage.removeItem('currentUser');
     navigate('/admin/login');

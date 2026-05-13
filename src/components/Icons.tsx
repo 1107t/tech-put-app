@@ -1,14 +1,9 @@
-// src/components/Icons.tsx
-// アプリ全体で使用するSVGアイコンコンポーネント集。
-// BaseSvgを基底として各アイコンを定義することで、サイズ・色の統一管理が容易になっている。
 import type React from "react";
 
-// アイコンコンポーネント共通のプロパティ型（sizeでピクセルサイズを指定できる）
 type IconProps = React.SVGProps<SVGSVGElement> & {
   size?: number;
 };
 
-// 全アイコンの基底SVGコンポーネント。共通の属性（サイズ・ストローク設定等）を一括管理する。
 function BaseSvg({
   size = 18,
   children,
@@ -32,7 +27,6 @@ function BaseSvg({
   );
 }
 
-// メールアドレス入力欄などで使用するメールアイコン
 export function MailIcon({ size = 18, ...props }: IconProps) {
   return (
     <BaseSvg size={size} {...props}>
@@ -42,7 +36,6 @@ export function MailIcon({ size = 18, ...props }: IconProps) {
   );
 }
 
-// パスワード入力欄で使用する鍵アイコン
 export function LockIcon({ size = 18, ...props }: IconProps) {
   return (
     <BaseSvg size={size} {...props}>
@@ -77,7 +70,6 @@ export function ListIcon({ size = 18, ...props }: IconProps) {
   );
 }
 
-// ユーザー名入力欄やプロフィールで使用する人物アイコン
 export function UserIcon({ size = 18, ...props }: IconProps) {
   return (
     <BaseSvg size={size} {...props}>
@@ -87,7 +79,6 @@ export function UserIcon({ size = 18, ...props }: IconProps) {
   );
 }
 
-// 新規追加ボタンなどで使用するプラス（+）アイコン
 export function PlusSquareIcon({ size = 18, ...props }: IconProps) {
   return (
     <BaseSvg size={size} {...props}>

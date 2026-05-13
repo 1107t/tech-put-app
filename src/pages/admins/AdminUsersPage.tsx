@@ -1,6 +1,4 @@
-// src/pages/admins/AdminUsersPage.tsx 【修正】
-// 管理者向け登録ユーザー一覧ページ。IndexedDBから全ユーザーを取得してテーブル表示する。
-// 未ログイン時は /admin/login にリダイレクトする認証ガード付き。
+// src/pages/admins/AdminUsersPage.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -18,7 +16,6 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // マウント時: 認証チェック後、全ユーザーをIndexedDBから取得する
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -33,8 +30,7 @@ export default function AdminUsersPage() {
       const allUsers = await getUsers();
       if (!cancelled) {
         setUsers(allUsers);
-        // アンマウント後のstate更新を防ぐため、if (!cancelled) の中でsetLoadingを呼ぶ
-        setLoading(false);
+        setLoading(false); // アンマウント後のstate更新を防ぐため、if (!cancelled) の中に移動
       }
     })();
     return () => {

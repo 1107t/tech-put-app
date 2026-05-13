@@ -1,6 +1,4 @@
-// src/components/admin/SidebarItem.tsx 【修正】
-// 管理画面サイドバーの各メニュー項目コンポーネント。
-// ホバー時に背景色を変えてインタラクティブ感を演出する。
+// src/components/admin/SidebarItem.tsx
 import { Link } from "react-router-dom";
 
 type Props = {
@@ -11,7 +9,6 @@ type Props = {
 export default function SidebarItem({ label, to }: Props) {
   return (
     <li className="mb-1">
-      {/* ホバー時のみ背景色を暗くし、ホバー解除で透明に戻す */}
       <Link
         to={to}
         className="text-white text-decoration-none d-flex align-items-center py-2 px-3 rounded"

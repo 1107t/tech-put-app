@@ -1,6 +1,4 @@
-// src/pages/admins/AdminDetail.tsx 【修正】
-// 管理者詳細ページ。ログイン中の管理者の名前・メールアドレスをカード形式で表示する。
-// URLの :id がログイン中管理者のIDと異なる場合は正しいIDのURLへリダイレクトする。
+// src/pages/admins/AdminDetail.tsx
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getCurrentAdmin, adminLogout, type Admin } from "../../lib/adminStore";
@@ -8,20 +6,16 @@ import AdminLayout from "../../components/admin/AdminLayout";
 
 export default function AdminDetail() {
   const navigate = useNavigate();
-  // URLパラメータ :id を取得し、ログイン中の管理者IDと照合する
   const { id } = useParams();
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // マウント時: 認証チェック + URLのIDとログイン管理者IDの一致確認
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const currentAdmin = await getCurrentAdmin();
       if (cancelled) return;
-      // 未ログインなら /admin/login へ
       if (!currentAdmin) { navigate("/admin/login", { replace: true }); return; }
-      // 他管理者のIDへアクセスした場合は自分のページへリダイレクト
       if (id !== currentAdmin.id) { navigate(`/admin/${currentAdmin.id}`, { replace: true }); return; }
       setAdmin(currentAdmin);
       setLoading(false);

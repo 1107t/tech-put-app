@@ -1,6 +1,4 @@
 // src/lib/adminStore.ts
-// 管理者アカウントの登録・認証・セッション管理を行うストア。
-// localforageを使ってブラウザに永続保存し、bcryptjsでパスワードをハッシュ化する。
 import localforage from "localforage";
 import bcrypt from "bcryptjs";
 
@@ -10,13 +8,12 @@ export const EMAIL_INDEX_PREFIX = "email:";      // email:{email}   -> adminId
 export const SESSION_ADMIN_ID_KEY = "admin_id";  // session: current admin id
 export const ADMIN_COUNTER_KEY = "admin_counter"; // 連番カウンター
 
-// 管理者データ用のストレージインスタンス（adminsストアに管理者情報を保存）
+// 管理者用のストレージインスタンス
 const adminStorage = localforage.createInstance({
   name: "tech-put-admin",
   storeName: "admins",
 });
 
-// セッション用ストレージインスタンス（ログイン中の管理者IDを保持する）
 const adminSessionStorage = localforage.createInstance({
   name: "tech-put-admin",
   storeName: "session",
@@ -205,16 +202,16 @@ export async function deleteAdmin(adminId: string): Promise<void> {
   await adminStorage.removeItem(EMAIL_INDEX_PREFIX + admin.email);
 }
 
-// 全管理者を取得（開発・デバッグ用）：カウンター等の非管理者キーを除外して返す
+// 全管理者を取得（開発・デバッグ用）
 export async function getAllAdmins(): Promise<Admin[]> {
   const admins: Admin[] = [];
-
+  
   await adminStorage.iterate<Admin | string, void>((value, key) => {
-    // admin:{id} のキーのみを対象とする（メールインデックスやカウンターは除外）
+    // admin:{id} のキーのみを対象とする
     if (key.startsWith(ADMIN_KEY_PREFIX)) {
       admins.push(value as Admin);
     }
   });
-
+  
   return admins;
 }

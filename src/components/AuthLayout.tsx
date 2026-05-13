@@ -1,10 +1,7 @@
 // src/components/AuthLayout.tsx
-// ログイン・新規登録・パスワードリセットなど認証系ページの共通レイアウト。
-// ロゴ・サブタイトル・メインコンテンツ・フッターリンクを統一的に表示する。
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
-// このレイアウトが受け取るプロパティの型定義
 type Props = {
   subtitle?: string;
   brandHref?: string; // "/login" など
@@ -12,7 +9,6 @@ type Props = {
   footer?: ReactNode;
 };
 
-// 認証系ページ共通レイアウトコンポーネント。ロゴ・カード・フッターを描画する。
 export default function AuthLayout({
   subtitle,
   brandHref = "/login",

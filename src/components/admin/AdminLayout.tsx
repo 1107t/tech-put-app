@@ -1,6 +1,4 @@
-// src/components/admin/AdminLayout.tsx 【修正】
-// 管理画面の共通レイアウト。左サイドバー（メニュー・検索）＋ヘッダー＋メインコンテンツ領域で構成する。
-// 各管理ページはこのレイアウトを children として受け取り、固有のコンテンツを差し込む。
+// src/components/admin/AdminLayout.tsx
 import { useState } from "react";
 import { type Admin } from "../../lib/adminStore";
 import SidebarItem from "./SidebarItem";
@@ -12,7 +10,6 @@ type Props = {
   children: React.ReactNode;
 };
 
-// サイドバーに表示するナビゲーション項目の定義
 const menuItems = [
   { id: 1, label: "記事一覧", to: "/admin/articles" },
   { id: 2, label: "動画投稿一覧", to: "/admin/videos" },
@@ -21,9 +18,7 @@ const menuItems = [
 ];
 
 export default function AdminLayout({ admin, onLogout, children }: Props) {
-  // searchQuery: サイドバー検索入力値（現状UI表示のみ、絞り込み未実装）
   const [searchQuery, setSearchQuery] = useState("");
-  // dropdownOpen: ヘッダーのユーザードロップダウン開閉状態
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   return (

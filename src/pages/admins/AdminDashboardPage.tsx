@@ -1,6 +1,4 @@
-// src/pages/admins/AdminDashboardPage.tsx 【修正】
-// 管理者ダッシュボードページ。管理者ログイン後のトップ画面。
-// 未ログイン時は /admin/login にリダイレクトする認証ガード付き。
+// src/pages/admins/AdminDashboardPage.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCurrentAdmin, adminLogout, type Admin } from "../../lib/adminStore";
@@ -11,7 +9,6 @@ export default function AdminDashboardPage() {
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // マウント時: ログイン状態を確認し、未ログインなら /admin/login へリダイレクト
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -24,7 +21,6 @@ export default function AdminDashboardPage() {
       setAdmin(currentAdmin);
       setLoading(false);
     })();
-    // アンマウント時にフラグを立て、非同期処理後のstate更新を防ぐ
     return () => { cancelled = true; };
   }, [navigate]);
 
