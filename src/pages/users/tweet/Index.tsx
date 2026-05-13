@@ -1,34 +1,43 @@
+// src/pages/users/tweet/Index.tsx【新規作成】
+// つぶやき一覧ページ。投稿・編集・削除・フラッシュメッセージを管理する。
+// Rails-style に合わせ tweet/ ディレクトリの Index として配置。
 import { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { getCurrentUser } from "../../lib/usersStore";
-import { createTweet, deleteTweet, getTweets, updateTweet } from "../../lib/tweetsStore";
-import type { User } from "../../lib/users";
-import type { Tweet } from "../../lib/tweets";
-import UserLayout from "../../components/user/UserLayout";
-import { dashboardMenu } from "../../lib/userMenus";
-import "../../styles/pages/tweets.css";
+import { getCurrentUser } from "../../../lib/usersStore";
+import { createTweet, deleteTweet, getTweets, updateTweet } from "../../../lib/tweetsStore";
+import type { User } from "../../../lib/users";
+import type { Tweet } from "../../../lib/tweets";
+import UserLayout from "../../../components/user/UserLayout";
+import { dashboardMenu } from "../../../lib/userMenus";
+import "../../../styles/pages/tweets.css";
 
-type Flash = { type: "success" | "error"; message: string };
+// フラッシュメッセージの型（成功=緑 / エラー=赤）
+type Flash = {
+  type: "success" | "error"; // 表示色の種別
+  message: string;           // 表示するメッセージ内容
+};
 
+// ISO形式の日時文字列を「YYYY年MM月DD日 HH:mm」形式に変換するユーティリティ
 function formatDate(iso: string): string {
-  const d = new Date(iso);
-  const y = d.getFullYear();
-  const mo = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  const h = String(d.getHours()).padStart(2, "0");
-  const min = String(d.getMinutes()).padStart(2, "0");
-  return `${y}年${mo}月${day}日 ${h}:${min}`;
+  const date = new Date(iso);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // 月は0始まりのため+1
+  const day = String(date.getDate()).padStart(2, "0");
+  const hour = String(date.getHours()).padStart(2, "0");
+  const minute = String(date.getMinutes()).padStart(2, "0");
+  return `${year}年${month}月${day}日 ${hour}:${minute}`;
 }
 
 export default function TweetsPage() {
-  const [me, setMe] = useState<User | null>(null);
-  const [tweets, setTweets] = useState<Tweet[]>([]);
-  const [content, setContent] = useState("");
-  const [flash, setFlash] = useState<Flash | null>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editContent, setEditContent] = useState("");
+  const [me, setMe] = useState<User | null>(null);           // ログイン中のユーザー情報
+  const [tweets, setTweets] = useState<Tweet[]>([]);          // つぶやき一覧
+  const [content, setContent] = useState("");                 // 投稿フォームの入力内容
+  const [flash, setFlash] = useState<Flash | null>(null);     // フラッシュメッセージ
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null); // フラッシュ自動消去タイマー
+  const [editingId, setEditingId] = useState<string | null>(null); // 編集中のつぶやきID（null=編集していない）
+  const [editContent, setEditContent] = useState(""); // 編集中の本文テキスト
 
+  // マウント時: ログイン状態を確認しつぶやき一覧を取得する
   useEffect(() => {
     (async () => {
       const u = await getCurrentUser();
@@ -38,15 +47,17 @@ export default function TweetsPage() {
     })();
   }, []);
 
+  // フラッシュメッセージを表示し、3秒後に自動消去する
   const showFlash = (type: Flash["type"], message: string) => {
     setFlash({ type, message });
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => setFlash(null), 3000);
   };
 
-  const handleEditStart = (t: { id: string; content: string }) => {
-    setEditingId(t.id);
-    setEditContent(t.content);
+  // 編集ボタン押下: 対象ツイートの内容をセットしてインライン編集モードへ
+  const handleEditStart = (tweet: Tweet) => {
+    setEditingId(tweet.id);
+    setEditContent(tweet.content);
   };
 
   const handleEditSave = async (id: string) => {
@@ -100,7 +111,8 @@ export default function TweetsPage() {
         </div>
       )}
 
-      <div style={{ maxWidth: 680, margin: "0 auto", width: "100%" }}>
+      {/* コンテンツ幅を680pxに制限し中央寄せ */}
+      <div className="tweets-page__content">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h2 className="h5 mb-0">つぶやき一覧</h2>
           <div className="d-flex gap-2">
@@ -120,8 +132,10 @@ export default function TweetsPage() {
                     <div className="d-flex gap-2 align-items-center">
                       <div className="tweets-page__avatar" />
                       <div>
-                        <div className="fw-bold" style={{ fontSize: "0.9rem" }}>{tweet.userName}</div>
-                        <div className="text-muted" style={{ fontSize: "0.75rem" }}>
+                        {/* ユーザー名 */}
+                        <div className="fw-bold tweets-page__user-name">{tweet.userName}</div>
+                        {/* 投稿日時 */}
+                        <div className="text-muted tweets-page__date">
                           {formatDate(tweet.createdAt)}
                         </div>
                       </div>
@@ -168,7 +182,8 @@ export default function TweetsPage() {
                       </div>
                     </div>
                   ) : (
-                    <p className="mb-2" style={{ whiteSpace: "pre-wrap" }}>{tweet.content}</p>
+                    /* 本文: 改行を保持して表示 */
+                    <p className="mb-2 tweets-page__body">{tweet.content}</p>
                   )}
 
                   <div className="d-flex gap-3">

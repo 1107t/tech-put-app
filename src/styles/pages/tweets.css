@@ -53,3 +53,25 @@
 .tweets-page__action-btn:hover {
   color: #374151;
 }
+
+/* つぶやき一覧のコンテンツ幅を制限し中央寄せ */
+.tweets-page__content {
+  max-width: 680px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ユーザー名のフォントサイズ */
+.tweets-page__user-name {
+  font-size: 0.9rem;
+}
+
+/* 投稿日時のフォントサイズ */
+.tweets-page__date {
+  font-size: 0.75rem;
+}
+
+/* つぶやき本文: 改行を保持して表示 */
+.tweets-page__body {
+  white-space: pre-wrap;
+}
