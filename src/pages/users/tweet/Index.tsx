@@ -1,11 +1,10 @@
-// src/pages/users/tweet/Index.tsx【新規作成】
+// src/pages/users/tweet/Index.tsx【修正】
 // つぶやき一覧ページ。投稿・編集・削除・フラッシュメッセージを管理する。
 // Rails-style に合わせ tweet/ ディレクトリの Index として配置。
 import { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { getCurrentUser } from "../../../lib/usersStore";
+import { useRequireAuth } from "../../../lib/useRequireAuth";
 import { createTweet, deleteTweet, getTweets, updateTweet } from "../../../lib/tweetsStore";
-import type { User } from "../../../lib/users";
 import type { Tweet } from "../../../lib/tweets";
 import UserLayout from "../../../components/user/UserLayout";
 import { dashboardMenu } from "../../../lib/userMenus";
@@ -28,8 +27,9 @@ function formatDate(iso: string): string {
   return `${year}年${month}月${day}日 ${hour}:${minute}`;
 }
 
-export default function TweetsPage() {
-  const [me, setMe] = useState<User | null>(null);           // ログイン中のユーザー情報
+export default function TweetIndex() {
+  // useRequireAuth が認証チェック・未ログイン時リダイレクトを担当（UserLayout 内と同一フック）
+  const { me } = useRequireAuth();
   const [tweets, setTweets] = useState<Tweet[]>([]);          // つぶやき一覧
   const [content, setContent] = useState("");                 // 投稿フォームの入力内容
   const [flash, setFlash] = useState<Flash | null>(null);     // フラッシュメッセージ
@@ -37,15 +37,11 @@ export default function TweetsPage() {
   const [editingId, setEditingId] = useState<string | null>(null); // 編集中のつぶやきID（null=編集していない）
   const [editContent, setEditContent] = useState(""); // 編集中の本文テキスト
 
-  // マウント時: ログイン状態を確認しつぶやき一覧を取得する
+  // me が確定してからつぶやき一覧を取得する（me が null の間はスキップ）
   useEffect(() => {
-    (async () => {
-      const u = await getCurrentUser();
-      if (!u) return;
-      setMe(u);
-      setTweets(await getTweets());
-    })();
-  }, []);
+    if (!me) return;
+    (async () => setTweets(await getTweets()))();
+  }, [me]);
 
   // フラッシュメッセージを表示し、3秒後に自動消去する
   const showFlash = (type: Flash["type"], message: string) => {
