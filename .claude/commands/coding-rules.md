@@ -133,6 +133,30 @@ export default function UserSidebar({ items }: { items: MenuItem[] }) { ... }
 
 ---
 
+### ⑤ 同じ機能のページが複数になる場合はサブディレクトリに分ける
+
+**禁止:**
+```
+pages/users/ArticlePostPage.tsx   // NG: 記事関連が増えたとき散らかる
+pages/users/ArticleListPage.tsx
+pages/users/ArticleDetailPage.tsx
+```
+
+**必須:**
+```
+pages/users/article/
+  ├── Post.tsx     // 記事投稿
+  ├── List.tsx     // 記事一覧
+  ├── Detail.tsx   // 記事詳細
+  └── Edit.tsx     // 記事編集
+```
+
+**判断基準:** 同じ機能に関連するページが今後複数になりそうな場合は、最初の1ファイルの時点でサブディレクトリを作る。
+
+**理由:** ファイルが増えてから整理すると影響範囲が広がる。最初から構造を作っておくことで将来の可読性・拡張性を確保できる。（西野さんレビュー 2026-05-13）
+
+---
+
 ## チェックリスト（コミット前に確認）
 
 - [ ] `map` / `forEach` のブロック変数がフルネームになっているか
@@ -140,3 +164,4 @@ export default function UserSidebar({ items }: { items: MenuItem[] }) { ... }
 - [ ] CSSとインラインの二重定義になっていないか
 - [ ] 同じ処理が複数ファイルに重複していないか（DRY原則）
 - [ ] コンポーネントにデータ定義が直書きされていないか（SRP）
+- [ ] 機能関連のページが複数になる場合、サブディレクトリに分けているか

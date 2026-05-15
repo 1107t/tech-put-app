@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import type { User } from "../../lib/users";
 import type { MenuItem } from "../../lib/userMenus";
 import "../../styles/components/userLayout.css";
@@ -20,9 +20,9 @@ export default function UserSidebar({ me, items, onLogout }: Props) {
 
       {me && (
         <div className="mb-3">
-          <Link to={`/users/${me.id}`} className="text-white text-decoration-none small">
+          <NavLink to={`/users/${me.id}`} className="text-white text-decoration-none small">
             {me.name}
-          </Link>
+          </NavLink>
           <hr className="border-secondary mt-2 mb-0" />
         </div>
       )}
@@ -31,9 +31,15 @@ export default function UserSidebar({ me, items, onLogout }: Props) {
 
       <nav className="d-grid gap-1">
         {items.map((item) => (
-          <Link key={item.to} className="btn btn-sm btn-dark text-start" to={item.to}>
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={({ isActive }) =>
+              `btn btn-sm text-start ${isActive ? "btn-secondary" : "btn-dark"}`
+            }
+          >
             {item.label}
-          </Link>
+          </NavLink>
         ))}
       </nav>
 

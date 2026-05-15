@@ -6,7 +6,7 @@ import UserSignUpPage from './pages/users/SignUpPage';
 import UserMessagePage from './pages/users/MessagePage';
 import UserPassreset from './pages/users/Passreset';
 import DashboardPage from './pages/users/DashboardPage';
-import ArticlePostPage from './pages/users/ArticlePostPage';
+import ArticlePostPage from './pages/users/article/Post';
 
 // 管理者用ページ
 import AdminLoginPage from './pages/admins/AdminLoginPage';

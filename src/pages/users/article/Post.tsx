@@ -1,9 +1,10 @@
 import React, { useCallback, useLayoutEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { dashboardMenu } from "../../lib/userMenus";
-import UserLayout from "../../components/user/UserLayout";
+import { dashboardMenu } from "../../../lib/userMenus";
+import UserLayout from "../../../components/user/UserLayout";
 import ReactMarkdown from "react-markdown";
-import "../../styles/pages/articlePost.css";
+import remarkGfm from "remark-gfm";
+import "../../../styles/pages/articlePost.css";
 
 export default function ArticlePostPage() {
   const navigate = useNavigate();
@@ -71,7 +72,7 @@ export default function ArticlePostPage() {
             className="border p-2 bg-white article-preview-box"
             style={{ "--preview-height": `${editorHeight}px` } as React.CSSProperties}
           >
-            <ReactMarkdown>{body}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{body}</ReactMarkdown>
           </div>
         </div>
       </div>
