@@ -32,7 +32,7 @@ export default function ArticlePostPage() {
   };
 
   return (
-    <UserLayout menu={dashboardMenu} headerTitle="投稿した記事一覧">
+    <UserLayout menu={dashboardMenu} headerTitle="記事投稿">
       <h2 className="h5 mb-4">記事投稿</h2>
 
       <div className="mb-3">
