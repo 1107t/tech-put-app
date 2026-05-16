@@ -1,3 +1,17 @@
+/* デザイントークン */
+:root {
+  --shell-bg-admin: #1a1a1a;
+  --shell-bg-user: #1f2937;
+  --shell-text: #ffffff;
+
+  --admin-page-bg: #f5f7fa;
+  --admin-sidebar-width: 250px;
+  --admin-sidebar-border: #2a2a2a;
+  --admin-search-bg: #2a2a2a;
+  --admin-title-size: 16px;
+  --admin-footer-size: 11px;
+}
+
 /* Bootstrap前提の最小CSS */
 :root {
   --shell-bg-user: #1f2937;
