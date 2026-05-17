@@ -5,8 +5,10 @@ import LoginPage from './pages/users/LoginPage';
 import UserSignUpPage from './pages/users/SignUpPage';
 import UserMessagePage from './pages/users/MessagePage';
 import UserPassreset from './pages/users/Passreset';
-import DashboardPage from './pages/users/DashboardPage';
+import ELearningPage from './pages/users/ELearningPage';
 import ArticlePostPage from './pages/users/article/Post';
+import ArticleIndexPage from './pages/users/article/Index';
+import ArticleEditPage from './pages/users/article/Edit';
 
 // 管理者用ページ
 import AdminLoginPage from './pages/admins/AdminLoginPage';
@@ -30,8 +32,10 @@ function AppRoutes() {
         <Route path="/signup" element={<UserSignUpPage />} />
         <Route path="/message/:type" element={<UserMessagePage />} />
         <Route path="/reset" element={<UserPassreset />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/dashboard" element={<ELearningPage />} />
+        <Route path="/articles" element={<ArticleIndexPage />} />
         <Route path="/articles/new" element={<ArticlePostPage />} />
+        <Route path="/articles/:id/edit" element={<ArticleEditPage />} />
 
         {/* 管理者用ルート（固定パスを先に定義） */}
         <Route path="/admin/login" element={<AdminLoginPage />} />

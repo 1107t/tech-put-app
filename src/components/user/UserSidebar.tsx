@@ -34,6 +34,7 @@ export default function UserSidebar({ me, items, onLogout }: Props) {
           <NavLink
             key={item.to}
             to={item.to}
+            end
             className={({ isActive }) =>
               `btn btn-sm text-start ${isActive ? "btn-secondary" : "btn-dark"}`
             }

@@ -23,7 +23,7 @@ export default function LoginPage() {
       if (saved) setEmail(saved);
 
       const id = await getCurrentUserId();
-      if (id) navigate("/dashboard", { replace: true });
+      if (id) navigate("/articles", { replace: true });
     })();
   }, [navigate]);
 
@@ -43,7 +43,7 @@ export default function LoginPage() {
       //  登録済みユーザーだけ通す（localforage照合）
       await login(email, password);
 
-      navigate("/dashboard", { replace: true });
+      navigate("/articles", { replace: true });
     } catch (err) {
       const msg =
         err instanceof Error ? err.message : "不明なエラーが発生しました。";

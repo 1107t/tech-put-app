@@ -17,7 +17,7 @@ const lessons: Lesson[] = [
   { id: "4", title: "HTML_CSS編(3) 簡単なホームページを作ってみよう。", category: "HTML,CSS", done: true },
 ];
 
-export default function DashboardPage() {
+export default function ELearningPage() {
   return (
     <UserLayout menu={dashboardMenu}>
       <h1 className="h4 mb-4">e-learning一覧</h1>
