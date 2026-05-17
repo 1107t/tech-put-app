@@ -24,35 +24,40 @@ const lessons: Lesson[] = [
 
 export default function DashboardPage() {
   // UserLayout が認証チェック・リダイレクト・サイドバー・ヘッダーをすべて担当する
+  // render-prop の me はこのページでは使用しないため _ で受け取る
   return (
     <UserLayout menu={dashboardMenu} headerTitle="e-learning一覧">
-      <h1 className="h4 mb-4">e-learning一覧</h1>
+      {(_me) => (
+        <>
+          <h1 className="h4 mb-4">e-learning一覧</h1>
 
-      {/* レッスンカード一覧 */}
-      <div className="d-grid gap-3" style={{ maxWidth: 640 }}>
-        {lessons.map((lesson) => (
-          <div key={lesson.id} className="card shadow-sm">
-            <div className="card-body">
-              <div className="d-flex align-items-start justify-content-between">
-                {/* レッスンタイトル */}
-                <div className="fw-bold">{lesson.title}</div>
-                {/* 完了バッジ */}
-                {lesson.done && <span className="badge text-bg-secondary">完了</span>}
+          {/* レッスンカード一覧 */}
+          <div className="d-grid gap-3" style={{ maxWidth: 640 }}>
+            {lessons.map((lesson) => (
+              <div key={lesson.id} className="card shadow-sm">
+                <div className="card-body">
+                  <div className="d-flex align-items-start justify-content-between">
+                    {/* レッスンタイトル */}
+                    <div className="fw-bold">{lesson.title}</div>
+                    {/* 完了バッジ */}
+                    {lesson.done && <span className="badge text-bg-secondary">完了</span>}
+                  </div>
+
+                  {/* カテゴリ名 */}
+                  <div className="text-muted small mt-2">{lesson.category}</div>
+
+                  {/* 記事を見るボタン */}
+                  <div className="mt-3">
+                    <Link className="btn btn-primary btn-sm" to={`/lessons/${lesson.id}`}>
+                      記事を見る
+                    </Link>
+                  </div>
+                </div>
               </div>
-
-              {/* カテゴリ名 */}
-              <div className="text-muted small mt-2">{lesson.category}</div>
-
-              {/* 記事を見るボタン */}
-              <div className="mt-3">
-                <Link className="btn btn-primary btn-sm" to={`/lessons/${lesson.id}`}>
-                  記事を見る
-                </Link>
-              </div>
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </>
+      )}
     </UserLayout>
   );
 }

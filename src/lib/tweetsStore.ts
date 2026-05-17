@@ -24,11 +24,11 @@ async function setTweets(tweets: Tweet[]) {
 }
 
 // 新しいつぶやきを保存する。
-// 新しい投稿が一覧の先頭に来るよう unshift で配列の先頭に追加する。
+// スプレッド構文で新しい配列を生成し、元の配列を変更しない（非破壊的操作）。
+// 新しい投稿が一覧の先頭に来るよう tweet を配列の先頭に配置する。
 export async function createTweet(tweet: Tweet): Promise<void> {
   const tweets = await getTweets();
-  tweets.unshift(tweet);
-  await setTweets(tweets);
+  await setTweets([tweet, ...tweets]);
 }
 
 // 指定IDのつぶやきを削除する

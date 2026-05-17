@@ -1,16 +1,17 @@
-// src/components/user/UserLayout.tsx【新規作成】
+// src/components/user/UserLayout.tsx【修正】
 // サイドバー・ヘッダー・メインコンテンツを組み合わせたページ共通レイアウト。
-// 認証チェック（useRequireAuth）を内部で行い、未ログインなら /login にリダイレクトする。
+// render-prop パターンで me を子に渡すため、子側で useRequireAuth を二重呼び出しする必要がない。
 import type { MenuItem } from "../../lib/userMenus";
+import type { User } from "../../lib/users";
 import { useRequireAuth } from "../../lib/useRequireAuth";
 import UserSidebar from "./UserSidebar";
 import UserHeader from "./UserHeader";
 import "../../styles/components/userLayout.css";
 
 type Props = {
-  menu: MenuItem[];       // サイドバーに表示するメニュー項目
-  headerTitle?: string;   // ヘッダーに表示するページタイトル
-  children: React.ReactNode; // 各ページのメインコンテンツ
+  menu: MenuItem[];                        // サイドバーに表示するメニュー項目
+  headerTitle?: string;                    // ヘッダーに表示するページタイトル
+  children: (me: User) => React.ReactNode; // render-prop: ログイン中ユーザーを受け取りコンテンツを返す
 };
 
 export default function UserLayout({ menu, headerTitle, children }: Props) {
@@ -27,8 +28,8 @@ export default function UserLayout({ menu, headerTitle, children }: Props) {
       <main className="flex-grow-1 bg-light">
         {/* 上部ヘッダー: ページタイトルとアバター */}
         <UserHeader title={headerTitle} />
-        {/* 各ページのコンテンツをここに描画 */}
-        <div className="p-4">{children}</div>
+        {/* render-prop で me を渡し、各ページのコンテンツを描画する */}
+        <div className="p-4">{children(me)}</div>
       </main>
     </div>
   );

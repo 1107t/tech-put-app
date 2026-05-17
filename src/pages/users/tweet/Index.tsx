@@ -1,10 +1,10 @@
 // src/pages/users/tweet/Index.tsx【修正】
 // つぶやき一覧ページ。投稿・編集・削除・フラッシュメッセージを管理する。
-// Rails-style に合わせ tweet/ ディレクトリの Index として配置。
+// UserLayout の render-prop から me を受け取るため、useRequireAuth の二重呼び出しを解消している。
 import { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { useRequireAuth } from "../../../lib/useRequireAuth";
 import { createTweet, deleteTweet, getTweets, updateTweet } from "../../../lib/tweetsStore";
+import type { User } from "../../../lib/users";
 import type { Tweet } from "../../../lib/tweets";
 import UserLayout from "../../../components/user/UserLayout";
 import { dashboardMenu } from "../../../lib/userMenus";
@@ -27,21 +27,20 @@ function formatDate(iso: string): string {
   return `${year}年${month}月${day}日 ${hour}:${minute}`;
 }
 
-export default function TweetIndex() {
-  // useRequireAuth が認証チェック・未ログイン時リダイレクトを担当（UserLayout 内と同一フック）
-  const { me } = useRequireAuth();
+// UserLayout の render-prop から me を受け取り、つぶやき一覧・投稿・編集・削除を担当するコンポーネント
+// me は UserLayout 側で認証済みが保証されているため、ここで useRequireAuth を呼ぶ必要はない
+function TweetsContent({ me }: { me: User }) {
   const [tweets, setTweets] = useState<Tweet[]>([]);          // つぶやき一覧
   const [content, setContent] = useState("");                 // 投稿フォームの入力内容
   const [flash, setFlash] = useState<Flash | null>(null);     // フラッシュメッセージ
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null); // フラッシュ自動消去タイマー
   const [editingId, setEditingId] = useState<string | null>(null); // 編集中のつぶやきID（null=編集していない）
-  const [editContent, setEditContent] = useState(""); // 編集中の本文テキスト
+  const [editContent, setEditContent] = useState("");         // 編集中の本文テキスト
 
-  // me が確定してからつぶやき一覧を取得する（me が null の間はスキップ）
+  // マウント時につぶやき一覧を取得する（me は親で保証済みなので null チェック不要）
   useEffect(() => {
-    if (!me) return;
     (async () => setTweets(await getTweets()))();
-  }, [me]);
+  }, []);
 
   // フラッシュメッセージを表示し、3秒後に自動消去する
   const showFlash = (type: Flash["type"], message: string) => {
@@ -56,6 +55,7 @@ export default function TweetIndex() {
     setEditContent(tweet.content);
   };
 
+  // 編集確定: 空文字はエラー、成功時はストア更新して一覧再取得
   const handleEditSave = async (id: string) => {
     if (!editContent.trim()) {
       showFlash("error", "内容を入力してください");
@@ -67,18 +67,19 @@ export default function TweetIndex() {
     showFlash("success", "つぶやきを更新しました。");
   };
 
+  // 削除ボタン押下: ストアから削除して一覧を再取得
   const handleDelete = async (id: string) => {
     await deleteTweet(id);
     setTweets(await getTweets());
     showFlash("success", "つぶやきを削除しました。");
   };
 
+  // 投稿ボタン押下: バリデーション → IndexedDB に保存 → 一覧を再取得
   const handleSubmit = async () => {
     if (!content.trim()) {
       showFlash("error", "投稿内容を入力してください");
       return;
     }
-    if (!me) return;
 
     const tweet: Tweet = {
       id: uuidv4(),
@@ -95,7 +96,8 @@ export default function TweetIndex() {
   };
 
   return (
-    <UserLayout menu={dashboardMenu} headerTitle="つぶやき一覧">
+    <>
+      {/* フラッシュメッセージ: 成功=緑 / エラー=赤 */}
       {flash && (
         <div
           className={`alert mb-3 py-2 px-4 ${
@@ -117,6 +119,7 @@ export default function TweetIndex() {
           </div>
         </div>
 
+        {/* つぶやき一覧: 投稿がなければ空メッセージ、あればカード形式で表示 */}
         {tweets.length === 0 ? (
           <p className="text-muted text-center py-5">つぶやきはまだありません</p>
         ) : (
@@ -136,7 +139,8 @@ export default function TweetIndex() {
                         </div>
                       </div>
                     </div>
-                    {me && tweet.userId === me.id && editingId !== tweet.id && (
+                    {/* 自分の投稿にのみ編集・削除ボタンを表示 */}
+                    {tweet.userId === me.id && editingId !== tweet.id && (
                       <div className="d-flex gap-1">
                         <button
                           className="btn btn-outline-secondary btn-sm"
@@ -154,6 +158,7 @@ export default function TweetIndex() {
                     )}
                   </div>
 
+                  {/* 本文: 編集中はテキストエリアを表示、通常時はテキスト表示 */}
                   {editingId === tweet.id ? (
                     <div className="mb-2">
                       <textarea
@@ -182,6 +187,7 @@ export default function TweetIndex() {
                     <p className="mb-2 tweets-page__body">{tweet.content}</p>
                   )}
 
+                  {/* アクションボタン: コメント数・いいね数（将来の拡張用） */}
                   <div className="d-flex gap-3">
                     <button className="tweets-page__action-btn">
                       <span>💬</span>
@@ -198,6 +204,7 @@ export default function TweetIndex() {
           </div>
         )}
 
+        {/* 投稿フォーム: Cmd+Enter（Mac）/ Ctrl+Enter（Windows）でも投稿できる */}
         <div className="card shadow-sm tweets-page__form-card mt-4">
           <div className="card-body">
             <textarea
@@ -218,6 +225,15 @@ export default function TweetIndex() {
           </div>
         </div>
       </div>
+    </>
+  );
+}
+
+// UserLayout に render-prop でコンテンツを渡すラッパーコンポーネント
+export default function TweetIndex() {
+  return (
+    <UserLayout menu={dashboardMenu} headerTitle="つぶやき一覧">
+      {(me) => <TweetsContent me={me} />}
     </UserLayout>
   );
 }
