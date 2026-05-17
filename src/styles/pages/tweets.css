@@ -75,3 +75,16 @@
 .tweets-page__body {
   white-space: pre-wrap;
 }
+
+/* モーダル背景オーバーレイ: 半透明の暗幕。クリックでモーダルを閉じる */
+.tweets-page__modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1040;
+}
+
+/* モーダル本体が背景オーバーレイより手前に来るよう z-index を設定 */
+.tweets-page__modal-backdrop ~ .modal {
+  z-index: 1050;
+}

@@ -1,5 +1,5 @@
 // src/pages/users/tweet/Index.tsx【修正】
-// つぶやき一覧ページ。投稿・編集・削除・フラッシュメッセージを管理する。
+// つぶやき一覧ページ。ヘッダーの「つぶやき投稿」ボタンでモーダルを開き投稿する。
 // UserLayout の render-prop から me を受け取るため、useRequireAuth の二重呼び出しを解消している。
 import { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
@@ -27,11 +27,17 @@ function formatDate(iso: string): string {
   return `${year}年${month}月${day}日 ${hour}:${minute}`;
 }
 
-// UserLayout の render-prop から me を受け取り、つぶやき一覧・投稿・編集・削除を担当するコンポーネント
-// me は UserLayout 側で認証済みが保証されているため、ここで useRequireAuth を呼ぶ必要はない
-function TweetsContent({ me }: { me: User }) {
+// TweetIndex から受け取る props の型
+type TweetsContentProps = {
+  me: User;                  // ログイン中ユーザー（UserLayout で認証済み）
+  isModalOpen: boolean;      // 投稿モーダルの表示状態
+  onModalClose: () => void;  // モーダルを閉じるコールバック
+};
+
+// UserLayout の render-prop から me を受け取り、つぶやき一覧・モーダル投稿・編集・削除を担当するコンポーネント
+function TweetsContent({ me, isModalOpen, onModalClose }: TweetsContentProps) {
   const [tweets, setTweets] = useState<Tweet[]>([]);          // つぶやき一覧
-  const [content, setContent] = useState("");                 // 投稿フォームの入力内容
+  const [modalContent, setModalContent] = useState("");       // モーダル内の投稿テキスト
   const [flash, setFlash] = useState<Flash | null>(null);     // フラッシュメッセージ
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null); // フラッシュ自動消去タイマー
   const [editingId, setEditingId] = useState<string | null>(null); // 編集中のつぶやきID（null=編集していない）
@@ -41,6 +47,11 @@ function TweetsContent({ me }: { me: User }) {
   useEffect(() => {
     (async () => setTweets(await getTweets()))();
   }, []);
+
+  // モーダルが閉じられるときに入力テキストをリセットする
+  useEffect(() => {
+    if (!isModalOpen) setModalContent("");
+  }, [isModalOpen]);
 
   // フラッシュメッセージを表示し、3秒後に自動消去する
   const showFlash = (type: Flash["type"], message: string) => {
@@ -74,9 +85,9 @@ function TweetsContent({ me }: { me: User }) {
     showFlash("success", "つぶやきを削除しました。");
   };
 
-  // 投稿ボタン押下: バリデーション → IndexedDB に保存 → 一覧を再取得
-  const handleSubmit = async () => {
-    if (!content.trim()) {
+  // モーダルの投稿ボタン押下: バリデーション → IndexedDB に保存 → 一覧を再取得 → モーダルを閉じる
+  const handleModalSubmit = async () => {
+    if (!modalContent.trim()) {
       showFlash("error", "投稿内容を入力してください");
       return;
     }
@@ -85,14 +96,14 @@ function TweetsContent({ me }: { me: User }) {
       id: uuidv4(),
       userId: me.id,
       userName: me.name,
-      content: content.trim(),
+      content: modalContent.trim(),
       createdAt: new Date().toISOString(),
     };
 
     await createTweet(tweet);
-    setContent("");
     setTweets(await getTweets());
     showFlash("success", "つぶやきを作成しました。");
+    onModalClose(); // 投稿完了後にモーダルを閉じる
   };
 
   return (
@@ -203,37 +214,90 @@ function TweetsContent({ me }: { me: User }) {
             ))}
           </div>
         )}
+      </div>
 
-        {/* 投稿フォーム: Cmd+Enter（Mac）/ Ctrl+Enter（Windows）でも投稿できる */}
-        <div className="card shadow-sm tweets-page__form-card mt-4">
-          <div className="card-body">
-            <textarea
-              className="form-control mb-2"
-              rows={3}
-              placeholder="つぶやく内容を入力してください..."
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit();
-              }}
-            />
-            <div className="d-flex justify-content-end">
-              <button className="btn btn-success btn-sm px-4" onClick={handleSubmit}>
-                投稿する
-              </button>
+      {/* 投稿モーダル: isModalOpen が true のときだけ表示する */}
+      {isModalOpen && (
+        <>
+          {/* 半透明の背景オーバーレイ: クリックでモーダルを閉じる */}
+          <div className="tweets-page__modal-backdrop" onClick={onModalClose} />
+
+          {/* モーダル本体 */}
+          <div className="modal d-block" tabIndex={-1} role="dialog">
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                {/* モーダルヘッダー */}
+                <div className="modal-header">
+                  <h5 className="modal-title">投稿を作成</h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    aria-label="閉じる"
+                    onClick={onModalClose}
+                  />
+                </div>
+
+                {/* モーダルボディ: 投稿テキスト入力エリア */}
+                <div className="modal-body">
+                  <textarea
+                    className="form-control"
+                    rows={4}
+                    placeholder="つぶやく内容を入力してください..."
+                    value={modalContent}
+                    onChange={(e) => setModalContent(e.target.value)}
+                    onKeyDown={(e) => {
+                      // Cmd+Enter（Mac）/ Ctrl+Enter（Windows）でも投稿できる
+                      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleModalSubmit();
+                    }}
+                    autoFocus
+                  />
+                </div>
+
+                {/* モーダルフッター: キャンセル・投稿ボタン */}
+                <div className="modal-footer">
+                  <button className="btn btn-secondary" onClick={onModalClose}>
+                    キャンセル
+                  </button>
+                  <button className="btn btn-success" onClick={handleModalSubmit}>
+                    投稿する
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
     </>
   );
 }
 
 // UserLayout に render-prop でコンテンツを渡すラッパーコンポーネント
+// モーダルの開閉状態をここで管理し、ヘッダーボタンと TweetsContent の両方に渡す
 export default function TweetIndex() {
+  // モーダルの表示/非表示を管理するフラグ
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
-    <UserLayout menu={dashboardMenu} headerTitle="つぶやき一覧">
-      {(me) => <TweetsContent me={me} />}
+    <UserLayout
+      menu={dashboardMenu}
+      headerTitle="つぶやき一覧"
+      // ヘッダーに「つぶやき投稿」ボタンを表示し、クリックでモーダルを開く
+      headerAction={
+        <button
+          className="btn btn-primary btn-sm"
+          onClick={() => setIsModalOpen(true)}
+        >
+          つぶやき投稿
+        </button>
+      }
+    >
+      {(me) => (
+        <TweetsContent
+          me={me}
+          isModalOpen={isModalOpen}
+          onModalClose={() => setIsModalOpen(false)}
+        />
+      )}
     </UserLayout>
   );
 }
