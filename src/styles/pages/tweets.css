@@ -76,15 +76,28 @@
   white-space: pre-wrap;
 }
 
-/* モーダル背景オーバーレイ: 半透明の暗幕。クリックでモーダルを閉じる */
-.tweets-page__modal-backdrop {
+/* 下部固定フォーム: サイドバー幅(260px)を除いた右側領域の底部に固定する */
+.tweets-page__fixed-form {
   position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1040;
+  bottom: 0;
+  left: 260px; /* サイドバーの幅分だけ右にずらす */
+  right: 0;
+  background: #fff;
+  border-top: 1px solid #dee2e6;
+  z-index: 100;
 }
 
-/* モーダル本体が背景オーバーレイより手前に来るよう z-index を設定 */
-.tweets-page__modal-backdrop ~ .modal {
-  z-index: 1050;
+/* 固定フォームの内側レイアウト: 最大幅を設けて中央寄せ */
+.tweets-page__fixed-form-inner {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+}
+
+/* 一覧エリア: 固定フォームの高さ分だけ下に余白を作り、内容がフォームに隠れないようにする */
+.tweets-page__content {
+  max-width: 680px;
+  margin: 0 auto;
+  width: 100%;
+  padding-bottom: 120px; /* 固定フォームの高さ(約110px)より少し大きめに確保 */
 }
