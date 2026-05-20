@@ -1,0 +1,46 @@
+.admin-shell {
+  background-color: var(--admin-page-bg);
+}
+
+.admin-sidebar {
+  width: var(--admin-sidebar-width);
+  min-height: 100vh;
+  background-color: var(--shell-bg-admin);
+  position: fixed;
+  left: 0;
+  top: 0;
+}
+
+.admin-sidebar__title-area {
+  border-bottom: 1px solid var(--admin-sidebar-border);
+}
+
+.admin-sidebar__title {
+  font-size: var(--admin-title-size);
+}
+
+.admin-search-input,
+.admin-search-btn {
+  background-color: var(--admin-search-bg);
+  border: none;
+  color: var(--shell-text);
+}
+
+.admin-search-input:focus {
+  background-color: var(--admin-search-bg);
+  color: var(--shell-text);
+  box-shadow: none;
+}
+
+.admin-sidebar__footer {
+  border-top: 1px solid var(--admin-sidebar-border);
+}
+
+.admin-sidebar__footer-text {
+  font-size: var(--admin-footer-size);
+  line-height: 1.5;
+}
+
+.admin-main {
+  margin-left: var(--admin-sidebar-width);
+}
