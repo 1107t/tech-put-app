@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
-import { MailIcon, LockIcon } from "../../components//Icons";
+import { MailIcon, LockIcon } from "../../components/Icons";
 import { getCurrentUserId, login } from "../../lib/usersStore";
 
 export default function LoginPage() {
@@ -126,7 +126,7 @@ export default function LoginPage() {
             <input
               type="password"
               required
-              className="form-control text-muted"
+              className="form-control"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -142,7 +142,7 @@ export default function LoginPage() {
           <input
             id="remember_me"
             type="checkbox"
-            className="form-check-inputtext-muted"
+            className="form-check-inputtext"
             checked={remember}
             onChange={(e) => setRemember(e.target.checked)}
             disabled={loading}

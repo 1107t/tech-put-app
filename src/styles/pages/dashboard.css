@@ -2,6 +2,10 @@
    Dashboard (user)
    ========================= */
 
+.lesson-list {
+  max-width: 640px;
+}
+
 .user-dashboard {
   min-height: 100vh;
 }

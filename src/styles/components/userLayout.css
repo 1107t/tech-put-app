@@ -1,0 +1,27 @@
+.user-shell {
+  min-height: 100vh;
+  display: flex;
+}
+
+.user-sidebar {
+  width: 260px;
+  height: 100vh;
+  flex-shrink: 0;
+  background: var(--shell-bg-user);
+  color: var(--shell-text);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
+}
+
+.user-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #dee2e6;
+  background: #fff;
+}

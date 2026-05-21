@@ -10,10 +10,9 @@ import {
 
 type Props = {
   me: User;
-  variant?: "dashboard" | "user";
 };
 
-export default function Sidebar({ me, variant = "dashboard" }: Props) {
+export default function Sidebar({ me }: Props) {
   return (
     <aside className="user-dashboard__sidebar">
 
@@ -30,14 +29,8 @@ export default function Sidebar({ me, variant = "dashboard" }: Props) {
         </Link>
         <div className="user-dashboard__divider" />
       </div>
-
-      {/* 👇 分岐 */}
-      {variant === "dashboard" ?  (
-          <><div className="small text-uppercase text-white-50 user-dashboard__nav-title">
-          e-learning
-        </div>
         <div className="user-dashboard__nav">
-            <Link className="user-dashboard__nav-item" to="/memos">
+            <Link className="user-dashboard__nav-item" to="/dashboard">
               <GridIcon className="user-dashboard__nav-icon" size={18} />
               <span>記事一覧</span>
             </Link>
@@ -47,42 +40,20 @@ export default function Sidebar({ me, variant = "dashboard" }: Props) {
               <span>プロフィール一覧</span>
             </Link>
 
-            <Link className="user-dashboard__nav-item" to="/profiles/new">
+            <Link className="user-dashboard__nav-item" to="/videos">
               <UserIcon className="user-dashboard__nav-icon" size={18} />
               <span>動画投稿一覧</span>
             </Link>
-            <Link className="user-dashboard__nav-item" to="/memos/new">
+            <Link className="user-dashboard__nav-item" to="/tweets">
               <PlusSquareIcon className="user-dashboard__nav-icon" size={18} />
               <span>つぶやき一覧</span>
             </Link>
 
-            <Link className="user-dashboard__nav-item" to="/memos/new">
+            <Link className="user-dashboard__nav-item" to="inquiries">
               <PlusSquareIcon className="user-dashboard__nav-icon" size={18} />
               <span>問い合わせ</span>
             </Link>
-          </div></>
-        ) : (
-
-        <>
-          <div className="user-dashboard__nav">
-            <Link className="user-dashboard__nav-item" to="/memos">
-              <span>メモ一覧</span>
-            </Link>
-
-            <Link className="user-dashboard__nav-item" to="/profiles">
-              <span>プロフィール一覧</span>
-            </Link>
-
-            <Link className="user-dashboard__nav-item" to="/profiles/new">
-              <span>プロフィール作成</span>
-            </Link>
-
-            <Link className="user-dashboard__nav-item" to="/memos/new">
-              <span>メモ作成</span>
-            </Link>
           </div>
-        </>
-        )}
 
     </aside>
   );
