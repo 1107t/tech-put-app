@@ -10,12 +10,30 @@
   min-height: 100vh;
 }
 
+
 .user-dashboard__sidebar {
   width: 280px;
   background: #222;
   color: #fff;
   padding: 16px;
 }
+
+.user-dashboard__sidebar_size {
+  width: 30px;
+  height: 32px;
+}
+
+/* ヘッダー右上のユーザー丸 */
+.user-dashboard__header-avatar {
+  width: 28px;
+  height: 28px;
+}
+
+/* レッスンカード最大幅 */
+.user-dashboard__content {
+  max-width: 640px;
+}
+
 
 .user-dashboard__profile {
   margin-bottom: 20px;
@@ -32,7 +50,7 @@
 
 .user-dashboard__divider {
   height: 2px;
-  background: red;
+  background: #ef4444;
   margin-top: 8px;
 }
 
@@ -64,5 +82,8 @@
 }
 
 .user-dashboard__nav-icon {
+  width: 18px;
+  height: 18px;
   opacity: 0.9;
 }
+

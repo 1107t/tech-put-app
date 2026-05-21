@@ -142,7 +142,7 @@ export default function LoginPage() {
           <input
             id="remember_me"
             type="checkbox"
-            className="form-check-input"
+            className="form-check-inputtext"
             checked={remember}
             onChange={(e) => setRemember(e.target.checked)}
             disabled={loading}
