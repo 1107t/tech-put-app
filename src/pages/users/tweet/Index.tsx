@@ -18,6 +18,9 @@ type Flash = {
 };
 
 // ISO形式の日時文字列を「YYYY年MM月DD日 HH:mm」形式に変換するユーティリティ
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const MAX_FILES_PER_TWEET = 4;
+
 function formatDate(iso: string): string {
   const date = new Date(iso);
   const year = date.getFullYear();
@@ -42,28 +45,45 @@ function TweetsContent({ me }: { me: User }) {
   // 既存ツイートの画像表示用Object URL（tweetId → url[]）
   const [tweetImageUrls, setTweetImageUrls] = useState<Record<string, string[]>>({});
   const fileInputRef = useRef<HTMLInputElement | null>(null);  // ファイル選択inputへの参照
+  // Object URLのキャッシュ。変化したツイートのURLだけ差し替えてチラつきを防ぐ
+  const urlsRef = useRef<Record<string, string[]>>({});
 
   // マウント時につぶやき一覧を取得する
   useEffect(() => {
     (async () => setTweets(await getTweets()))();
   }, []);
 
-  // ツイート一覧が変わるたびに各ツイートの画像をObject URLに変換する
-  // Object URLはメモリを消費するため、ツイートが変わるタイミングで前回分を解放（revoke）する
+  // ツイート一覧が変わるたびに画像のObject URLを差分更新する
+  // 変化のないツイートは既存URLを再利用し、チラつきと不要なBlob再生成を防ぐ
   useEffect(() => {
-    const newUrls: Record<string, string[]> = {};
-    tweets.forEach((tweet) => {
-      if (tweet.images && tweet.images.length > 0) {
-        newUrls[tweet.id] = tweet.images.map((blob) => URL.createObjectURL(blob));
-      }
-    });
-    setTweetImageUrls(newUrls);
+    const prev = urlsRef.current;
+    const next: Record<string, string[]> = {};
 
-    // クリーンアップ: コンポーネントアンマウント時・tweets変更時にURLを解放してメモリリークを防ぐ
-    return () => {
-      Object.values(newUrls).flat().forEach((url) => URL.revokeObjectURL(url));
-    };
+    for (const tweet of tweets) {
+      if (!tweet.images?.length) continue;
+      if (prev[tweet.id] && prev[tweet.id].length === tweet.images.length) {
+        // 画像枚数が同じなら既存URLを再利用してチラつきを防ぐ
+        next[tweet.id] = prev[tweet.id];
+      } else {
+        // 変化したツイートの旧URLを解放してから新規生成する
+        prev[tweet.id]?.forEach((url) => URL.revokeObjectURL(url));
+        next[tweet.id] = tweet.images.map((blob) => URL.createObjectURL(blob));
+      }
+    }
+    // 一覧から消えたツイートのURLを解放する
+    for (const id of Object.keys(prev)) {
+      if (!next[id]) prev[id].forEach((url) => URL.revokeObjectURL(url));
+    }
+    urlsRef.current = next;
+    setTweetImageUrls(next);
   }, [tweets]);
+
+  // アンマウント時にすべてのObject URLを解放してメモリリークを防ぐ
+  useEffect(() => {
+    return () => {
+      Object.values(urlsRef.current).flat().forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, []);
 
   // 選択中の画像が変わるたびにプレビュー用Object URLを生成する
   // クリーンアップで前回のURLを解放してメモリリークを防ぐ
@@ -72,6 +92,13 @@ function TweetsContent({ me }: { me: User }) {
     setPreviewUrls(urls);
     return () => urls.forEach((url) => URL.revokeObjectURL(url));
   }, [selectedImages]);
+
+  // アンマウント時にフラッシュタイマーをクリアする（アンマウント後のstate更新によるReact警告を防ぐ）
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   // フラッシュメッセージを表示し、3秒後に自動消去する
   const showFlash = (type: Flash["type"], message: string) => {
@@ -82,11 +109,13 @@ function TweetsContent({ me }: { me: User }) {
 
   // ファイル選択ダイアログから画像を選択したときの処理
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files ?? []).filter((file) =>
-      file.type.startsWith("image/") // 画像ファイルのみ受け付ける
-    );
-    setSelectedImages((previous) => [...previous, ...files]);
-    event.target.value = ""; // 同じファイルを再選択できるようにリセット
+    const validFiles = Array.from(event.target.files ?? []).filter((file) => {
+      if (!file.type.startsWith('image/')) return false;
+      if (file.size > MAX_FILE_SIZE) { showFlash('error', `${file.name} は5MBを超えています`); return false; }
+      return true;
+    });
+    setSelectedImages((previous) => [...previous, ...validFiles].slice(0, MAX_FILES_PER_TWEET));
+    event.target.value = '';
   };
 
   // ドラッグ中にドロップ領域に入ったときの処理
@@ -102,10 +131,12 @@ function TweetsContent({ me }: { me: User }) {
   const handleDrop = (event: React.DragEvent) => {
     event.preventDefault();
     setIsDragging(false);
-    const files = Array.from(event.dataTransfer.files).filter((file) =>
-      file.type.startsWith("image/") // 画像ファイルのみ受け付ける
-    );
-    setSelectedImages((previous) => [...previous, ...files]);
+    const validFiles = Array.from(event.dataTransfer.files).filter((file) => {
+      if (!file.type.startsWith('image/')) return false;
+      if (file.size > MAX_FILE_SIZE) { showFlash('error', `${file.name} は5MBを超えています`); return false; }
+      return true;
+    });
+    setSelectedImages((previous) => [...previous, ...validFiles].slice(0, MAX_FILES_PER_TWEET));
   };
 
   // プレビューから特定の画像を削除する
@@ -119,26 +150,34 @@ function TweetsContent({ me }: { me: User }) {
     setEditContent(tweet.content);
   };
 
-  // 編集確定: 空文字はエラー、成功時はストア更新して一覧再取得
+  // 編集確定: 空文字はエラー、成功時はストア更新して一覧再取得。失敗時はエラーフラッシュを表示する
   const handleEditSave = async (id: string) => {
     if (!editContent.trim()) {
       showFlash("error", "内容を入力してください");
       return;
     }
-    await updateTweet(id, editContent.trim());
-    setEditingId(null);
-    setTweets(await getTweets());
-    showFlash("success", "つぶやきを更新しました。");
+    try {
+      await updateTweet(id, editContent.trim());
+      setEditingId(null);
+      setTweets(await getTweets());
+      showFlash("success", "つぶやきを更新しました。");
+    } catch (error) {
+      showFlash("error", error instanceof Error ? error.message : "保存に失敗しました");
+    }
   };
 
-  // 削除ボタン押下: ストアから削除して一覧を再取得
+  // 削除ボタン押下: ストアから削除して一覧を再取得。失敗時はエラーフラッシュを表示する
   const handleDelete = async (id: string) => {
-    await deleteTweet(id);
-    setTweets(await getTweets());
-    showFlash("success", "つぶやきを削除しました。");
+    try {
+      await deleteTweet(id);
+      setTweets(await getTweets());
+      showFlash("success", "つぶやきを削除しました。");
+    } catch (error) {
+      showFlash("error", error instanceof Error ? error.message : "削除に失敗しました");
+    }
   };
 
-  // 投稿ボタン押下: バリデーション → IndexedDBに保存 → 一覧を再取得 → フォームをリセット
+  // 投稿ボタン押下: バリデーション → IndexedDBに保存 → 一覧を再取得 → フォームをリセット。失敗時はエラーフラッシュを表示する
   const handleSubmit = async () => {
     if (!content.trim() && selectedImages.length === 0) {
       showFlash("error", "テキストまたは画像を入力してください");
@@ -155,12 +194,16 @@ function TweetsContent({ me }: { me: User }) {
       createdAt: new Date().toISOString(),
     };
 
-    await createTweet(tweet);
-    // フォームをリセット
-    setContent("");
-    setSelectedImages([]);
-    setTweets(await getTweets());
-    showFlash("success", "つぶやきを作成しました。");
+    try {
+      await createTweet(tweet);
+      // フォームをリセット
+      setContent("");
+      setSelectedImages([]);
+      setTweets(await getTweets());
+      showFlash("success", "つぶやきを作成しました。");
+    } catch (error) {
+      showFlash("error", error instanceof Error ? error.message : "保存に失敗しました");
+    }
   };
 
   return (
@@ -236,7 +279,11 @@ function TweetsContent({ me }: { me: User }) {
                         onChange={(e) => setEditContent(e.target.value)}
                         onKeyDown={(e) => {
                           // Cmd+Enter（Mac）/ Ctrl+Enter（Windows）で保存できる
-                          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleEditSave(tweet.id);
+                          // preventDefault でtextareaへの改行挿入を防いでから保存する
+                          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                            e.preventDefault();
+                            handleEditSave(tweet.id);
+                          }
                         }}
                       />
                       <div className="d-flex gap-2 justify-content-end">
@@ -328,7 +375,11 @@ function TweetsContent({ me }: { me: User }) {
               onChange={(e) => setContent(e.target.value)}
               onKeyDown={(e) => {
                 // Cmd+Enter（Mac）/ Ctrl+Enter（Windows）でも投稿できる
-                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit();
+                // preventDefault でtextareaへの改行挿入を防いでから投稿する
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                  e.preventDefault();
+                  handleSubmit();
+                }
               }}
             />
           </div>
