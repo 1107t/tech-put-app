@@ -3,7 +3,7 @@
 // UserLayout に認証・サイドバー・ヘッダーを委譲し、コンテンツのみ記述する。
 import { Link } from "react-router-dom";
 import UserLayout from "../../components/user/UserLayout";
-import { dashboardMenu } from "../../lib/userMenus";
+import { dashboardMenu } from "../../components/user/UserLayout";
 import "../../styles/pages/dashboard.css";
 
 // レッスン情報の型定義

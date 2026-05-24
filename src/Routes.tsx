@@ -9,7 +9,6 @@ import UserMessagePage from './pages/users/MessagePage';
 import UserPassreset from './pages/users/Passreset';
 import DashboardPage from './pages/users/DashboardPage';
 import TweetIndex from './pages/users/tweet/Index'; // tweet/ ディレクトリに移行（Rails-style）
-import ArticlePostPage from './pages/users/article/Post';
 
 // 管理者用ページ
 import AdminLoginPage from './pages/admins/AdminLoginPage';
@@ -36,7 +35,6 @@ function AppRoutes() {
         <Route path="/reset" element={<UserPassreset />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/tweets" element={<TweetIndex />} />
-        <Route path="/articles/new" element={<ArticlePostPage />} />
 
         {/* 管理者用ルート（固定パスを先に定義） */}
         <Route path="/admin/login" element={<AdminLoginPage />} />

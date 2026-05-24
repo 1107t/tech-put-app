@@ -8,7 +8,7 @@ import { createTweet, deleteTweet, getTweets, updateTweet } from "../../../lib/t
 import type { User } from "../../../lib/users";
 import type { Tweet } from "../../../lib/tweets";
 import UserLayout from "../../../components/user/UserLayout";
-import { dashboardMenu } from "../../../lib/userMenus";
+import { dashboardMenu } from "../../../components/user/UserLayout";
 import "../../../styles/pages/tweets.css";
 
 // フラッシュメッセージの型（成功=緑 / エラー=赤）
