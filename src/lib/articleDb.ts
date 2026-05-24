@@ -11,18 +11,23 @@ export type Article = {
   updatedAt: string;
 };
 
+let dbPromise: Promise<IDBDatabase> | null = null;
+
 function openDb(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = (e) => {
-      const db = (e.target as IDBOpenDBRequest).result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: "id", autoIncrement: true });
-      }
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
+  if (!dbPromise) {
+    dbPromise = new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = (e) => {
+        const db = (e.target as IDBOpenDBRequest).result;
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          db.createObjectStore(STORE_NAME, { keyPath: "id", autoIncrement: true });
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+  return dbPromise;
 }
 
 export async function createArticle(data: Omit<Article, "id" | "createdAt" | "updatedAt">): Promise<number> {
@@ -83,21 +88,28 @@ const SAMPLE_ARTICLES: Omit<Article, "id">[] = [
   { title: "HTML_CSS編(3) 簡単なホームページを作ってみよう。", subtitle: "HTML,CSS", body: "", createdAt: "2026-05-04T00:00:00.000Z", updatedAt: "2026-05-04T00:00:00.000Z" },
 ];
 
-export async function seedSampleArticles(): Promise<void> {
-  const db = await openDb();
-  const count = await new Promise<number>((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, "readonly");
-    const req = tx.objectStore(STORE_NAME).count();
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-  if (count > 0) return;
-  for (const a of SAMPLE_ARTICLES) {
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, "readwrite");
-      const req = tx.objectStore(STORE_NAME).add(a);
-      req.onsuccess = () => resolve();
-      req.onerror = () => reject(req.error);
-    });
+let seedPromise: Promise<void> | null = null;
+
+export function seedSampleArticles(): Promise<void> {
+  if (!seedPromise) {
+    seedPromise = (async () => {
+      const db = await openDb();
+      const count = await new Promise<number>((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, "readonly");
+        const req = tx.objectStore(STORE_NAME).count();
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+      if (count > 0) return;
+      for (const a of SAMPLE_ARTICLES) {
+        await new Promise<void>((resolve, reject) => {
+          const tx = db.transaction(STORE_NAME, "readwrite");
+          const req = tx.objectStore(STORE_NAME).add(a);
+          req.onsuccess = () => resolve();
+          req.onerror = () => reject(req.error);
+        });
+      }
+    })();
   }
+  return seedPromise;
 }

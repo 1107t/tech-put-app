@@ -9,7 +9,7 @@ export default function ArticleIndexPage() {
   const [articles, setArticles] = useState<Article[]>([]);
 
   const load = async () => {
-    await seedSampleArticles();
+    await seedSampleArticles();  // main.tsxで開始済みのseedを待つ
     const data = await getAllArticles();
     setArticles(data);
   };
