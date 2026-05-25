@@ -1,6 +1,6 @@
-import React, { useCallback, useLayoutEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 import "../../styles/pages/articlePost.css";
 
 type Props = {
@@ -21,70 +21,84 @@ export default function ArticleEditor({
   body, onBodyChange,
   submitLabel, onSubmit, onCancel,
 }: Props) {
-  const [editorHeight, setEditorHeight] = useState<number>(500);
-  const [textareaEl, setTextareaEl] = useState<HTMLTextAreaElement | null>(null);
-
-  const textareaRef = useCallback((el: HTMLTextAreaElement | null) => setTextareaEl(el), []);
-
-  useLayoutEffect(() => {
-    if (!textareaEl) return;
-    const observer = new ResizeObserver(() => setEditorHeight(textareaEl.offsetHeight));
-    observer.observe(textareaEl);
-    return () => observer.disconnect();
-  }, [textareaEl]);
-
   return (
-    <>
-      <div className="mb-3">
-        <input
-          type="text"
-          className="form-control"
-          placeholder="タイトル"
-          value={title}
-          onChange={(e) => onTitleChange(e.target.value)}
-        />
-      </div>
+    <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }}>
+      <div className="row mt-4">
 
-      <div className="mb-4">
-        <input
-          type="text"
-          className="form-control"
-          placeholder="サブタイトル"
-          value={subtitle}
-          onChange={(e) => onSubtitleChange(e.target.value)}
-        />
-      </div>
-
-      <div className="d-flex gap-3 mb-4">
-        <div className="article-editor-pane">
-          <div className="fw-semibold mb-1 small border-bottom pb-1">エディター</div>
-          <textarea
-            ref={textareaRef}
-            className="form-control article-editor-textarea"
-            placeholder="本文"
-            value={body}
-            onChange={(e) => onBodyChange(e.target.value)}
+        <div className="col-12 mb-2">
+          <input
+            type="text"
+            placeholder="タイトル"
+            className="form-control title-form"
+            value={title}
+            onChange={(e) => onTitleChange(e.target.value)}
           />
         </div>
-        <div className="article-preview-pane">
-          <div className="fw-semibold mb-1 small border-bottom pb-1">プレビュー</div>
-          <div
-            className="border p-2 bg-white article-preview-box"
-            style={{ "--preview-height": `${editorHeight}px` } as React.CSSProperties}
-          >
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{body}</ReactMarkdown>
+
+        <div className="col-12 mb-4">
+          <input
+            type="text"
+            placeholder="サブタイトル"
+            className="form-control subtitle-form"
+            value={subtitle}
+            onChange={(e) => onSubtitleChange(e.target.value)}
+          />
+        </div>
+
+        <div className="col-12 col-md-6 mb-3">
+          <div className="card card-outline card-info">
+            <div className="card-header">
+              <h3 className="card-title">エディター</h3>
+            </div>
+            <div className="card-body p-0">
+              <textarea
+                placeholder="本文"
+                className="form-control markdown-editor"
+                rows={30}
+                value={body}
+                onChange={(e) => onBodyChange(e.target.value)}
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="d-flex justify-content-end gap-2">
-        <button className="btn btn-primary" onClick={onSubmit}>
-          {submitLabel}
-        </button>
-        <button className="btn btn-outline-secondary" onClick={onCancel}>
-          キャンセル
-        </button>
+        <div className="col-12 col-md-6 mb-3 d-none d-md-block">
+          <div className="card card-outline card-info">
+            <div className="card-header">
+              <h3 className="card-title">プレビュー</h3>
+            </div>
+            <div className="card-body p-0">
+              <div className="article-preview-box">
+                <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeRaw]}
+                components={{
+                  img({ src, alt }) {
+                    return (
+                      <a href={src ?? "#"} target="_blank" rel="noopener noreferrer">
+                        {alt || "画像を表示"}
+                      </a>
+                    );
+                  },
+                }}
+              >
+                {body}
+              </ReactMarkdown>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-12 text-center my-3">
+          <button type="submit" className="btn btn-primary mx-2">
+            {submitLabel}
+          </button>
+          <button type="button" className="btn btn-secondary mx-2" onClick={onCancel}>
+            キャンセル
+          </button>
+        </div>
+
       </div>
-    </>
+    </form>
   );
 }

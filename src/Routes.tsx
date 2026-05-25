@@ -9,6 +9,7 @@ import ELearningPage from './pages/users/ELearningPage';
 import ArticlePostPage from './pages/users/article/Post';
 import ArticleIndexPage from './pages/users/article/Index';
 import ArticleEditPage from './pages/users/article/Edit';
+import ArticleShowPage from './pages/users/article/Show';
 
 // 管理者用ページ
 import AdminLoginPage from './pages/admins/AdminLoginPage';
@@ -36,6 +37,7 @@ function AppRoutes() {
         <Route path="/articles" element={<ArticleIndexPage />} />
         <Route path="/articles/new" element={<ArticlePostPage />} />
         <Route path="/articles/:id/edit" element={<ArticleEditPage />} />
+        <Route path="/articles/:id" element={<ArticleShowPage />} />
 
         {/* 管理者用ルート（固定パスを先に定義） */}
         <Route path="/admin/login" element={<AdminLoginPage />} />

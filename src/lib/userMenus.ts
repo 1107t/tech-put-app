@@ -5,7 +5,6 @@ export type MenuItem = {
 
 export const dashboardMenu: MenuItem[] = [
   { label: "記事一覧", to: "/articles" },
-  { label: "記事投稿", to: "/articles/new" },
   { label: "プロフィール一覧", to: "/profiles" },
   { label: "動画投稿一覧", to: "/videos" },
   { label: "つぶやき一覧", to: "/tweets" },

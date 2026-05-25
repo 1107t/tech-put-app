@@ -3,6 +3,11 @@
   display: flex;
 }
 
+.user-shell > main {
+  min-width: 0;
+  overflow-x: hidden;
+}
+
 .user-sidebar {
   width: 260px;
   height: 100vh;
@@ -24,4 +29,25 @@
   padding: 1rem;
   border-bottom: 1px solid #dee2e6;
   background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-title {
+  font-size: 1.15rem;
+}
+
+.header-action-link {
+  font-size: 1.15rem;
+  color: #6c757d;
+  text-decoration: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+.header-action-link:hover {
+  background-color: #e9ecef;
+  color: #6c757d;
+  text-decoration: none;
 }
