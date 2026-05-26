@@ -1,20 +1,21 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ESNext",                    // 最新のJS構文にコンパイル
     "useDefineForClassFields": true,
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "allowJs": false,
-    "skipLibCheck": true,
-    "esModuleInterop": false,
+    "allowJs": false,                      // JSファイルは対象外（TypeScriptのみ）
+    "skipLibCheck": true,                  // node_modules の型チェックをスキップして高速化
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "strict": true,
+    "strict": true,                        // 厳格な型チェックを有効化
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
-    "moduleResolution": "Node",
-    "resolveJsonModule": true,
+    // "bundler" は TypeScript 5.0 以降の機能。このプロジェクトは TS 4.9.5 のため "node" を使用
+    "moduleResolution": "node",
+    "resolveJsonModule": true,             // JSONファイルを import できるようにする
     "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx"
+    "noEmit": true,                        // コンパイル結果を出力しない（Viteがビルドを担当するため）
+    "jsx": "react-jsx"                     // React 17以降の新しいJSX変換を使用
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]

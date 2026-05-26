@@ -1,9 +1,13 @@
+// src/utils/indexedDB.ts
+// ブラウザ内蔵のIndexedDBを使ったユーザーデータの永続化ユーティリティ。
+// サーバー不要でブラウザ上にデータを保存・取得できる（学習目的の実装）。
+
 // データベース名とストア名
 const DB_NAME = 'TechPutDB';
 const DB_VERSION = 1;
 const STORE_NAME = 'users';
 
-// データベースの初期化
+// データベースの初期化：DBを開き、初回のみストアとインデックスを作成する
 export const initDB = (): Promise<IDBDatabase> => {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -11,13 +15,15 @@ export const initDB = (): Promise<IDBDatabase> => {
     request.onerror = () => reject(request.error);
     request.onsuccess = () => resolve(request.result);
 
+    // DBのバージョンアップ時（初回含む）にストア構造を定義する
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result;
-      
+
       if (!db.objectStoreNames.contains(STORE_NAME)) {
-        const objectStore = db.createObjectStore(STORE_NAME, { 
-          keyPath: 'id', 
-          autoIncrement: true 
+        // usersストアを作成し、idを主キー・emailを検索用インデックスに設定
+        const objectStore = db.createObjectStore(STORE_NAME, {
+          keyPath: 'id',
+          autoIncrement: true
         });
         objectStore.createIndex('email', 'email', { unique: true });
       }
@@ -77,16 +83,17 @@ export const getAllUsers = async (): Promise<UserData[]> => {
   });
 };
 
-// ユーザー認証（ログイン用）
+// ユーザー認証（ログイン用）：メールとパスワードが一致すればユーザー情報を返す
 export const authenticateUser = async (
-  email: string, 
+  email: string,
   password: string
 ): Promise<UserData | null> => {
   const user = await getUserByEmail(email);
-  
+
+  // パスワードが一致する場合のみ認証成功（本番ではハッシュ比較が必要）
   if (user && user.password === password) {
     return user;
   }
-  
+
   return null;
 };
