@@ -1,20 +1,20 @@
-import type { ReactNode } from "react";
+// src/components/user/UserHeader.tsx【修正】
+// ページ上部のヘッダーコンポーネント。ページタイトルとアバターアイコンを表示する。
+// UserLayout から呼び出され、headerTitle props でタイトルを受け取る。
 import UserAvatar from "./UserAvatar";
 import "../../styles/components/userLayout.css";
 
 type Props = {
-  title?: string;
-  action?: ReactNode;
+  title?: string; // ヘッダーに表示するページタイトル（省略可）
 };
 
-export default function UserHeader({ title, action }: Props) {
+export default function UserHeader({ title }: Props) {
   return (
     <div className="user-header">
-      <span className="header-title">≡ {title}</span>
-      <div className="d-flex align-items-center gap-3">
-        {action}
-        <UserAvatar size="sm" />
-      </div>
+      {/* ページタイトル: ハンバーガーアイコン風の「≡」と組み合わせて表示 */}
+      <span>≡ {title}</span>
+      {/* 右端にアバターアイコンを表示 */}
+      <UserAvatar size="sm" />
     </div>
   );
 }

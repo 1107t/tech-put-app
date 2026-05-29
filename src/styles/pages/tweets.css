@@ -1,0 +1,164 @@
+/* =========================
+   Tweets Page (user)
+   ========================= */
+
+/* つぶやきカード: ホバー時にシャドウを強調してインタラクティブ感を出す */
+.tweets-page__tweet-card {
+  border-radius: 8px;
+  transition: box-shadow 0.15s ease;
+}
+
+.tweets-page__tweet-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ユーザーアバター（画像未実装のため背景色で代替） */
+.tweets-page__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #9ca3af;
+  flex-shrink: 0;
+}
+
+/* コメント・いいねなどのアクションボタン共通スタイル */
+.tweets-page__action-btn {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 0.85rem;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tweets-page__action-btn:hover {
+  color: #374151;
+}
+
+/* ユーザー名のフォントサイズ */
+.tweets-page__user-name {
+  font-size: 0.9rem;
+}
+
+/* 投稿日時のフォントサイズ */
+.tweets-page__date {
+  font-size: 0.75rem;
+}
+
+/* つぶやき本文: 改行を保持して表示 */
+.tweets-page__body {
+  white-space: pre-wrap;
+}
+
+/* 一覧エリア: max-width を設けず画面幅いっぱいに広げる。固定フォーム分の余白を下に確保 */
+.tweets-page__content {
+  width: 100%;
+  padding-bottom: 160px; /* 固定フォームの高さ分だけ下余白を確保（画像プレビュー時も隠れないよう大きめに） */
+}
+
+/* ==================
+   ツイートの添付画像
+   ================== */
+
+/* ツイートカード内の画像グリッド: 複数枚を横並びで表示 */
+.tweets-page__image-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ツイートカード内の各画像: 最大幅を設けてアスペクト比を維持 */
+.tweets-page__tweet-image {
+  max-width: 200px;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+/* ==================
+   下部固定フォーム
+   ================== */
+
+/* 固定フォーム外枠: サイドバー幅(260px)を除いた右側領域の底部に固定する */
+.tweets-page__fixed-form {
+  position: fixed;
+  bottom: 0;
+  left: 260px; /* サイドバーの幅分だけ右にずらす */
+  right: 0;
+  background: #fff;
+  border-top: 1px solid #dee2e6;
+  z-index: 100;
+}
+
+/* 固定フォームの内側: 画面幅いっぱいに広げ、左右に適切な余白を設ける */
+.tweets-page__fixed-form-inner {
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+}
+
+/* ドラッグ&ドロップ領域: 通常時は視覚的変化なし */
+.tweets-page__drop-zone {
+  border-radius: 4px;
+  transition: background 0.15s ease, border 0.15s ease;
+}
+
+/* ドラッグ中: 背景色を変えてドロップ可能であることをユーザーに伝える */
+.tweets-page__drop-zone--active {
+  background: #eff6ff;
+  outline: 2px dashed #3b82f6;
+  outline-offset: 2px;
+}
+
+/* ==================
+   画像プレビュー
+   ================== */
+
+/* プレビューグリッド: 選択済み画像を横並びで表示 */
+.tweets-page__preview-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* プレビュー1枚の外枠: ×ボタンを重ねるために relative にする */
+.tweets-page__preview-item {
+  position: relative;
+  display: inline-block;
+}
+
+/* プレビュー画像: 正方形に切り抜いて表示 */
+.tweets-page__preview-image {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+  display: block;
+}
+
+/* ×ボタン: 画像の右上に重ねて表示 */
+.tweets-page__preview-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  font-size: 0.7rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tweets-page__preview-remove:hover {
+  background: #dc2626;
+}

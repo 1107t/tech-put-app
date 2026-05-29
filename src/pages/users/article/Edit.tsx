@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { dashboardMenu } from "../../../lib/userMenus";
-import UserLayout from "../../../components/user/UserLayout";
+import UserLayout, { dashboardMenu } from "../../../components/user/UserLayout";
 import ArticleEditor from "../../../components/user/ArticleEditor";
 import { getArticle, updateArticle } from "../../../lib/articleDb";
 
@@ -37,22 +36,26 @@ export default function ArticleEditPage() {
   if (notFound) {
     return (
       <UserLayout menu={dashboardMenu} headerTitle="記事編集">
-        <p className="text-danger">記事が見つかりませんでした。</p>
+        {(_me) => <p className="text-danger">記事が見つかりませんでした。</p>}
       </UserLayout>
     );
   }
 
   return (
     <UserLayout menu={dashboardMenu} headerTitle="記事編集">
-      <h2 className="h5 mb-4">記事編集</h2>
-      <ArticleEditor
-        title={title} onTitleChange={setTitle}
-        subtitle={subtitle} onSubtitleChange={setSubtitle}
-        body={body} onBodyChange={setBody}
-        submitLabel="更新"
-        onSubmit={handleUpdate}
-        onCancel={() => navigate("/articles")}
-      />
+      {(_me) => (
+        <>
+          <h2 className="h5 mb-4">記事編集</h2>
+          <ArticleEditor
+            title={title} onTitleChange={setTitle}
+            subtitle={subtitle} onSubtitleChange={setSubtitle}
+            body={body} onBodyChange={setBody}
+            submitLabel="更新"
+            onSubmit={handleUpdate}
+            onCancel={() => navigate("/articles")}
+          />
+        </>
+      )}
     </UserLayout>
   );
 }

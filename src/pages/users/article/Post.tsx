@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { dashboardMenu } from "../../../lib/userMenus";
-import UserLayout from "../../../components/user/UserLayout";
+import UserLayout, { dashboardMenu } from "../../../components/user/UserLayout";
 import ArticleEditor from "../../../components/user/ArticleEditor";
 import { createArticle } from "../../../lib/articleDb";
 
@@ -19,15 +18,19 @@ export default function ArticlePostPage() {
 
   return (
     <UserLayout menu={dashboardMenu} headerTitle="記事投稿">
-      <h2 className="h5 mb-4">記事投稿</h2>
-      <ArticleEditor
-        title={title} onTitleChange={setTitle}
-        subtitle={subtitle} onSubtitleChange={setSubtitle}
-        body={body} onBodyChange={setBody}
-        submitLabel="投稿"
-        onSubmit={handleSubmit}
-        onCancel={() => navigate("/articles")}
-      />
+      {(_me) => (
+        <>
+          <h2 className="h5 mb-4">記事投稿</h2>
+          <ArticleEditor
+            title={title} onTitleChange={setTitle}
+            subtitle={subtitle} onSubtitleChange={setSubtitle}
+            body={body} onBodyChange={setBody}
+            submitLabel="投稿"
+            onSubmit={handleSubmit}
+            onCancel={() => navigate("/articles")}
+          />
+        </>
+      )}
     </UserLayout>
   );
 }

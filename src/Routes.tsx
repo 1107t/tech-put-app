@@ -1,3 +1,5 @@
+// src/Routes.tsx
+// アプリ全体のルーティング定義。URLパスとページコンポーネントを対応付ける。
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 // 一般ユーザー用ページ
@@ -5,7 +7,8 @@ import LoginPage from './pages/users/LoginPage';
 import UserSignUpPage from './pages/users/SignUpPage';
 import UserMessagePage from './pages/users/MessagePage';
 import UserPassreset from './pages/users/Passreset';
-import ELearningPage from './pages/users/ELearningPage';
+import DashboardPage from './pages/users/DashboardPage';
+import TweetIndex from './pages/users/tweet/Index';
 import ArticlePostPage from './pages/users/article/Post';
 import ArticleIndexPage from './pages/users/article/Index';
 import ArticleEditPage from './pages/users/article/Edit';
@@ -21,6 +24,7 @@ import AdminPage from './pages/adminpage';
 import AdminDetail from './pages/admins/AdminDetail';
 import AdminUsersPage from './pages/admins/AdminUsersPage';
 
+// アプリのルーティングを管理するコンポーネント。全ページのURL設定をここで一元管理する。
 function AppRoutes() {
   return (
     <Router>
@@ -33,7 +37,8 @@ function AppRoutes() {
         <Route path="/signup" element={<UserSignUpPage />} />
         <Route path="/message/:type" element={<UserMessagePage />} />
         <Route path="/reset" element={<UserPassreset />} />
-        <Route path="/dashboard" element={<ELearningPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/tweets" element={<TweetIndex />} />
         <Route path="/articles" element={<ArticleIndexPage />} />
         <Route path="/articles/new" element={<ArticlePostPage />} />
         <Route path="/articles/:id/edit" element={<ArticleEditPage />} />
