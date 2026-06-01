@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
 import UserLayout, { dashboardMenu } from "../../../components/user/UserLayout";
 import { getArticle, deleteArticle, seedSampleArticles, type Article } from "../../../lib/articleDb";
 import "../../../styles/pages/articleShow.css";
@@ -11,25 +12,42 @@ export default function ArticleShowPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [article, setArticle] = useState<Article | null>(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const load = async () => {
-      await seedSampleArticles();
-      const data = await getArticle(Number(id));
-      if (!data) {
-        navigate("/articles");
-        return;
+      try {
+        await seedSampleArticles();
+        const data = await getArticle(Number(id));
+        if (!data) {
+          navigate("/articles");
+          return;
+        }
+        setArticle(data);
+      } catch {
+        setError("記事の読み込みに失敗しました。");
       }
-      setArticle(data);
     };
     load();
-  }, [id]);
+  }, [id, navigate]);
 
   const handleDelete = async () => {
     if (!window.confirm("この記事を削除しますか？")) return;
-    await deleteArticle(Number(id));
-    navigate("/articles");
+    try {
+      await deleteArticle(Number(id));
+      navigate("/articles");
+    } catch {
+      setError("記事の削除に失敗しました。");
+    }
   };
+
+  if (error) {
+    return (
+      <UserLayout menu={dashboardMenu} headerTitle="記事詳細">
+        {(_me) => <p className="text-danger">{error}</p>}
+      </UserLayout>
+    );
+  }
 
   if (!article) return null;
 
@@ -58,7 +76,7 @@ export default function ArticleShowPage() {
                 <div className="article-show-content">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
-                    rehypePlugins={[rehypeRaw]}
+                    rehypePlugins={[rehypeRaw, rehypeSanitize]}
                     components={{
                       img({ src, alt }) {
                         return (
@@ -66,6 +84,25 @@ export default function ArticleShowPage() {
                             {alt || "画像を表示"}
                           </a>
                         );
+                      },
+                      code({ className, children, ...props }) {
+                        const match = /language-(\S+)/.exec(className || "");
+                        const langStr = match ? match[1] : "";
+                        const [lang, filename] = langStr.includes(":") ? langStr.split(":") : [langStr, ""];
+                        const isBlock = !props.ref && String(children).includes("\n");
+                        if (isBlock) {
+                          return (
+                            <div>
+                              {filename && (
+                                <div className="code-filename">{filename}</div>
+                              )}
+                              <pre className={lang ? `language-${lang}` : undefined}>
+                                <code>{children}</code>
+                              </pre>
+                            </div>
+                          );
+                        }
+                        return <code className={className}>{children}</code>;
                       },
                     }}
                   >

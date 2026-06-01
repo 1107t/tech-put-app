@@ -9,11 +9,16 @@ export default function ArticlePostPage() {
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [body, setBody] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async () => {
     if (!title.trim()) return;
-    await createArticle({ title, subtitle, body });
-    navigate("/articles");
+    try {
+      await createArticle({ title, subtitle, body });
+      navigate("/articles");
+    } catch {
+      setError("記事の保存に失敗しました。");
+    }
   };
 
   return (
@@ -21,6 +26,7 @@ export default function ArticlePostPage() {
       {(_me) => (
         <>
           <h2 className="h5 mb-4">記事投稿</h2>
+          {error && <p className="text-danger">{error}</p>}
           <ArticleEditor
             title={title} onTitleChange={setTitle}
             subtitle={subtitle} onSubtitleChange={setSubtitle}

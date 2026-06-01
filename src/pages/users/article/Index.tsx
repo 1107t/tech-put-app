@@ -18,32 +18,50 @@ export default function ArticleIndexPage() {
   const navigate = useNavigate();
   const [articles, setArticles] = useState<Article[]>([]);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const [error, setError] = useState("");
 
   const load = async () => {
-    await seedSampleArticles();  // main.tsxで開始済みのseedを待つ
-    const data = await getAllArticles();
-    setArticles(data);
+    try {
+      await seedSampleArticles();
+      const data = await getAllArticles();
+      setArticles(data);
+    } catch {
+      setError("記事の読み込みに失敗しました。");
+    }
   };
 
   useEffect(() => {
     load();
   }, []);
 
+  useEffect(() => {
+    if (openMenuId === null) return;
+    const closeMenu = () => setOpenMenuId(null);
+    document.addEventListener("click", closeMenu);
+    return () => document.removeEventListener("click", closeMenu);
+  }, [openMenuId]);
+
   const handleDelete = async (id: number) => {
     if (!window.confirm("この記事を削除しますか？")) return;
-    await deleteArticle(id);
-    setOpenMenuId(null);
-    await load();
+    try {
+      await deleteArticle(id);
+      setOpenMenuId(null);
+      await load();
+    } catch {
+      setError("記事の削除に失敗しました。");
+    }
   };
 
   return (
-    <UserLayout menu={dashboardMenu} headerTitle="投稿した記事一覧">
+    <UserLayout
+      menu={dashboardMenu}
+      headerTitle="投稿した記事一覧"
+      headerAction={<Link to="/articles/new" className="header-action-link">記事投稿</Link>}
+    >
       {(_me) => (
         <>
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <h2 className="article-list-title mb-0">記事一覧</h2>
-            <Link to="/articles/new" className="btn btn-primary btn-sm">記事投稿</Link>
-          </div>
+          {error && <p className="text-danger">{error}</p>}
+          <h2 className="article-list-title mb-4">記事一覧</h2>
 
           <div className="articles-table-wrapper">
             <table className="table articles-table table-hover">

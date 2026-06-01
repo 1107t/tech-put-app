@@ -68,7 +68,7 @@
   width: 40px;
 }
 
-.dropdown-menu {
+.articles-table .dropdown-menu {
   position: absolute;
   right: 0;
   top: 100%;
@@ -83,8 +83,8 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.dropdown-menu li a,
-.dropdown-menu li .delete-btn {
+.articles-table .dropdown-menu li a,
+.articles-table .dropdown-menu li .delete-btn {
   display: block;
   padding: 8px 16px;
   color: rgb(33, 37, 41);
@@ -97,7 +97,7 @@
   cursor: pointer;
 }
 
-.dropdown-menu li a:hover,
-.dropdown-menu li .delete-btn:hover {
+.articles-table .dropdown-menu li a:hover,
+.articles-table .dropdown-menu li .delete-btn:hover {
   background-color: #f8f9fa;
 }

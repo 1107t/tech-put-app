@@ -58,6 +58,23 @@
   padding: 0;
 }
 
+/* コードブロックのファイル名ラベル */
+.article-show-content .code-filename {
+  background-color: #e0e4e8;
+  border: 1px solid #d0d7de;
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  padding: 4px 12px;
+  font-size: 0.8em;
+  font-family: monospace;
+  color: #555;
+}
+
+.article-show-content .code-filename + pre {
+  border-radius: 0 0 6px 6px;
+  margin-top: 0;
+}
+
 .article-show-content table {
   border-collapse: collapse;
   width: 100%;
@@ -68,4 +85,13 @@
 .article-show-content td {
   border: 1px solid #dee2e6;
   padding: 8px 12px;
+}
+
+.article-show-content th {
+  background-color: #f6f8fa;
+  font-weight: 600;
+}
+
+.article-show-content tr:nth-child(even) {
+  background-color: #f9f9f9;
 }

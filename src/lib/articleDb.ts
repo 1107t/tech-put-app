@@ -46,7 +46,14 @@ export async function getAllArticles(): Promise<Article[]> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, "readonly");
     const req = tx.objectStore(STORE_NAME).getAll();
-    req.onsuccess = () => resolve((req.result as Article[]).reverse());
+    req.onsuccess = () => {
+      const articles = req.result as Article[];
+      resolve(
+        [...articles].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )
+      );
+    };
     req.onerror = () => reject(req.error);
   });
 }

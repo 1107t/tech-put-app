@@ -50,6 +50,39 @@
   padding: 12px;
 }
 
+/* プレビュー内見出し */
+.article-preview-box h1,
+.article-preview-box h2,
+.article-preview-box h3,
+.article-preview-box h4,
+.article-preview-box h5 {
+  margin: 2rem 0 1rem;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #d0cece;
+}
+
+/* プレビュー内テーブル */
+.article-preview-box table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.article-preview-box th,
+.article-preview-box td {
+  border: 1px solid #dee2e6;
+  padding: 8px 12px;
+}
+
+.article-preview-box th {
+  background-color: #f6f8fa;
+  font-weight: 600;
+}
+
+.article-preview-box tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
 /* プレビュー内コードブロック */
 .article-preview-box pre {
   background-color: #f6f8fa;
@@ -73,4 +106,21 @@
 .article-preview-box pre code {
   background: none;
   padding: 0;
+}
+
+/* コードブロックのファイル名ラベル */
+.article-preview-box .code-filename {
+  background-color: #e0e4e8;
+  border: 1px solid #d0d7de;
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  padding: 4px 12px;
+  font-size: 0.8em;
+  font-family: monospace;
+  color: #555;
+}
+
+.article-preview-box .code-filename + pre {
+  border-radius: 0 0 6px 6px;
+  margin-top: 0;
 }

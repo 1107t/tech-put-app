@@ -1,6 +1,7 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
 import "../../styles/pages/articlePost.css";
 
 type Props = {
@@ -71,7 +72,7 @@ export default function ArticleEditor({
               <div className="article-preview-box">
                 <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeRaw]}
+                rehypePlugins={[rehypeRaw, rehypeSanitize]}
                 components={{
                   img({ src, alt }) {
                     return (
@@ -79,6 +80,25 @@ export default function ArticleEditor({
                         {alt || "画像を表示"}
                       </a>
                     );
+                  },
+                  code({ className, children, ...props }) {
+                    const match = /language-(\S+)/.exec(className || "");
+                    const langStr = match ? match[1] : "";
+                    const [lang, filename] = langStr.includes(":") ? langStr.split(":") : [langStr, ""];
+                    const isBlock = !props.ref && String(children).includes("\n");
+                    if (isBlock) {
+                      return (
+                        <div>
+                          {filename && (
+                            <div className="code-filename">{filename}</div>
+                          )}
+                          <pre className={lang ? `language-${lang}` : undefined}>
+                            <code>{children}</code>
+                          </pre>
+                        </div>
+                      );
+                    }
+                    return <code className={className}>{children}</code>;
                   },
                 }}
               >
