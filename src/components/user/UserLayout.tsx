@@ -24,12 +24,13 @@ export const dashboardMenu: MenuItem[] = [
 ];
 
 type Props = {
-  menu: MenuItem[];                        // サイドバーに表示するメニュー項目
-  headerTitle?: string;                    // ヘッダーに表示するページタイトル
-  children: (me: User) => React.ReactNode; // render-prop: ログイン中ユーザーを受け取りコンテンツを返す
+  menu: MenuItem[];
+  headerTitle?: string;
+  headerAction?: React.ReactNode;
+  children: (me: User) => React.ReactNode;
 };
 
-export default function UserLayout({ menu, headerTitle, children }: Props) {
+export default function UserLayout({ menu, headerTitle, headerAction, children }: Props) {
   // 認証チェック: 未ログインなら /login へリダイレクト、ログアウト処理も提供
   const { me, handleLogout } = useRequireAuth();
 
@@ -80,7 +81,7 @@ export default function UserLayout({ menu, headerTitle, children }: Props) {
 
       <main className="flex-grow-1 bg-light">
         {/* 上部ヘッダー: ページタイトルとアバター */}
-        <UserHeader title={headerTitle} />
+        <UserHeader title={headerTitle} action={headerAction} />
         {/* render-prop で me を渡し、各ページのコンテンツを描画する */}
         <div className="p-4">{children(me)}</div>
       </main>
