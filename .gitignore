@@ -17,6 +17,10 @@ dist-ssr
 .claude/
 CLAUDE.md
 
+# Nested git repos (untracked)
+claude_code_rule_md
+pdca-cli
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
