@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import type { User } from "../../lib/users";
+import type { User } from "../../lib/userTypes";
 import type { MenuItem } from "../../lib/userMenus";
 import "../../styles/components/userLayout.css";
 import "../../styles/components/userAvatar.css";

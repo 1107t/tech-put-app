@@ -1,5 +1,9 @@
+import axios from 'axios'
 import { api, tokenStorage } from './api'
 import type { User, GenderValue } from './userTypes'
+
+// TODO: httpOnly Cookie 移行時に各関数内の tokenStorage.setXxx() / removeXxx() を削除する。
+//   Rails がレスポンスで Set-Cookie するため、フロント側での token 保存・削除は不要になる。
 
 export async function signup(params: {
   name: string
@@ -30,8 +34,11 @@ export async function getCurrentUser(): Promise<User | null> {
   try {
     const res = await api.get<{ user: User }>('/auth/me')
     return res.data.user
-  } catch {
-    tokenStorage.removeUser()
-    return null
+  } catch (err) {
+    if (axios.isAxiosError(err) && err.response?.status === 401) {
+      tokenStorage.removeUser()
+      return null
+    }
+    throw err
   }
 }

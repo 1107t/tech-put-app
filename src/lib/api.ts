@@ -9,11 +9,16 @@ export const TOKEN_KEYS = {
   manager: 'manager_token',
 } as const
 
+// TODO: httpOnly Cookie 移行時に withCredentials: true を追加する。
+//   これにより Cookie がクロスオリジンリクエストでも自動付与される。
+//   Rails 側: cookies.signed[:token] を設定し SameSite: :strict + Secure を必ず付ける。
 export const api = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
 })
 
+// TODO: httpOnly Cookie 移行時にこの request interceptor ごと削除する。
+//   Cookie はブラウザが自動付与するため Authorization ヘッダーの手動付与は不要になる。
 // リクエスト時にトークンを自動付与（URL パスでロールを判定）
 api.interceptors.request.use((config) => {
   const userToken    = localStorage.getItem(TOKEN_KEYS.user)
@@ -67,6 +72,9 @@ export function apiWithToken(token: string) {
   })
 }
 
+// TODO: httpOnly Cookie 移行時に tokenStorage ごと削除する。
+//   localStorage へのトークン保存は XSS でトークンが盗まれるリスクがある。
+//   移行後はブラウザの Cookie 管理に委ねるため、このユーティリティは不要になる。
 // トークン操作ユーティリティ
 export const tokenStorage = {
   getUser:    ()          => localStorage.getItem(TOKEN_KEYS.user),

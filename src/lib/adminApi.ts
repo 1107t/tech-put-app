@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { api, tokenStorage } from './api'
 import type { AdminUser } from './userTypes'
 
@@ -7,6 +8,9 @@ export interface Admin {
   email: string
   createdAt: string
 }
+
+// TODO: httpOnly Cookie 移行時に各関数内の tokenStorage.setXxx() / removeXxx() を削除する。
+//   Rails がレスポンスで Set-Cookie するため、フロント側での token 保存・削除は不要になる。
 
 export async function adminLogin(email: string, password: string): Promise<Admin> {
   const res = await api.post<{ token: string; admin: Admin }>('/admin/auth/login', { email, password })
@@ -25,9 +29,12 @@ export async function getCurrentAdmin(): Promise<Admin | null> {
   try {
     const res = await api.get<{ admin: Admin }>('/admin/auth/me')
     return res.data.admin
-  } catch {
-    tokenStorage.removeAdmin()
-    return null
+  } catch (err) {
+    if (axios.isAxiosError(err) && err.response?.status === 401) {
+      tokenStorage.removeAdmin()
+      return null
+    }
+    throw err
   }
 }
 

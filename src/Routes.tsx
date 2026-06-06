@@ -49,6 +49,9 @@ function AppRoutes() {
 
         <Route path="/adminpage" element={<AdminPage />} />
 
+        {/* TODO(manager): マネージャー用ルートを追加する
+            /manager/login, /manager/dashboard など admin セクションに倣って実装 */}
+
         {/* 404ページ */}
         <Route path="*" element={<div>404 - ページが見つかりません</div>} />
       </Routes>
