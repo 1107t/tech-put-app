@@ -89,7 +89,7 @@ export default function ArticleIndexPage() {
                       <button
                         className="btn menu-btn"
                         onClick={() =>
-                          setOpenMenuId(openMenuId === article.id! ? null : article.id!)
+                          setOpenMenuId(openMenuId === article.id ? null : article.id)
                         }
                       >
                         ︙
@@ -107,7 +107,7 @@ export default function ArticleIndexPage() {
                           <li>
                             <button
                               className="nav-link delete-btn"
-                              onClick={() => handleDelete(article.id!)}
+                              onClick={() => handleDelete(article.id)}
                             >
                               削除
                             </button>

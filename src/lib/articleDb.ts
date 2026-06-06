@@ -2,11 +2,14 @@ const DB_NAME = "tech-put-db";
 const STORE_NAME = "articles";
 const DB_VERSION = 1;
 
-export type Article = {
-  id?: number;
+export type ArticleInput = {
   title: string;
   subtitle: string;
   body: string;
+};
+
+export type Article = ArticleInput & {
+  id: number;
   createdAt: string;
   updatedAt: string;
 };
@@ -30,7 +33,7 @@ function openDb(): Promise<IDBDatabase> {
   return dbPromise;
 }
 
-export async function createArticle(data: Omit<Article, "id" | "createdAt" | "updatedAt">): Promise<number> {
+export async function createArticle(data: ArticleInput): Promise<number> {
   const db = await openDb();
   const now = new Date().toISOString();
   return new Promise((resolve, reject) => {
@@ -68,13 +71,28 @@ export async function getArticle(id: number): Promise<Article | undefined> {
   });
 }
 
-export async function updateArticle(id: number, data: Omit<Article, "id" | "createdAt" | "updatedAt"> & { createdAt: string }): Promise<void> {
+export async function updateArticle(id: number, data: ArticleInput): Promise<void> {
   const db = await openDb();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, "readwrite");
-    const req = tx.objectStore(STORE_NAME).put({ ...data, id, updatedAt: new Date().toISOString() });
-    req.onsuccess = () => resolve();
-    req.onerror = () => reject(req.error);
+    const store = tx.objectStore(STORE_NAME);
+    const getReq = store.get(id);
+    getReq.onsuccess = () => {
+      const existing = getReq.result as Article | undefined;
+      if (!existing) {
+        reject(new Error("記事が見つかりません"));
+        return;
+      }
+      const putReq = store.put({
+        ...existing,
+        ...data,
+        id,
+        updatedAt: new Date().toISOString(),
+      });
+      putReq.onsuccess = () => resolve();
+      putReq.onerror = () => reject(putReq.error);
+    };
+    getReq.onerror = () => reject(getReq.error);
   });
 }
 

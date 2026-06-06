@@ -12,7 +12,7 @@ export default function ArticlePostPage() {
   const [error, setError] = useState("");
 
   const handleSubmit = async () => {
-    if (!title.trim()) return;
+    if (!title.trim()) { setError("タイトルを入力してください。"); return; }
     try {
       await createArticle({ title, subtitle, body });
       navigate("/articles");

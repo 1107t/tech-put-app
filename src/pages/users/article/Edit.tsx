@@ -10,7 +10,6 @@ export default function ArticleEditPage() {
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [body, setBody] = useState("");
-  const [createdAt, setCreatedAt] = useState("");
   const [notFound, setNotFound] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState("");
@@ -26,16 +25,16 @@ export default function ArticleEditPage() {
         setTitle(article.title);
         setSubtitle(article.subtitle);
         setBody(article.body);
-        setCreatedAt(article.createdAt);
         setLoaded(true);
       })
       .catch(() => setError("記事の読み込みに失敗しました。"));
   }, [id]);
 
   const handleUpdate = async () => {
-    if (!title.trim() || !id) return;
+    if (!title.trim()) { setError("タイトルを入力してください。"); return; }
+    if (!id) return;
     try {
-      await updateArticle(Number(id), { title, subtitle, body, createdAt });
+      await updateArticle(Number(id), { title, subtitle, body });
       navigate("/articles");
     } catch {
       setError("記事の更新に失敗しました。");

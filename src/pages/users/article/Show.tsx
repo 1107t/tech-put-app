@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeRaw from "rehype-raw";
-import rehypeSanitize from "rehype-sanitize";
 import UserLayout, { dashboardMenu } from "../../../components/user/UserLayout";
+import MarkdownView from "../../../components/user/MarkdownView";
 import { getArticle, deleteArticle, seedSampleArticles, type Article } from "../../../lib/articleDb";
 import "../../../styles/pages/articleShow.css";
 
@@ -74,40 +71,7 @@ export default function ArticleShowPage() {
                 </div>
                 <hr />
                 <div className="article-show-content">
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    rehypePlugins={[rehypeRaw, rehypeSanitize]}
-                    components={{
-                      img({ src, alt }) {
-                        return (
-                          <a href={src ?? "#"} target="_blank" rel="noopener noreferrer">
-                            {alt || "画像を表示"}
-                          </a>
-                        );
-                      },
-                      code({ className, children, ...props }) {
-                        const match = /language-(\S+)/.exec(className || "");
-                        const langStr = match ? match[1] : "";
-                        const [lang, filename] = langStr.includes(":") ? langStr.split(":") : [langStr, ""];
-                        const isBlock = !props.ref && String(children).includes("\n");
-                        if (isBlock) {
-                          return (
-                            <div>
-                              {filename && (
-                                <div className="code-filename">{filename}</div>
-                              )}
-                              <pre className={lang ? `language-${lang}` : undefined}>
-                                <code>{children}</code>
-                              </pre>
-                            </div>
-                          );
-                        }
-                        return <code className={className}>{children}</code>;
-                      },
-                    }}
-                  >
-                    {article.body}
-                  </ReactMarkdown>
+                  <MarkdownView body={article.body} />
                 </div>
               </div>
             </div>
