@@ -11,10 +11,15 @@ node_modules
 dist
 dist-ssr
 *.local
+.env.production
 
 # Claude Code
 .claude/
 CLAUDE.md
+
+# Nested git repos (untracked)
+claude_code_rule_md
+pdca-cli
 
 # Editor directories and files
 .vscode/*
@@ -26,3 +31,4 @@ CLAUDE.md
 *.njsproj
 *.sln
 *.sw?
+teac-output-new

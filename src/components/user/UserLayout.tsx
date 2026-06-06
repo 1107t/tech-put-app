@@ -2,7 +2,7 @@
 // サイドバー・ヘッダー・メインコンテンツを組み合わせたページ共通レイアウト。
 // render-prop パターンで me を子に渡すため、子側で useRequireAuth を二重呼び出しする必要がない。
 import { NavLink } from "react-router-dom";
-import type { User } from "../../lib/users";
+import type { User } from "../../lib/userTypes";
 import { useRequireAuth } from "../../lib/useRequireAuth";
 import UserHeader from "./UserHeader";
 import "../../styles/components/userLayout.css";

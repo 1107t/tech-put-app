@@ -1,9 +1,9 @@
-// src/pages/admins/AdminLoginPage.tsx
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
 import { MailIcon, LockIcon } from "../../components/Icons";
-import { adminLogin } from "../../lib/adminStore";
+import { adminLogin, getCurrentAdmin } from "../../lib/adminApi";
+import { getApiErrorMessage } from "../../lib/api";
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
@@ -15,20 +15,13 @@ export default function AdminLoginPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
+    const saved = localStorage.getItem("admin_remember_email");
+    if (saved) setEmail(saved);
 
-    const loadRememberedEmail = () => {
-      if (cancelled) return;
-      const saved = localStorage.getItem("admin_remember_email");
-      if (saved) setEmail(saved);
-    };
-
-    loadRememberedEmail();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    getCurrentAdmin().then((admin) => {
+      if (admin) navigate("/admin/dashboard", { replace: true });
+    });
+  }, [navigate]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -47,9 +40,7 @@ export default function AdminLoginPage() {
 
       navigate("/admin/dashboard", { replace: true });
     } catch (err) {
-      const msg =
-        err instanceof Error ? err.message : "不明なエラーが発生しました。";
-      setErrorMsg(msg);
+      setErrorMsg(getApiErrorMessage(err, "ログインに失敗しました。"));
     } finally {
       setLoading(false);
     }

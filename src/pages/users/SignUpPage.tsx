@@ -1,10 +1,12 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
-import { v4 as uuid } from "uuid";
 import { UserIcon, MailIcon, LockIcon } from "../../components/Icons";
-import { createUser, login } from "../../lib/usersStore";
-import { Gender, type GenderValue } from "../../lib/users";
+import { signup } from "../../lib/userApi";
+import { Gender, type GenderValue } from "../../lib/userTypes";
+import { getApiErrorMessage } from "../../lib/api";
+
+type GenderSelectValue = GenderValue | "";
 
 
 export default function SignUpPage() {
@@ -13,7 +15,7 @@ export default function SignUpPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [birthday, setBirthday] = useState("");
-  const [gender, setGender] = useState<GenderValue>(Gender.Unset);
+  const [gender, setGender] = useState<GenderSelectValue>("");
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
   const [agree, setAgree] = useState(false);
@@ -35,22 +37,11 @@ export default function SignUpPage() {
     try {
       setSaving(true);
 
-      await createUser({
-        id: uuid(),
-        name,
-        email,
-        birthday,
-        gender,
-        password, // 学習用（本番NG）
-        createdAt: new Date().toISOString(),
-      });
-
-      // 登録後にログイン扱いにしたいなら（任意）
-      await login(email, password);
+      await signup({ name, email, password, birthday, gender: gender || undefined });
 
       navigate("/message/signup", { replace: true });
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : "登録に失敗しました。");
+      setMsg(getApiErrorMessage(err, "登録に失敗しました。"));
     } finally {
       setSaving(false);
     }
@@ -128,12 +119,13 @@ export default function SignUpPage() {
           <select
             className="form-select"
             value={gender}
-            onChange={(e) => setGender(Number(e.target.value) as GenderValue)}
+            onChange={(e) => setGender(e.target.value as GenderSelectValue)}
             disabled={saving}
           >
-            <option value={Gender.Unset}>未設定</option>
+            <option value="">未設定</option>
             <option value={Gender.Male}>男性</option>
             <option value={Gender.Female}>女性</option>
+            <option value={Gender.Other}>その他</option>
           </select>
         </div>
 
