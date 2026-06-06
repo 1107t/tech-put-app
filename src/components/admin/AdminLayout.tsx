@@ -1,6 +1,6 @@
 // src/components/admin/AdminLayout.tsx
 import { useState } from "react";
-import { type Admin } from "../../lib/adminStore";
+import { type Admin } from "../../lib/adminApi";
 import SidebarItem from "./SidebarItem";
 import HeaderItem from "./HeaderItem";
 import "../../styles/components/adminLayout.css";
