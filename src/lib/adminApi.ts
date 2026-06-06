@@ -1,5 +1,5 @@
 import { api, tokenStorage } from './api'
-import type { User } from './userTypes'
+import type { AdminUser } from './userTypes'
 
 export interface Admin {
   id: string
@@ -31,7 +31,7 @@ export async function getCurrentAdmin(): Promise<Admin | null> {
   }
 }
 
-export async function getUsers(): Promise<User[]> {
-  const res = await api.get<{ users: User[] }>('/admin/users')
+export async function getUsers(): Promise<AdminUser[]> {
+  const res = await api.get<{ users: AdminUser[] }>('/admin/users')
   return res.data.users
 }

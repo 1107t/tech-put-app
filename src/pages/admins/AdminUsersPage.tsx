@@ -20,8 +20,7 @@ export default function AdminUsersPage() {
         return;
       }
       setAdmin(currentAdmin);
-
-      const allUsers = await getUsers() as AdminUser[];
+      const allUsers = await getUsers();
       if (!cancelled) {
         setUsers(allUsers);
         setLoading(false); // アンマウント後のstate更新を防ぐため、if (!cancelled) の中に移動
