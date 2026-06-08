@@ -23,8 +23,6 @@ const lessons: Lesson[] = [
 ];
 
 export default function DashboardPage() {
-  // UserLayout が認証チェック・リダイレクト・サイドバー・ヘッダーをすべて担当する
-  // render-prop の me はこのページでは使用しないため _ で受け取る
   return (
     <UserLayout menu={dashboardMenu} headerTitle="e-learning一覧">
       {(_me) => (

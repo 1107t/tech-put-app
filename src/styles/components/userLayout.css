@@ -3,6 +3,11 @@
   display: flex;
 }
 
+.user-shell > main {
+  min-width: 0;
+  overflow-x: hidden;
+}
+
 .user-sidebar {
   width: 260px;
   height: 100vh;
@@ -15,6 +20,43 @@
   position: sticky;
   top: 0;
   overflow-y: auto;
+  font-size: 1rem;
+}
+
+/* サイドバーのメニュー（AdminLTE 風・フラットな nav-link） */
+.user-sidebar .sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-sidebar .sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 0.25rem;
+  color: #c2c7d0;
+  text-decoration: none;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.user-sidebar .sidebar-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* 現在ページのハイライト（AdminLTE のアクティブ色） */
+.user-sidebar .sidebar-link.active {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.user-sidebar .sidebar-link .nav-icon {
+  width: 1.4rem;
+  text-align: center;
+  font-size: 1rem;
 }
 
 .user-header {
@@ -24,4 +66,25 @@
   padding: 1rem;
   border-bottom: 1px solid #dee2e6;
   background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-title {
+  font-size: 1.15rem;
+}
+
+.header-action-link {
+  font-size: 1.15rem;
+  color: #6c757d;
+  text-decoration: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+.header-action-link:hover {
+  background-color: #e9ecef;
+  color: #6c757d;
+  text-decoration: none;
 }

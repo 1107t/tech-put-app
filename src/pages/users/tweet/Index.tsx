@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { createTweet, deleteTweet, getTweets, updateTweet } from "../../../lib/tweetsStore";
-import type { User } from "../../../lib/users";
+import type { User } from "../../../lib/userTypes";
 import type { Tweet } from "../../../lib/tweets";
 import UserLayout from "../../../components/user/UserLayout";
 import { dashboardMenu } from "../../../components/user/UserLayout";

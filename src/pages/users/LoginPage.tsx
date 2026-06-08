@@ -24,7 +24,7 @@ export default function LoginPage() {
       if (saved) setEmail(saved);
 
       const user = await getCurrentUser();
-      if (user) navigate("/dashboard", { replace: true });
+      if (user) navigate("/articles", { replace: true });
     })();
   }, [navigate]);
 
@@ -43,7 +43,7 @@ export default function LoginPage() {
 
       await login(email, password);
 
-      navigate("/dashboard", { replace: true });
+      navigate("/articles", { replace: true });
     } catch (err) {
       setErrorMsg(getApiErrorMessage(err, "ログインに失敗しました。"));
     } finally {
