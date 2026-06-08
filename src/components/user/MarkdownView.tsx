@@ -6,6 +6,24 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { isValidElement, useState, type ReactNode, type ReactElement } from "react";
 
+// ReactNode を素のテキストに変換（テーブルセルが数字かどうかの判定に使う）
+function nodeToText(node: ReactNode): string {
+  if (node == null || typeof node === "boolean") return "";
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(nodeToText).join("");
+  if (isValidElement(node)) {
+    return nodeToText((node.props as { children?: ReactNode }).children);
+  }
+  return "";
+}
+
+// セルの中身が数値（金額・パーセント・カンマ区切り含む）かどうか
+function isNumericCell(text: string): boolean {
+  const trimmed = text.trim();
+  if (trimmed === "") return false;
+  return /^[¥$＄]?[-+]?[\d,]+(\.\d+)?%?$/.test(trimmed);
+}
+
 // Prism の言語名エイリアス（html は Prism 上では markup 扱いのため変換する等）
 const PRISM_LANG_ALIASES: Record<string, string> = {
   html: "markup",
@@ -102,6 +120,15 @@ const components = {
   // インラインコードのみ担当（ブロックは pre 側で処理済み）。
   code({ className, children }: React.HTMLAttributes<HTMLElement> & { children?: ReactNode }) {
     return <code className={className}>{children}</code>;
+  },
+  // 見出し(th)は常に左寄せ（markdown の列揃え指定よりこちらを優先）。
+  th({ children }: { children?: ReactNode }) {
+    return <th style={{ textAlign: "left" }}>{children}</th>;
+  },
+  // 数値セルだけ右寄せ（文字セルは既定の左寄せのまま）。
+  td({ children, style }: { children?: ReactNode; style?: React.CSSProperties }) {
+    const alignRight = isNumericCell(nodeToText(children));
+    return <td style={alignRight ? { ...style, textAlign: "right" } : style}>{children}</td>;
   },
 };
 

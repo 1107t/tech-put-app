@@ -132,6 +132,7 @@
 .article-show-content th {
   background-color: #f6f8fa;
   font-weight: 600;
+  text-align: left;
 }
 
 .article-show-content tr:nth-child(even) {
