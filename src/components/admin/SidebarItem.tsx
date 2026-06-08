@@ -1,24 +1,23 @@
 // src/components/admin/SidebarItem.tsx
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 type Props = {
   label: string;
   to: string;
+  icon: string; // Font Awesome のアイコンクラス（Rails の nav-icon に合わせる）
 };
 
-export default function SidebarItem({ label, to }: Props) {
+export default function SidebarItem({ label, to, icon }: Props) {
   return (
-    <li className="mb-1">
-      <Link
+    <li>
+      <NavLink
         to={to}
-        className="text-white text-decoration-none d-flex align-items-center py-2 px-3 rounded"
-        style={{ fontSize: "14px" }}
-        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#2a2a2a")}
-        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+        end={to === "/admin/dashboard"}
+        className={({ isActive }) => `admin-sidebar-link ${isActive ? "active" : ""}`}
       >
-        <span className="me-2" style={{ fontSize: "10px" }}>■</span>
-        {label}
-      </Link>
+        <i className={`nav-icon ${icon}`} />
+        <span>{label}</span>
+      </NavLink>
     </li>
   );
 }

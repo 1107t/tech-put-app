@@ -12,15 +12,17 @@ import "../../styles/components/userAvatar.css";
 export type MenuItem = {
   label: string; // 表示テキスト
   to: string;    // リンク先のパス
+  icon: string;  // Font Awesome のアイコンクラス（Rails の nav-icon に合わせる）
 };
 
-// 受講生ダッシュボード共通メニュー（全ページで共有）
+// 受講生ダッシュボード共通メニュー（全ページで共有）。アイコンは Rails 版に合わせる。
 export const dashboardMenu: MenuItem[] = [
-  { label: "記事一覧", to: "/articles" },
-  { label: "プロフィール一覧", to: "/profiles" },
-  { label: "動画投稿一覧", to: "/videos" },
-  { label: "つぶやき一覧", to: "/tweets" },
-  { label: "問い合わせ", to: "/inquiries" },
+  { label: "e-learning", to: "/dashboard", icon: "fa-solid fa-book-open" },
+  { label: "記事一覧", to: "/articles", icon: "fa-solid fa-newspaper" },
+  { label: "プロフィール一覧", to: "/profiles", icon: "fa-solid fa-address-card" },
+  { label: "動画投稿一覧", to: "/videos", icon: "fa-brands fa-youtube" },
+  { label: "つぶやき一覧", to: "/tweets", icon: "fa-brands fa-twitter" },
+  { label: "問い合わせ", to: "/inquiries", icon: "fa-solid fa-circle-info" },
 ];
 
 type Props = {
@@ -49,26 +51,25 @@ export default function UserLayout({ menu, headerTitle, headerAction, children }
 
         {/* ユーザー名: プロフィールページへのリンク */}
         <div className="mb-3">
-          <NavLink to={`/users/${me.id}`} className="text-white text-decoration-none small">
+          <NavLink to={`/users/${me.id}`} className="text-white text-decoration-none">
             {me.name}
           </NavLink>
           <hr className="border-secondary mt-2 mb-0" />
         </div>
 
-        {/* セクションラベル */}
-        <div className="small text-uppercase text-white-50 mb-2">e-learning</div>
-
         {/* メニュー一覧: NavLink の isActive で現在ページをハイライト */}
-        <nav className="d-grid gap-1">
+        <nav className="sidebar-menu">
           {menu.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
+              end={item.to === "/dashboard"}
               className={({ isActive }) =>
-                `btn btn-sm text-start ${isActive ? "btn-secondary" : "btn-dark"}`
+                `sidebar-link ${isActive ? "active" : ""}`
               }
             >
-              {item.label}
+              <i className={`nav-icon ${item.icon}`} />
+              <span>{item.label}</span>
             </NavLink>
           ))}
         </nav>

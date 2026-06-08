@@ -11,11 +11,13 @@ type Props = {
   children: React.ReactNode;
 };
 
+// アイコンは Rails 版 admin サイドバーに合わせる
 const menuItems = [
-  { id: 1, label: "記事一覧", to: "/admin/articles" },
-  { id: 2, label: "動画投稿一覧", to: "/admin/videos" },
-  { id: 3, label: "登録ユーザー一覧", to: "/admin/users" },
-  { id: 4, label: "問い合わせ一覧", to: "/admin/inquiries" },
+  { id: 1, label: "e-learning", to: "/admin/dashboard", icon: "fa-solid fa-book-open" },
+  { id: 2, label: "記事一覧", to: "/admin/articles", icon: "fa-solid fa-table-cells" },
+  { id: 3, label: "動画投稿一覧", to: "/admin/videos", icon: "fa-brands fa-youtube" },
+  { id: 4, label: "登録ユーザー一覧", to: "/admin/users", icon: "fa-solid fa-list" },
+  { id: 5, label: "問い合わせ一覧", to: "/admin/inquiries", icon: "fa-solid fa-list" },
 ];
 
 export default function AdminLayout({ admin, onLogout, children }: Props) {
@@ -28,7 +30,7 @@ export default function AdminLayout({ admin, onLogout, children }: Props) {
         {/* サイドバー */}
         <div className="text-white p-3 d-flex flex-column admin-sidebar">
           <div className="mb-4 pb-3 admin-sidebar__title-area">
-            <h5 className="mb-0 admin-sidebar__title">管理画面</h5>
+            <h5 className="mb-0 admin-sidebar__title">TecPutt管理画面</h5>
           </div>
 
           {/* 検索ボックス */}
@@ -53,9 +55,9 @@ export default function AdminLayout({ admin, onLogout, children }: Props) {
           </div>
 
           {/* メニュー項目 */}
-          <ul className="list-unstyled flex-grow-1">
+          <ul className="list-unstyled flex-grow-1 admin-sidebar-menu">
             {menuItems.map((item) => (
-              <SidebarItem key={item.id} label={item.label} to={item.to} />
+              <SidebarItem key={item.id} label={item.label} to={item.to} icon={item.icon} />
             ))}
           </ul>
 
