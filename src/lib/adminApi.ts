@@ -42,3 +42,28 @@ export async function getUsers(): Promise<AdminUser[]> {
   const res = await api.get<{ users: AdminUser[] }>('/admin/users')
   return res.data.users
 }
+
+export interface AdminPost {
+  id: string
+  title: string
+  body: string
+  youtubeUrl: string
+  adminId: string | null
+  userId: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export async function getAdminPosts(): Promise<AdminPost[]> {
+  const res = await api.get<{ posts: AdminPost[] }>('/admin/posts')
+  return res.data.posts
+}
+
+export async function createAdminPost(params: {
+  title: string
+  body: string
+  youtube_url: string
+}): Promise<AdminPost> {
+  const res = await api.post<{ post: AdminPost }>('/admin/posts', params)
+  return res.data.post
+}

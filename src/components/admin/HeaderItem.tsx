@@ -1,5 +1,5 @@
 // src/components/admin/HeaderItem.tsx
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { type Admin } from "../../lib/adminApi";
 
 type Props = {
@@ -10,6 +10,8 @@ type Props = {
 };
 
 export default function HeaderItem({ admin, dropdownOpen, setDropdownOpen, onLogout }: Props) {
+  const { pathname } = useLocation();
+
   return (
     <div
       className="d-flex justify-content-between align-items-center px-4"
@@ -37,8 +39,19 @@ export default function HeaderItem({ admin, dropdownOpen, setDropdownOpen, onLog
         <span style={{ fontSize: "15px", color: "#333" }}>管理者詳細画面</span>
       </div>
 
-      {/* 右側：アカウントアイコン＋ドロップダウン */}
-      <div className="d-flex align-items-center">
+      {/* 右側：動画投稿タグ＋アカウントアイコン＋ドロップダウン */}
+      <div className="d-flex align-items-center gap-3">
+        {pathname === "/admin/videos" && (
+          <Link
+            to="/admin/videos/new"
+            className="text-decoration-none"
+            style={{ fontSize: "14px", color: "#6c757d" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#333")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "#6c757d")}
+          >
+            動画投稿
+          </Link>
+        )}
         <div className="position-relative">
           <button
             className="btn p-0 border-0"
