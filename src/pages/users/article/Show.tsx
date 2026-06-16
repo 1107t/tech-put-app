@@ -14,8 +14,9 @@ export default function ArticleShowPage() {
 
   useEffect(() => {
     const load = async () => {
+      if (!id) { navigate("/articles"); return; }
       try {
-        const data = await getArticle(id ?? "");
+        const data = await getArticle(id);
         if (!data) {
           navigate("/articles");
           return;
@@ -30,8 +31,9 @@ export default function ArticleShowPage() {
 
   const handleDelete = async () => {
     if (!window.confirm("この記事を削除しますか？")) return;
+    if (!id) { navigate("/articles"); return; }
     try {
-      await deleteArticle(id ?? "");
+      await deleteArticle(id);
       navigate("/articles");
     } catch (err) {
       setError(getApiErrorMessage(err, "記事の削除に失敗しました。"));
