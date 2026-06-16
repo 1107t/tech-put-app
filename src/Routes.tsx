@@ -13,6 +13,7 @@ import ArticlePostPage from './pages/users/article/Post';
 import ArticleIndexPage from './pages/users/article/Index';
 import ArticleEditPage from './pages/users/article/Edit';
 import ArticleShowPage from './pages/users/article/Show';
+import UserVideoIndexPage from './pages/users/video/Index';
 
 // 管理者用ページ
 import AdminLoginPage from './pages/admins/AdminLoginPage';
@@ -23,8 +24,10 @@ import AdminDashboardPage from './pages/admins/AdminDashboardPage';
 import AdminPage from './pages/adminpage';
 import AdminDetail from './pages/admins/AdminDetail';
 import AdminUsersPage from './pages/admins/AdminUsersPage';
+import AdminUserDetailPage from './pages/admins/AdminUserDetailPage';
 import AdminVideosPage from './pages/admins/AdminVideosPage';
 import AdminVideoPostPage from './pages/admins/AdminVideoPostPage';
+import VideoDetail from './pages/admins/VideoDetail';
 
 // アプリのルーティングを管理するコンポーネント。全ページのURL設定をここで一元管理する。
 function AppRoutes() {
@@ -40,6 +43,7 @@ function AppRoutes() {
         <Route path="/message/:type" element={<UserMessagePage />} />
         <Route path="/reset" element={<UserPassreset />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/videos" element={<UserVideoIndexPage />} />
         <Route path="/tweets" element={<TweetIndex />} />
         <Route path="/articles" element={<ArticleIndexPage />} />
         <Route path="/articles/new" element={<ArticlePostPage />} />
@@ -55,7 +59,9 @@ function AppRoutes() {
         <Route path="/admin/articles" element={<div>記事一覧ページ（未実装）</div>} />
         <Route path="/admin/videos" element={<AdminVideosPage />} />
         <Route path="/admin/videos/new" element={<AdminVideoPostPage />} />
+        <Route path="/admin/videos/:id" element={<VideoDetail />} />
         <Route path="/admin/users" element={<AdminUsersPage />} />
+        <Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
         <Route path="/admin/inquiries" element={<div>問い合わせ一覧ページ（未実装）</div>} />
 
         {/* 管理者詳細（動的パスは固定パスの後に定義） */}

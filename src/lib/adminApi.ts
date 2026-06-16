@@ -43,6 +43,11 @@ export async function getUsers(): Promise<AdminUser[]> {
   return res.data.users
 }
 
+export async function getAdminUser(id: string): Promise<AdminUser> {
+  const res = await api.get<{ user: AdminUser }>(`/admin/users/${id}`)
+  return res.data.user
+}
+
 export interface AdminPost {
   id: string
   title: string
@@ -50,6 +55,7 @@ export interface AdminPost {
   youtubeUrl: string
   adminId: string | null
   userId: string | null
+  posterName: string | null
   createdAt: string
   updatedAt: string
 }
@@ -66,4 +72,8 @@ export async function createAdminPost(params: {
 }): Promise<AdminPost> {
   const res = await api.post<{ post: AdminPost }>('/admin/posts', params)
   return res.data.post
+}
+
+export async function deleteAdminPost(id: string): Promise<void> {
+  await api.delete(`/admin/posts/${id}`)
 }

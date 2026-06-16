@@ -5,14 +5,17 @@ import { getCurrentAdmin, adminLogout, createAdminPost, type Admin } from "../..
 import { getApiErrorMessage } from "../../lib/api";
 import AdminLayout from "../../components/admin/AdminLayout";
 
+const TITLE_MAX = 30;
+const BODY_MAX = 240;
+
 export default function AdminVideoPostPage() {
   const navigate = useNavigate();
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [title, setTitle] = useState("");
-  const [url, setUrl] = useState("");
-  const [description, setDescription] = useState("");
+  const [body, setBody] = useState("");
+  const [youtubeUrl, setYoutubeUrl] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -38,9 +41,9 @@ export default function AdminVideoPostPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) { setError("タイトルを入力してください。"); return; }
-    if (!url.trim()) { setError("URLを入力してください。"); return; }
+    if (!youtubeUrl.trim()) { setError("YoutubeのURLを入力してください。"); return; }
     try {
-      await createAdminPost({ title, body: description, youtube_url: url });
+      await createAdminPost({ title, body, youtube_url: youtubeUrl });
       navigate("/admin/videos");
     } catch (err) {
       setError(getApiErrorMessage(err, "動画の投稿に失敗しました。"));
@@ -70,40 +73,54 @@ export default function AdminVideoPostPage() {
               {error && <p className="text-danger">{error}</p>}
 
               <form onSubmit={handleSubmit}>
-                <div className="mb-3">
+                <div className="mb-1">
                   <label className="form-label" style={{ fontSize: "14px" }}>
-                    タイトル <span className="text-danger">*</span>
+                    タイトル
                   </label>
                   <input
                     type="text"
                     className="form-control"
                     value={title}
+                    maxLength={TITLE_MAX}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="動画のタイトルを入力"
+                    placeholder="タイトル (必須 30文字まで)"
                   />
                 </div>
+                <div className="mb-3 text-end">
+                  <span className="text-muted" style={{ fontSize: "12px" }}>
+                    {title.length}文字
+                  </span>
+                </div>
 
-                <div className="mb-3">
+                <div className="mb-1">
                   <label className="form-label" style={{ fontSize: "14px" }}>
-                    URL <span className="text-danger">*</span>
+                    内容
+                  </label>
+                  <textarea
+                    className="form-control"
+                    rows={6}
+                    value={body}
+                    maxLength={BODY_MAX}
+                    onChange={(e) => setBody(e.target.value)}
+                    placeholder="内容 (必須 240文字まで)"
+                  />
+                </div>
+                <div className="mb-3 text-end">
+                  <span className="text-muted" style={{ fontSize: "12px" }}>
+                    {body.length}文字
+                  </span>
+                </div>
+
+                <div className="mb-4">
+                  <label className="form-label" style={{ fontSize: "14px" }}>
+                    Youtube URL
                   </label>
                   <input
                     type="url"
                     className="form-control"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    placeholder="https://www.youtube.com/watch?v=..."
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label className="form-label" style={{ fontSize: "14px" }}>説明</label>
-                  <textarea
-                    className="form-control"
-                    rows={4}
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="動画の説明を入力"
+                    value={youtubeUrl}
+                    onChange={(e) => setYoutubeUrl(e.target.value)}
+                    placeholder="YoutubeのURLを添付（必須)"
                   />
                 </div>
 
