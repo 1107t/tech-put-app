@@ -1,4 +1,4 @@
-// src/Routes.tsx
+// src/Routes.tsx【修正】
 // アプリ全体のルーティング定義。URLパスとページコンポーネントを対応付ける。
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
@@ -19,6 +19,7 @@ import AdminDashboardPage from './pages/admins/AdminDashboardPage';
 import AdminPage from './pages/adminpage';
 import AdminDetail from './pages/admins/AdminDetail';
 import AdminUsersPage from './pages/admins/AdminUsersPage';
+import AdminUserTweetsPage from './pages/admins/AdminUserTweetsPage';
 
 // アプリのルーティングを管理するコンポーネント。全ページのURL設定をここで一元管理する。
 function AppRoutes() {
@@ -45,6 +46,8 @@ function AppRoutes() {
         <Route path="/admin/articles" element={<div>記事一覧ページ（未実装）</div>} />
         <Route path="/admin/videos" element={<div>動画投稿一覧ページ（未実装）</div>} />
         <Route path="/admin/users" element={<AdminUsersPage />} />
+        {/* ユーザー別つぶやき一覧。動的パスより前に定義して優先ルーティングを確保する */}
+        <Route path="/admin/users/:userId/tweets" element={<AdminUserTweetsPage />} />
         <Route path="/admin/inquiries" element={<div>問い合わせ一覧ページ（未実装）</div>} />
 
         {/* 管理者詳細（動的パスは固定パスの後に定義） */}

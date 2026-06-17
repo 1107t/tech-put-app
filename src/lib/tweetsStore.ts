@@ -1,8 +1,8 @@
-// src/lib/tweetsStore.ts
+// src/lib/tweetsStore.ts【修正】
 // つぶやきデータのCRUD操作を行うストア。
 // usersStore.ts と同じく localforage を使ってブラウザの IndexedDB に永続保存する。
 import localforage from "localforage";
-import type { Tweet } from "./tweets";
+import type { Tweet, TweetComment } from "./tweets";
 
 // usersStore と同じインスタンス設定を使用することで、同一DBの別ストアに保存される
 const tweetStorage = localforage.createInstance({
@@ -41,4 +41,41 @@ export async function deleteTweet(id: string): Promise<void> {
 export async function updateTweet(id: string, content: string): Promise<void> {
   const tweets = await getTweets();
   await setTweets(tweets.map((t) => (t.id === id ? { ...t, content } : t)));
+}
+
+// いいね数を1増やす
+export async function likeTweet(id: string): Promise<void> {
+  const tweets = await getTweets();
+  await setTweets(
+    tweets.map((tweet) =>
+      tweet.id === id ? { ...tweet, likes: (tweet.likes ?? 0) + 1 } : tweet
+    )
+  );
+}
+
+// いいね数を1減らす（0未満にはならない）
+export async function unlikeTweet(id: string): Promise<void> {
+  const tweets = await getTweets();
+  await setTweets(
+    tweets.map((tweet) =>
+      tweet.id === id ? { ...tweet, likes: Math.max(0, (tweet.likes ?? 0) - 1) } : tweet
+    )
+  );
+}
+
+// 指定ツイートにコメントを追加する
+export async function addComment(tweetId: string, text: string): Promise<void> {
+  const tweets = await getTweets();
+  const newComment: TweetComment = {
+    id: crypto.randomUUID(),
+    text,
+    createdAt: new Date().toISOString(),
+  };
+  await setTweets(
+    tweets.map((tweet) =>
+      tweet.id === tweetId
+        ? { ...tweet, comments: [...(tweet.comments ?? []), newComment] }
+        : tweet
+    )
+  );
 }
