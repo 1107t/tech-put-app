@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import UserLayout, { dashboardMenu } from "../../../components/user/UserLayout";
 import MarkdownView from "../../../components/user/MarkdownView";
-import { getArticle, deleteArticle, seedSampleArticles, type Article } from "../../../lib/articleDb";
+import { getArticle, deleteArticle, type Article } from "../../../lib/articleApi";
+import { getApiErrorMessage } from "../../../lib/api";
 import "../../../styles/pages/articleShow.css";
 
 export default function ArticleShowPage() {
@@ -13,9 +14,9 @@ export default function ArticleShowPage() {
 
   useEffect(() => {
     const load = async () => {
+      if (!id) { navigate("/articles"); return; }
       try {
-        await seedSampleArticles();
-        const data = await getArticle(Number(id));
+        const data = await getArticle(id);
         if (!data) {
           navigate("/articles");
           return;
@@ -30,11 +31,12 @@ export default function ArticleShowPage() {
 
   const handleDelete = async () => {
     if (!window.confirm("この記事を削除しますか？")) return;
+    if (!id) { navigate("/articles"); return; }
     try {
-      await deleteArticle(Number(id));
+      await deleteArticle(id);
       navigate("/articles");
-    } catch {
-      setError("記事の削除に失敗しました。");
+    } catch (err) {
+      setError(getApiErrorMessage(err, "記事の削除に失敗しました。"));
     }
   };
 
@@ -50,7 +52,7 @@ export default function ArticleShowPage() {
 
   return (
     <UserLayout menu={dashboardMenu} headerTitle="記事詳細">
-      {(_me) => (
+      {(me) => (
         <div className="row">
           <div className="col-md-10 offset-md-1">
             <div className="card article-show-card">
@@ -58,20 +60,22 @@ export default function ArticleShowPage() {
                 <div className="d-flex justify-content-between align-items-start mb-3">
                   <div>
                     <h1 className="article-show-title">{article.title}</h1>
-                    <p className="article-show-subtitle">{article.subtitle}</p>
+                    <p className="article-show-subtitle">{article.subTitle}</p>
                   </div>
-                  <div className="d-flex gap-2 ms-3 flex-shrink-0">
-                    <Link to={`/articles/${id}/edit`} className="btn btn-success btn-sm">
-                      編集
-                    </Link>
-                    <button className="btn btn-danger btn-sm" onClick={handleDelete}>
-                      削除
-                    </button>
-                  </div>
+                  {article.userId === me.id && (
+                    <div className="d-flex gap-2 ms-3 flex-shrink-0">
+                      <Link to={`/articles/${id}/edit`} className="btn btn-success btn-sm">
+                        編集
+                      </Link>
+                      <button className="btn btn-danger btn-sm" onClick={handleDelete}>
+                        削除
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <hr />
                 <div className="article-show-content">
-                  <MarkdownView body={article.body} />
+                  <MarkdownView body={article.content} />
                 </div>
               </div>
             </div>
