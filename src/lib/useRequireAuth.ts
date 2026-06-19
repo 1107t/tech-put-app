@@ -4,8 +4,8 @@
 // DashboardPage・TweetsPage など複数ページで重複していた認証コードをここに集約。
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCurrentUser, logout } from "./usersStore";
-import type { User } from "./users";
+import { getCurrentUser, logout } from "./userApi";
+import type { User } from "./userTypes";
 
 export function useRequireAuth(): { me: User | null; handleLogout: () => Promise<void> } {
   // ログイン中のユーザー情報（取得完了まで null）

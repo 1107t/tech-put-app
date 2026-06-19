@@ -3,8 +3,7 @@
 // 指定ユーザーの投稿を閲覧でき、いいね・コメント機能を持つ。
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getCurrentAdmin, adminLogout, type Admin } from "../../lib/adminStore";
-import { getUsers } from "../../lib/usersStore";
+import { getCurrentAdmin, adminLogout, getUsers, type Admin } from "../../lib/adminApi";
 import { getTweets, likeTweet, unlikeTweet, addComment } from "../../lib/tweetsStore";
 import type { Tweet } from "../../lib/tweets";
 import AdminLayout from "../../components/admin/AdminLayout";

@@ -32,6 +32,42 @@
   box-shadow: none;
 }
 
+/* サイドバーのメニュー（AdminLTE 風・フラットな nav-link） */
+.admin-sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-sidebar .admin-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 0.25rem;
+  color: #c2c7d0;
+  text-decoration: none;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.admin-sidebar .admin-sidebar-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* 現在ページのハイライト（AdminLTE のアクティブ色） */
+.admin-sidebar .admin-sidebar-link.active {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.admin-sidebar .admin-sidebar-link .nav-icon {
+  width: 1.4rem;
+  text-align: center;
+  font-size: 1rem;
+}
+
 .admin-sidebar__footer {
   border-top: 1px solid var(--admin-sidebar-border);
 }

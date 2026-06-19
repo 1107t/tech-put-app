@@ -1,7 +1,7 @@
 // src/pages/admins/AdminDetail.tsx
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getCurrentAdmin, adminLogout, type Admin } from "../../lib/adminStore";
+import { getCurrentAdmin, adminLogout, type Admin } from "../../lib/adminApi";
 import AdminLayout from "../../components/admin/AdminLayout";
 
 export default function AdminDetail() {
