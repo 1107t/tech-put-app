@@ -3,13 +3,7 @@ import { useEffect, useState } from "react";
 import type { User } from "../../../lib/userTypes";
 import UserLayout, { dashboardMenu } from "../../../components/user/UserLayout";
 import { getUserPosts, deleteUserPost, type UserPost } from "../../../lib/userApi";
-
-function getYouTubeVideoId(url: string): string | null {
-  const match = url.match(
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?/]+)/
-  );
-  return match ? match[1] : null;
-}
+import { getYouTubeVideoId } from "../../../lib/youtube";
 
 function VideoList({ me }: { me: User }) {
   const [videos, setVideos] = useState<UserPost[]>([]);
@@ -20,7 +14,7 @@ function VideoList({ me }: { me: User }) {
   useEffect(() => {
     (async () => {
       try {
-        const posts = await getUserPosts(me.id);
+        const posts = await getUserPosts();
         setVideos(posts);
       } catch {
         setError("動画の読み込みに失敗しました。");
@@ -75,6 +69,7 @@ function VideoList({ me }: { me: User }) {
                     {videoId ? (
                       <iframe
                         src={`https://www.youtube.com/embed/${videoId}`}
+                        title="YouTube動画"
                         width="280"
                         height="180"
                         frameBorder="0"

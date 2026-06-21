@@ -13,21 +13,21 @@ export default function AdminUserDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!id) return;
     let cancelled = false;
-    (async () => {
-      const currentAdmin = await getCurrentAdmin();
+    Promise.all([
+      getCurrentAdmin(),
+      getAdminUser(id).catch(() => null),
+    ]).then(([currentAdmin, userData]) => {
       if (cancelled) return;
       if (!currentAdmin) {
         navigate("/admin/login", { replace: true });
         return;
       }
       setAdmin(currentAdmin);
-      if (id) {
-        const userData = await getAdminUser(id);
-        if (!cancelled) setUser(userData);
-      }
-      if (!cancelled) setLoading(false);
-    })();
+      setUser(userData);
+      setLoading(false);
+    });
     return () => { cancelled = true; };
   }, [navigate, id]);
 

@@ -1,15 +1,10 @@
 // src/pages/admins/AdminVideosPage.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCurrentAdmin, adminLogout, getAdminPosts, deleteAdminPost, type Admin, type AdminPost } from "../../lib/adminApi";
+import { getAdminPosts, deleteAdminPost, type AdminPost } from "../../lib/adminApi";
 import AdminLayout from "../../components/admin/AdminLayout";
-
-function getYouTubeVideoId(url: string): string | null {
-  const match = url.match(
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?/]+)/
-  );
-  return match ? match[1] : null;
-}
+import { getYouTubeVideoId } from "../../lib/youtube";
+import { useRequireAdmin } from "../../lib/useRequireAdmin";
 
 type FilterState = {
   posterName: string;
@@ -23,46 +18,37 @@ const emptyFilter: FilterState = { posterName: "", title: "", body: "", createdA
 
 export default function AdminVideosPage() {
   const navigate = useNavigate();
-  const [admin, setAdmin] = useState<Admin | null>(null);
+  const { admin, loading, handleLogout } = useRequireAdmin();
   const [videos, setVideos] = useState<AdminPost[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [videosReady, setVideosReady] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [filter, setFilter] = useState<FilterState>(emptyFilter);
   const [applied, setApplied] = useState<FilterState>(emptyFilter);
   const [sortAsc, setSortAsc] = useState(false);
   const [page, setPage] = useState(1);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const PER_PAGE = 30;
 
   useEffect(() => {
+    if (!admin) return;
     let cancelled = false;
-    (async () => {
-      const currentAdmin = await getCurrentAdmin();
-      if (cancelled) return;
-      if (!currentAdmin) {
-        navigate("/admin/login", { replace: true });
-        return;
-      }
-      setAdmin(currentAdmin);
-      const posts = await getAdminPosts();
-      if (!cancelled) {
-        setVideos(posts);
-        setLoading(false);
-      }
-    })();
+    getAdminPosts().then((posts) => {
+      if (!cancelled) { setVideos(posts); setVideosReady(true); }
+    });
     return () => { cancelled = true; };
-  }, [navigate]);
-
-  const handleLogout = async () => {
-    await adminLogout();
-    navigate("/admin/login", { replace: true });
-  };
+  }, [admin]);
 
   const handleDelete = async (id: string) => {
     if (!window.confirm("この動画を削除しますか？")) return;
-    await deleteAdminPost(id);
-    setVideos((prev) => prev.filter((v) => v.id !== id));
-    setOpenMenuId(null);
+    try {
+      await deleteAdminPost(id);
+      setVideos((prev) => prev.filter((v) => v.id !== id));
+      setOpenMenuId(null);
+    } catch {
+      setDeleteError("削除に失敗しました。時間をおいて再度お試しください。");
+      setOpenMenuId(null);
+    }
   };
 
   const handleApply = () => {
@@ -96,7 +82,7 @@ export default function AdminVideosPage() {
   const totalPages = Math.ceil(filteredVideos.length / PER_PAGE);
   const pagedVideos = filteredVideos.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
-  if (loading) {
+  if (loading || !videosReady) {
     return (
       <div className="d-flex justify-content-center align-items-center min-vh-100">
         <div className="spinner-border text-primary" role="status">
@@ -108,6 +94,12 @@ export default function AdminVideosPage() {
 
   return (
     <AdminLayout admin={admin} onLogout={handleLogout}>
+      {deleteError && (
+        <div className="alert alert-danger alert-dismissible py-2 mb-3" role="alert">
+          {deleteError}
+          <button type="button" className="btn-close" onClick={() => setDeleteError(null)} />
+        </div>
+      )}
       <div className="d-flex align-items-center gap-3 mb-4">
         <h4 className="mb-0">動画投稿一覧</h4>
         <button className="btn btn-success btn-sm" onClick={() => setSortAsc((v) => !v)}>
@@ -135,6 +127,7 @@ export default function AdminVideosPage() {
                     {videoId ? (
                       <iframe
                         src={`https://www.youtube.com/embed/${videoId}`}
+                        title="YouTube動画"
                         width="280"
                         height="180"
                         frameBorder="0"

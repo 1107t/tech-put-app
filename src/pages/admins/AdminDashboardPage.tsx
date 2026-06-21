@@ -1,33 +1,9 @@
 // src/pages/admins/AdminDashboardPage.tsx
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { getCurrentAdmin, adminLogout, type Admin } from "../../lib/adminApi";
+import { useRequireAdmin } from "../../lib/useRequireAdmin";
 import AdminLayout from "../../components/admin/AdminLayout";
 
 export default function AdminDashboardPage() {
-  const navigate = useNavigate();
-  const [admin, setAdmin] = useState<Admin | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const currentAdmin = await getCurrentAdmin();
-      if (cancelled) return;
-      if (!currentAdmin) {
-        navigate("/admin/login", { replace: true });
-        return;
-      }
-      setAdmin(currentAdmin);
-      setLoading(false);
-    })();
-    return () => { cancelled = true; };
-  }, [navigate]);
-
-  const handleLogout = async () => {
-    await adminLogout();
-    navigate("/admin/login", { replace: true });
-  };
+  const { admin, loading, handleLogout } = useRequireAdmin();
 
   if (loading) {
     return (

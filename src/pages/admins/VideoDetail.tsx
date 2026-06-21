@@ -1,50 +1,30 @@
 // src/pages/admins/VideoDetail.tsx
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getCurrentAdmin, adminLogout, getAdminPosts, type Admin, type AdminPost } from "../../lib/adminApi";
+import { getAdminPost, type AdminPost } from "../../lib/adminApi";
 import AdminLayout from "../../components/admin/AdminLayout";
-
-function getYouTubeVideoId(url: string): string | null {
-  const match = url.match(
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?/]+)/
-  );
-  return match ? match[1] : null;
-}
+import { getYouTubeVideoId } from "../../lib/youtube";
+import { useRequireAdmin } from "../../lib/useRequireAdmin";
 
 export default function VideoDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [admin, setAdmin] = useState<Admin | null>(null);
+  const { admin, loading, handleLogout } = useRequireAdmin();
   const [video, setVideo] = useState<AdminPost | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [videoReady, setVideoReady] = useState(false);
 
   useEffect(() => {
+    if (!admin || !id) return;
     let cancelled = false;
-    (async () => {
-      const currentAdmin = await getCurrentAdmin();
-      if (cancelled) return;
-      if (!currentAdmin) {
-        navigate("/admin/login", { replace: true });
-        return;
-      }
-      setAdmin(currentAdmin);
-      // TODO: GET /api/v1/admin/posts/:id が実装されたら個別取得に切り替える
-      const posts = await getAdminPosts();
-      const found = posts.find((p) => p.id === id) ?? null;
-      if (!cancelled) {
-        setVideo(found);
-        setLoading(false);
-      }
-    })();
+    getAdminPost(id).then((post) => {
+      if (!cancelled) { setVideo(post); setVideoReady(true); }
+    }).catch(() => {
+      if (!cancelled) { setVideo(null); setVideoReady(true); }
+    });
     return () => { cancelled = true; };
-  }, [navigate, id]);
+  }, [admin, id]);
 
-  const handleLogout = async () => {
-    await adminLogout();
-    navigate("/admin/login", { replace: true });
-  };
-
-  if (loading) {
+  if (loading || !videoReady) {
     return (
       <div className="d-flex justify-content-center align-items-center min-vh-100">
         <div className="spinner-border text-primary" role="status">
@@ -85,6 +65,7 @@ export default function VideoDetail() {
                 <div className="mb-4 d-flex justify-content-center">
                   <iframe
                     src={`https://www.youtube.com/embed/${videoId}`}
+                    title="YouTube動画"
                     width="280"
                     height="180"
                     frameBorder="0"

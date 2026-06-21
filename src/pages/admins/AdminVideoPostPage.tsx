@@ -1,46 +1,27 @@
 // src/pages/admins/AdminVideoPostPage.tsx
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCurrentAdmin, adminLogout, createAdminPost, type Admin } from "../../lib/adminApi";
+import { createAdminPost } from "../../lib/adminApi";
 import { getApiErrorMessage } from "../../lib/api";
 import AdminLayout from "../../components/admin/AdminLayout";
+import { useRequireAdmin } from "../../lib/useRequireAdmin";
 
 const TITLE_MAX = 30;
 const BODY_MAX = 240;
 
 export default function AdminVideoPostPage() {
   const navigate = useNavigate();
-  const [admin, setAdmin] = useState<Admin | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { admin, loading, handleLogout } = useRequireAdmin();
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const currentAdmin = await getCurrentAdmin();
-      if (cancelled) return;
-      if (!currentAdmin) {
-        navigate("/admin/login", { replace: true });
-        return;
-      }
-      setAdmin(currentAdmin);
-      if (!cancelled) setLoading(false);
-    })();
-    return () => { cancelled = true; };
-  }, [navigate]);
-
-  const handleLogout = async () => {
-    await adminLogout();
-    navigate("/admin/login", { replace: true });
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) { setError("タイトルを入力してください。"); return; }
+    if (!body.trim()) { setError("内容を入力してください。"); return; }
     if (!youtubeUrl.trim()) { setError("YoutubeのURLを入力してください。"); return; }
     try {
       await createAdminPost({ title, body, youtube_url: youtubeUrl });

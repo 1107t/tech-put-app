@@ -40,9 +40,9 @@ export interface UserPost {
   updatedAt: string
 }
 
-export async function getUserPosts(userId: string): Promise<UserPost[]> {
+export async function getUserPosts(): Promise<UserPost[]> {
   const res = await api.get<{ posts: UserPost[] }>('/posts')
-  return res.data.posts.filter((p) => p.userId === userId)
+  return res.data.posts
 }
 
 export async function deleteUserPost(id: string): Promise<void> {
