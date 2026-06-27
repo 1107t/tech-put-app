@@ -1,10 +1,10 @@
 // src/pages/users/tweet/Index.tsx【修正】
 // つぶやき一覧ページ。一覧はスクロール可能で、投稿フォームは画面下部に固定表示する。
-// 画像添付（ファイル選択・ドラッグ&ドロップ）に対応。Blob形式でIndexedDBに保存する。
+// 画像添付（ファイル選択・ドラッグ&ドロップ）に対応。
+// IndexedDB から Rails API へ移行したため、画像は Active Storage の URL で表示する。
 // UserLayout の render-prop から me を受け取るため、useRequireAuth の二重呼び出しを解消している。
 import { useEffect, useRef, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
-import { createTweet, deleteTweet, getTweets, updateTweet } from "../../../lib/tweetsStore";
+import { createTweet, deleteTweet, getTweets, updateTweet, likeTweet, unlikeTweet, addComment } from "../../../lib/tweetsStore";
 import type { User } from "../../../lib/userTypes";
 import type { Tweet } from "../../../lib/tweets";
 import UserLayout from "../../../components/user/UserLayout";
@@ -17,10 +17,10 @@ type Flash = {
   message: string;           // 表示するメッセージ内容
 };
 
-// ISO形式の日時文字列を「YYYY年MM月DD日 HH:mm」形式に変換するユーティリティ
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
-const MAX_FILES_PER_TWEET = 4;
+const MAX_FILE_SIZE = 5 * 1024 * 1024;      // 1ファイルの上限: 5MB
+const MAX_FILES_PER_TWEET = 4;              // 1ツイートに添付できる画像の上限
 
+// ISO形式の日時文字列を「YYYY年MM月DD日 HH:mm」形式に変換するユーティリティ
 function formatDate(iso: string): string {
   const date = new Date(iso);
   const year = date.getFullYear();
@@ -31,64 +31,40 @@ function formatDate(iso: string): string {
   return `${year}年${month}月${day}日 ${hour}:${minute}`;
 }
 
-// UserLayout の render-prop から me を受け取り、つぶやき一覧・投稿・編集・削除を担当するコンポーネント
+// UserLayout の render-prop から me を受け取り、つぶやき一覧・投稿・編集・削除・いいね・コメントを担当するコンポーネント
 function TweetsContent({ me }: { me: User }) {
-  const [tweets, setTweets] = useState<Tweet[]>([]);           // つぶやき一覧
-  const [content, setContent] = useState("");                  // 投稿フォームの入力テキスト
-  const [selectedImages, setSelectedImages] = useState<Blob[]>([]); // 投稿に添付する画像（Blob形式）
-  const [previewUrls, setPreviewUrls] = useState<string[]>([]); // 投稿前プレビュー用のObject URL
-  const [isDragging, setIsDragging] = useState(false);        // ドラッグ中かどうかのフラグ
-  const [flash, setFlash] = useState<Flash | null>(null);     // フラッシュメッセージ
+  const [tweets, setTweets] = useState<Tweet[]>([]);                  // つぶやき一覧（APIから取得）
+  const [content, setContent] = useState("");                         // 投稿フォームの入力テキスト
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);   // 投稿に添付する画像（File形式）
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);       // 投稿前プレビュー用のObject URL
+  const [isDragging, setIsDragging] = useState(false);               // ドラッグ中かどうかのフラグ
+  const [flash, setFlash] = useState<Flash | null>(null);            // フラッシュメッセージ
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null); // フラッシュ自動消去タイマー
-  const [editingId, setEditingId] = useState<string | null>(null); // 編集中のつぶやきID
-  const [editContent, setEditContent] = useState("");          // 編集中の本文テキスト
-  // 既存ツイートの画像表示用Object URL（tweetId → url[]）
-  const [tweetImageUrls, setTweetImageUrls] = useState<Record<string, string[]>>({});
-  const fileInputRef = useRef<HTMLInputElement | null>(null);  // ファイル選択inputへの参照
-  // Object URLのキャッシュ。変化したツイートのURLだけ差し替えてチラつきを防ぐ
-  const urlsRef = useRef<Record<string, string[]>>({});
+  const [editingId, setEditingId] = useState<string | null>(null);   // 編集中のつぶやきID
+  const [editContent, setEditContent] = useState("");                 // 編集中の本文テキスト
+  const fileInputRef = useRef<HTMLInputElement | null>(null);         // ファイル選択inputへの参照
+  // コメント入力欄を開いているつぶやきのID（nullは全て閉じている状態）
+  const [openCommentTweetId, setOpenCommentTweetId] = useState<string | null>(null);
+  // 各つぶやきのコメント入力テキスト（tweetId → 入力テキスト）
+  const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
+  const [isLoading, setIsLoading] = useState(false); // 非同期処理中のフラグ
 
-  // マウント時につぶやき一覧を取得する
+  // マウント時につぶやき一覧をAPIから取得する
   useEffect(() => {
-    (async () => setTweets(await getTweets()))();
-  }, []);
-
-  // ツイート一覧が変わるたびに画像のObject URLを差分更新する
-  // 変化のないツイートは既存URLを再利用し、チラつきと不要なBlob再生成を防ぐ
-  useEffect(() => {
-    const prev = urlsRef.current;
-    const next: Record<string, string[]> = {};
-
-    for (const tweet of tweets) {
-      if (!tweet.images?.length) continue;
-      if (prev[tweet.id] && prev[tweet.id].length === tweet.images.length) {
-        // 画像枚数が同じなら既存URLを再利用してチラつきを防ぐ
-        next[tweet.id] = prev[tweet.id];
-      } else {
-        // 変化したツイートの旧URLを解放してから新規生成する
-        prev[tweet.id]?.forEach((url) => URL.revokeObjectURL(url));
-        next[tweet.id] = tweet.images.map((blob) => URL.createObjectURL(blob));
+    (async () => {
+      try {
+        setTweets(await getTweets())
+      } catch {
+        // 取得失敗時はエラーフラッシュを表示する
+        setFlash({ type: "error", message: "つぶやきの取得に失敗しました" })
       }
-    }
-    // 一覧から消えたツイートのURLを解放する
-    for (const id of Object.keys(prev)) {
-      if (!next[id]) prev[id].forEach((url) => URL.revokeObjectURL(url));
-    }
-    urlsRef.current = next;
-    setTweetImageUrls(next);
-  }, [tweets]);
-
-  // アンマウント時にすべてのObject URLを解放してメモリリークを防ぐ
-  useEffect(() => {
-    return () => {
-      Object.values(urlsRef.current).flat().forEach((url) => URL.revokeObjectURL(url));
-    };
+    })()
   }, []);
 
   // 選択中の画像が変わるたびにプレビュー用Object URLを生成する
   // クリーンアップで前回のURLを解放してメモリリークを防ぐ
   useEffect(() => {
-    const urls = selectedImages.map((blob) => URL.createObjectURL(blob));
+    const urls = selectedImages.map((file) => URL.createObjectURL(file));
     setPreviewUrls(urls);
     return () => urls.forEach((url) => URL.revokeObjectURL(url));
   }, [selectedImages]);
@@ -150,59 +126,85 @@ function TweetsContent({ me }: { me: User }) {
     setEditContent(tweet.content);
   };
 
-  // 編集確定: 空文字はエラー、成功時はストア更新して一覧再取得。失敗時はエラーフラッシュを表示する
+  // 編集確定: 空文字はエラー、成功時はAPIに送信して一覧を再取得する
   const handleEditSave = async (id: string) => {
     if (!editContent.trim()) {
       showFlash("error", "内容を入力してください");
       return;
     }
     try {
+      setIsLoading(true);
       await updateTweet(id, editContent.trim());
       setEditingId(null);
       setTweets(await getTweets());
       showFlash("success", "つぶやきを更新しました。");
-    } catch (error) {
-      showFlash("error", error instanceof Error ? error.message : "保存に失敗しました");
+    } catch {
+      showFlash("error", "保存に失敗しました");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // 削除ボタン押下: ストアから削除して一覧を再取得。失敗時はエラーフラッシュを表示する
+  // 削除ボタン押下: APIから削除して一覧を再取得する
   const handleDelete = async (id: string) => {
     try {
+      setIsLoading(true);
       await deleteTweet(id);
       setTweets(await getTweets());
       showFlash("success", "つぶやきを削除しました。");
-    } catch (error) {
-      showFlash("error", error instanceof Error ? error.message : "削除に失敗しました");
+    } catch {
+      showFlash("error", "削除に失敗しました");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // 投稿ボタン押下: バリデーション → IndexedDBに保存 → 一覧を再取得 → フォームをリセット。失敗時はエラーフラッシュを表示する
+  // 投稿ボタン押下: バリデーション → APIに送信 → 一覧を再取得 → フォームをリセットする
   const handleSubmit = async () => {
     if (!content.trim() && selectedImages.length === 0) {
       showFlash("error", "テキストまたは画像を入力してください");
       return;
     }
-
-    const tweet: Tweet = {
-      id: uuidv4(),
-      userId: me.id,
-      userName: me.name,
-      content: content.trim(),
-      // 画像が選択されている場合のみ images フィールドを含める
-      images: selectedImages.length > 0 ? [...selectedImages] : undefined,
-      createdAt: new Date().toISOString(),
-    };
-
     try {
-      await createTweet(tweet);
-      // フォームをリセット
+      setIsLoading(true);
+      // API が ID・日時を採番するため、フロントでは content と images だけ渡す
+      await createTweet(content.trim(), selectedImages.length > 0 ? selectedImages : undefined);
       setContent("");
       setSelectedImages([]);
       setTweets(await getTweets());
       showFlash("success", "つぶやきを作成しました。");
-    } catch (error) {
-      showFlash("error", error instanceof Error ? error.message : "保存に失敗しました");
+    } catch {
+      showFlash("error", "保存に失敗しました");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // いいねをトグルする: 未いいね→いいね追加、いいね済み→いいね解除
+  const handleLikeToggle = async (tweet: Tweet) => {
+    try {
+      if (tweet.likedByCurrentUser) {
+        await unlikeTweet(tweet.id);
+      } else {
+        await likeTweet(tweet.id);
+      }
+      // APIから最新状態を取得してカウントを反映する
+      setTweets(await getTweets());
+    } catch {
+      showFlash("error", "いいねに失敗しました");
+    }
+  };
+
+  // コメントを投稿する: 空文字は無視し、投稿後に入力欄をクリアして一覧を更新する
+  const handleCommentSubmit = async (tweetId: string) => {
+    const commentText = commentInputs[tweetId]?.trim();
+    if (!commentText) return;
+    try {
+      await addComment(tweetId, commentText);
+      setCommentInputs((previous) => ({ ...previous, [tweetId]: "" }));
+      setTweets(await getTweets());
+    } catch {
+      showFlash("error", "コメントの投稿に失敗しました");
     }
   };
 
@@ -235,104 +237,169 @@ function TweetsContent({ me }: { me: User }) {
           <p className="text-muted text-center py-5">つぶやきはまだありません</p>
         ) : (
           <div className="d-grid gap-3">
-            {tweets.map((tweet) => (
-              <div key={tweet.id} className="card shadow-sm tweets-page__tweet-card">
-                <div className="card-body">
-                  <div className="d-flex justify-content-between align-items-start mb-2">
-                    <div className="d-flex gap-2 align-items-center">
-                      <div className="tweets-page__avatar" />
-                      <div>
-                        {/* ユーザー名 */}
-                        <div className="fw-bold tweets-page__user-name">{tweet.userName}</div>
-                        {/* 投稿日時 */}
-                        <div className="text-muted tweets-page__date">
-                          {formatDate(tweet.createdAt)}
+            {tweets.map((tweet) => {
+              const isLiked = tweet.likedByCurrentUser ?? false;
+              const likeCount = tweet.likesCount ?? 0;
+              const commentCount = tweet.comments?.length ?? 0;
+              const isCommentOpen = openCommentTweetId === tweet.id;
+
+              return (
+                <div key={tweet.id} className="card shadow-sm tweets-page__tweet-card">
+                  <div className="card-body">
+                    <div className="d-flex justify-content-between align-items-start mb-2">
+                      <div className="d-flex gap-2 align-items-center">
+                        {/* アバター（画像未実装のため背景色で代替） */}
+                        <div className="tweets-page__avatar" />
+                        <div>
+                          {/* ユーザー名 */}
+                          <div className="fw-bold tweets-page__user-name">{tweet.userName}</div>
+                          {/* 投稿日時 */}
+                          <div className="text-muted tweets-page__date">
+                            {formatDate(tweet.createdAt)}
+                          </div>
                         </div>
                       </div>
+                      {/* 自分の投稿にのみ編集・削除ボタンを表示 */}
+                      {tweet.userId === me.id && editingId !== tweet.id && (
+                        <div className="d-flex gap-1">
+                          <button
+                            className="btn btn-outline-secondary btn-sm"
+                            onClick={() => handleEditStart(tweet)}
+                            disabled={isLoading}
+                          >
+                            編集
+                          </button>
+                          <button
+                            className="btn btn-outline-danger btn-sm"
+                            onClick={() => handleDelete(tweet.id)}
+                            disabled={isLoading}
+                          >
+                            削除
+                          </button>
+                        </div>
+                      )}
                     </div>
-                    {/* 自分の投稿にのみ編集・削除ボタンを表示 */}
-                    {tweet.userId === me.id && editingId !== tweet.id && (
-                      <div className="d-flex gap-1">
-                        <button
-                          className="btn btn-outline-secondary btn-sm"
-                          onClick={() => handleEditStart(tweet)}
-                        >
-                          編集
-                        </button>
-                        <button
-                          className="btn btn-outline-danger btn-sm"
-                          onClick={() => handleDelete(tweet.id)}
-                        >
-                          削除
-                        </button>
+
+                    {/* 本文: 編集中はテキストエリアを表示、通常時はテキスト表示 */}
+                    {editingId === tweet.id ? (
+                      <div className="mb-2">
+                        <textarea
+                          className="form-control mb-1"
+                          rows={3}
+                          value={editContent}
+                          onChange={(event) => setEditContent(event.target.value)}
+                          onKeyDown={(event) => {
+                            // Cmd+Enter（Mac）/ Ctrl+Enter（Windows）で保存できる
+                            if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+                              event.preventDefault();
+                              handleEditSave(tweet.id);
+                            }
+                          }}
+                        />
+                        <div className="d-flex gap-2 justify-content-end">
+                          <button
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => setEditingId(null)}
+                          >
+                            キャンセル
+                          </button>
+                          <button
+                            className="btn btn-success btn-sm"
+                            onClick={() => handleEditSave(tweet.id)}
+                            disabled={isLoading}
+                          >
+                            保存
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="mb-2 tweets-page__body">{tweet.content}</p>
+                    )}
+
+                    {/* 添付画像の表示: Active Storage の URL を img 要素で直接表示する */}
+                    {tweet.imageUrls && tweet.imageUrls.length > 0 && (
+                      <div className="tweets-page__image-grid mb-2">
+                        {tweet.imageUrls.map((imageUrl, index) => (
+                          <img
+                            key={index}
+                            src={imageUrl}
+                            alt={`添付画像 ${index + 1}`}
+                            className="tweets-page__tweet-image"
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    {/* アクションボタン: コメント・いいね */}
+                    <div className="d-flex gap-3">
+                      {/* コメントボタン: クリックでコメント入力欄を開閉する */}
+                      <button
+                        className="tweets-page__action-btn"
+                        onClick={() => setOpenCommentTweetId(isCommentOpen ? null : tweet.id)}
+                      >
+                        <span>💬</span>
+                        <span>{commentCount}</span>
+                      </button>
+                      {/* いいねボタン: いいね済みのときはハートを赤く表示してカウントを増やす */}
+                      <button
+                        className={`tweets-page__action-btn${isLiked ? " tweets-page__action-btn--liked" : ""}`}
+                        onClick={() => handleLikeToggle(tweet)}
+                      >
+                        <span>{isLiked ? "❤️" : "🤍"}</span>
+                        <span>{likeCount}</span>
+                      </button>
+                    </div>
+
+                    {/* コメントセクション: コメントボタンを押したときのみ表示 */}
+                    {isCommentOpen && (
+                      <div className="tweets-page__comment-section">
+                        {/* 既存コメントの一覧表示 */}
+                        {tweet.comments && tweet.comments.length > 0 && (
+                          <div className="mb-3">
+                            {tweet.comments.map((comment) => (
+                              <div key={comment.id} className="tweets-page__comment-item">
+                                <span>
+                                  <span className="fw-bold me-2">{comment.userName}</span>
+                                  {comment.content}
+                                </span>
+                                <span className="tweets-page__comment-date">
+                                  {formatDate(comment.createdAt)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {/* コメント入力欄: Enterキーでも投稿できる */}
+                        <div className="d-flex gap-2">
+                          <input
+                            type="text"
+                            className="form-control form-control-sm"
+                            placeholder="コメントを入力..."
+                            value={commentInputs[tweet.id] ?? ""}
+                            onChange={(event) =>
+                              setCommentInputs((previous) => ({
+                                ...previous,
+                                [tweet.id]: event.target.value,
+                              }))
+                            }
+                            onKeyDown={(event) => {
+                              // Enterキーでもコメントを投稿できる
+                              if (event.key === "Enter") handleCommentSubmit(tweet.id);
+                            }}
+                          />
+                          <button
+                            className="btn btn-success btn-sm"
+                            onClick={() => handleCommentSubmit(tweet.id)}
+                          >
+                            投稿
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
-
-                  {/* 本文: 編集中はテキストエリアを表示、通常時はテキスト表示 */}
-                  {editingId === tweet.id ? (
-                    <div className="mb-2">
-                      <textarea
-                        className="form-control mb-1"
-                        rows={3}
-                        value={editContent}
-                        onChange={(e) => setEditContent(e.target.value)}
-                        onKeyDown={(e) => {
-                          // Cmd+Enter（Mac）/ Ctrl+Enter（Windows）で保存できる
-                          // preventDefault でtextareaへの改行挿入を防いでから保存する
-                          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                            e.preventDefault();
-                            handleEditSave(tweet.id);
-                          }
-                        }}
-                      />
-                      <div className="d-flex gap-2 justify-content-end">
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          onClick={() => setEditingId(null)}
-                        >
-                          キャンセル
-                        </button>
-                        <button
-                          className="btn btn-success btn-sm"
-                          onClick={() => handleEditSave(tweet.id)}
-                        >
-                          保存
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="mb-2 tweets-page__body">{tweet.content}</p>
-                  )}
-
-                  {/* 添付画像の表示: Object URLに変換してimg要素で表示する */}
-                  {tweetImageUrls[tweet.id] && tweetImageUrls[tweet.id].length > 0 && (
-                    <div className="tweets-page__image-grid mb-2">
-                      {tweetImageUrls[tweet.id].map((url, index) => (
-                        <img
-                          key={index}
-                          src={url}
-                          alt={`添付画像 ${index + 1}`}
-                          className="tweets-page__tweet-image"
-                        />
-                      ))}
-                    </div>
-                  )}
-
-                  {/* アクションボタン: コメント数・いいね数（将来の拡張用） */}
-                  <div className="d-flex gap-3">
-                    <button className="tweets-page__action-btn">
-                      <span>💬</span>
-                      <span>0</span>
-                    </button>
-                    <button className="tweets-page__action-btn">
-                      <span>🤍</span>
-                      <span>0</span>
-                    </button>
-                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -372,12 +439,11 @@ function TweetsContent({ me }: { me: User }) {
               rows={2}
               placeholder="つぶやく内容を入力、または画像をここにドロップ..."
               value={content}
-              onChange={(e) => setContent(e.target.value)}
-              onKeyDown={(e) => {
+              onChange={(event) => setContent(event.target.value)}
+              onKeyDown={(event) => {
                 // Cmd+Enter（Mac）/ Ctrl+Enter（Windows）でも投稿できる
-                // preventDefault でtextareaへの改行挿入を防いでから投稿する
-                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                  e.preventDefault();
+                if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+                  event.preventDefault();
                   handleSubmit();
                 }
               }}
@@ -390,6 +456,7 @@ function TweetsContent({ me }: { me: User }) {
             <button
               className="btn btn-outline-secondary btn-sm"
               onClick={() => fileInputRef.current?.click()}
+              disabled={isLoading}
             >
               🖼 画像を追加
             </button>
@@ -402,8 +469,12 @@ function TweetsContent({ me }: { me: User }) {
               className="d-none"
               onChange={handleFileSelect}
             />
-            <button className="btn btn-success btn-sm px-4" onClick={handleSubmit}>
-              投稿する
+            <button
+              className="btn btn-success btn-sm px-4"
+              onClick={handleSubmit}
+              disabled={isLoading}
+            >
+              {isLoading ? "送信中..." : "投稿する"}
             </button>
           </div>
         </div>
