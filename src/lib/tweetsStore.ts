@@ -1,81 +1,58 @@
 // src/lib/tweetsStore.ts【修正】
 // つぶやきデータのCRUD操作を行うストア。
-// usersStore.ts と同じく localforage を使ってブラウザの IndexedDB に永続保存する。
-import localforage from "localforage";
-import type { Tweet, TweetComment } from "./tweets";
+// IndexedDB（localforage）からサーバーサイドAPIに移行した。
+// 全データが Rails DB に保存されるため、管理者を含む全ロールからアクセス可能になった。
+import { api } from './api'
+import type { Tweet } from './tweets'
 
-// usersStore と同じインスタンス設定を使用することで、同一DBの別ストアに保存される
-const tweetStorage = localforage.createInstance({
-  name: "tech-put-app",
-  storeName: "app_storage",
-});
-
-// IndexedDB に保存する際のキー名
-const TWEETS_KEY = "tweets";
-
-// 全つぶやきを取得する（データがない場合は空配列を返す）
-export async function getTweets(): Promise<Tweet[]> {
-  return (await tweetStorage.getItem<Tweet[]>(TWEETS_KEY)) ?? [];
+// GET /api/v1/tweets
+// userId を渡すと特定ユーザーのつぶやきのみ取得する
+export async function getTweets(userId?: string): Promise<Tweet[]> {
+  const params = userId ? { user_id: userId } : {}
+  const response = await api.get<{ tweets: Tweet[] }>('/tweets', { params })
+  return response.data.tweets
 }
 
-// 全つぶやきをストレージに保存するプライベート関数
-async function setTweets(tweets: Tweet[]) {
-  await tweetStorage.setItem(TWEETS_KEY, tweets);
+// POST /api/v1/tweets
+// 画像がある場合は multipart/form-data で送信する
+export async function createTweet(content: string, images?: File[]): Promise<Tweet> {
+  const formData = new FormData()
+  formData.append('content', content)
+  // 画像ファイルを images[] キーで配列送信する
+  if (images && images.length > 0) {
+    images.forEach((imageFile) => formData.append('images[]', imageFile))
+  }
+  const response = await api.post<{ tweet: Tweet }>('/tweets', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return response.data.tweet
 }
 
-// 新しいつぶやきを保存する。
-// スプレッド構文で新しい配列を生成し、元の配列を変更しない（非破壊的操作）。
-// 新しい投稿が一覧の先頭に来るよう tweet を配列の先頭に配置する。
-export async function createTweet(tweet: Tweet): Promise<void> {
-  const tweets = await getTweets();
-  await setTweets([tweet, ...tweets]);
-}
-
-// 指定IDのつぶやきを削除する
+// DELETE /api/v1/tweets/:id
 export async function deleteTweet(id: string): Promise<void> {
-  const tweets = await getTweets();
-  await setTweets(tweets.filter((t) => t.id !== id));
+  await api.delete(`/tweets/${id}`)
 }
 
-// 指定IDのつぶやき本文を更新する
-export async function updateTweet(id: string, content: string): Promise<void> {
-  const tweets = await getTweets();
-  await setTweets(tweets.map((t) => (t.id === id ? { ...t, content } : t)));
+// PATCH /api/v1/tweets/:id
+export async function updateTweet(id: string, content: string): Promise<Tweet> {
+  const response = await api.patch<{ tweet: Tweet }>(`/tweets/${id}`, { content })
+  return response.data.tweet
 }
 
-// いいね数を1増やす
+// POST /api/v1/tweets/:id/like
+// いいねを付ける。二重いいねはサーバー側で弾く
 export async function likeTweet(id: string): Promise<void> {
-  const tweets = await getTweets();
-  await setTweets(
-    tweets.map((tweet) =>
-      tweet.id === id ? { ...tweet, likes: (tweet.likes ?? 0) + 1 } : tweet
-    )
-  );
+  await api.post(`/tweets/${id}/like`)
 }
 
-// いいね数を1減らす（0未満にはならない）
+// DELETE /api/v1/tweets/:id/like
+// いいねを解除する
 export async function unlikeTweet(id: string): Promise<void> {
-  const tweets = await getTweets();
-  await setTweets(
-    tweets.map((tweet) =>
-      tweet.id === id ? { ...tweet, likes: Math.max(0, (tweet.likes ?? 0) - 1) } : tweet
-    )
-  );
+  await api.delete(`/tweets/${id}/like`)
 }
 
-// 指定ツイートにコメントを追加する
-export async function addComment(tweetId: string, text: string): Promise<void> {
-  const tweets = await getTweets();
-  const newComment: TweetComment = {
-    id: crypto.randomUUID(),
-    text,
-    createdAt: new Date().toISOString(),
-  };
-  await setTweets(
-    tweets.map((tweet) =>
-      tweet.id === tweetId
-        ? { ...tweet, comments: [...(tweet.comments ?? []), newComment] }
-        : tweet
-    )
-  );
+// POST /api/v1/tweets/:id/comments
+// コメントを投稿する
+export async function addComment(tweetId: string, content: string): Promise<void> {
+  await api.post(`/tweets/${tweetId}/comments`, { content })
 }
