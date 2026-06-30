@@ -11,7 +11,7 @@ const BODY_MAX = 240;
 
 export default function AdminVideoPostPage() {
   const navigate = useNavigate();
-  const { admin, loading, handleLogout } = useRequireAdmin();
+  const { admin, loading, error: networkError, handleLogout } = useRequireAdmin();
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -30,6 +30,15 @@ export default function AdminVideoPostPage() {
       setError(getApiErrorMessage(err, "動画の投稿に失敗しました。"));
     }
   };
+
+  if (networkError) {
+    return (
+      <div className="d-flex flex-column justify-content-center align-items-center min-vh-100 gap-3">
+        <p className="text-danger mb-0">{networkError}</p>
+        <button className="btn btn-secondary btn-sm" onClick={() => window.location.reload()}>再試行</button>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

@@ -6,7 +6,7 @@ import AdminLayout from "../../components/admin/AdminLayout";
 import { useRequireAdmin } from "../../lib/useRequireAdmin";
 
 export default function AdminUsersPage() {
-  const { admin, loading, handleLogout } = useRequireAdmin();
+  const { admin, loading, error, handleLogout } = useRequireAdmin();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [usersReady, setUsersReady] = useState(false);
 
@@ -18,6 +18,15 @@ export default function AdminUsersPage() {
     });
     return () => { cancelled = true; };
   }, [admin]);
+
+  if (error) {
+    return (
+      <div className="d-flex flex-column justify-content-center align-items-center min-vh-100 gap-3">
+        <p className="text-danger mb-0">{error}</p>
+        <button className="btn btn-secondary btn-sm" onClick={() => window.location.reload()}>再試行</button>
+      </div>
+    );
+  }
 
   if (loading || !usersReady) {
     return (

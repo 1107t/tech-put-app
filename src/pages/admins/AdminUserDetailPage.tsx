@@ -11,6 +11,7 @@ export default function AdminUserDetailPage() {
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [user, setUser] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -27,6 +28,10 @@ export default function AdminUserDetailPage() {
       setAdmin(currentAdmin);
       setUser(userData);
       setLoading(false);
+    }).catch(() => {
+      if (cancelled) return;
+      setError("読み込みに失敗しました。時間をおいて再試行してください。");
+      setLoading(false);
     });
     return () => { cancelled = true; };
   }, [navigate, id]);
@@ -42,6 +47,17 @@ export default function AdminUserDetailPage() {
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">読み込み中...</span>
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="d-flex flex-column justify-content-center align-items-center min-vh-100 gap-3">
+        <p className="text-danger mb-0">{error}</p>
+        <button className="btn btn-secondary btn-sm" onClick={() => window.location.reload()}>
+          再試行
+        </button>
       </div>
     );
   }

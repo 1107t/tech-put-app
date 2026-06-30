@@ -7,12 +7,21 @@ import AdminLayout from "../../components/admin/AdminLayout";
 export default function AdminDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { admin, loading, handleLogout } = useRequireAdmin();
+  const { admin, loading, error, handleLogout } = useRequireAdmin();
 
   useEffect(() => {
     if (!admin) return;
     if (id !== admin.id) navigate(`/admin/${admin.id}`, { replace: true });
   }, [admin, id, navigate]);
+
+  if (error) {
+    return (
+      <div className="d-flex flex-column justify-content-center align-items-center min-vh-100 gap-3">
+        <p className="text-danger mb-0">{error}</p>
+        <button className="btn btn-secondary btn-sm" onClick={() => window.location.reload()}>再試行</button>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

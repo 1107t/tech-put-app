@@ -106,43 +106,45 @@ function VideoList({ me }: { me: User }) {
                       <small className="text-muted">
                         {new Date(video.createdAt).toLocaleDateString("ja-JP")}
                       </small>
-                      <div style={{ position: "relative" }}>
-                        <button
-                          type="button"
-                          className="btn btn-link btn-sm p-0 text-muted"
-                          style={{ lineHeight: 1, fontSize: "16px" }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenMenuId(openMenuId === video.id ? null : video.id);
-                          }}
-                        >
-                          ⋮
-                        </button>
-                        {openMenuId === video.id && (
-                          <div
-                            style={{
-                              position: "absolute",
-                              right: 0,
-                              top: "100%",
-                              backgroundColor: "#fff",
-                              border: "1px solid #dee2e6",
-                              borderRadius: "4px",
-                              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                              zIndex: 10,
-                              minWidth: "80px",
+                      {video.userId === me.id && (
+                        <div style={{ position: "relative" }}>
+                          <button
+                            type="button"
+                            className="btn btn-link btn-sm p-0 text-muted"
+                            style={{ lineHeight: 1, fontSize: "16px" }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenMenuId(openMenuId === video.id ? null : video.id);
                             }}
                           >
-                            <button
-                              type="button"
-                              className="btn btn-link btn-sm text-danger w-100 text-start px-3 py-2"
-                              style={{ fontSize: "13px", textDecoration: "none" }}
-                              onClick={(e) => { e.stopPropagation(); handleDelete(video.id); }}
+                            ⋮
+                          </button>
+                          {openMenuId === video.id && (
+                            <div
+                              style={{
+                                position: "absolute",
+                                right: 0,
+                                top: "100%",
+                                backgroundColor: "#fff",
+                                border: "1px solid #dee2e6",
+                                borderRadius: "4px",
+                                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                                zIndex: 10,
+                                minWidth: "80px",
+                              }}
                             >
-                              削除
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                              <button
+                                type="button"
+                                className="btn btn-link btn-sm text-danger w-100 text-start px-3 py-2"
+                                style={{ fontSize: "13px", textDecoration: "none" }}
+                                onClick={(e) => { e.stopPropagation(); handleDelete(video.id); }}
+                              >
+                                削除
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -9,7 +9,7 @@ import { useRequireAdmin } from "../../lib/useRequireAdmin";
 export default function VideoDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { admin, loading, handleLogout } = useRequireAdmin();
+  const { admin, loading, error, handleLogout } = useRequireAdmin();
   const [video, setVideo] = useState<AdminPost | null>(null);
   const [videoReady, setVideoReady] = useState(false);
 
@@ -23,6 +23,15 @@ export default function VideoDetail() {
     });
     return () => { cancelled = true; };
   }, [admin, id]);
+
+  if (error) {
+    return (
+      <div className="d-flex flex-column justify-content-center align-items-center min-vh-100 gap-3">
+        <p className="text-danger mb-0">{error}</p>
+        <button className="btn btn-secondary btn-sm" onClick={() => window.location.reload()}>再試行</button>
+      </div>
+    );
+  }
 
   if (loading || !videoReady) {
     return (

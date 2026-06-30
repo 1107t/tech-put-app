@@ -18,7 +18,7 @@ const emptyFilter: FilterState = { posterName: "", title: "", body: "", createdA
 
 export default function AdminVideosPage() {
   const navigate = useNavigate();
-  const { admin, loading, handleLogout } = useRequireAdmin();
+  const { admin, loading, error, handleLogout } = useRequireAdmin();
   const [videos, setVideos] = useState<AdminPost[]>([]);
   const [videosReady, setVideosReady] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -81,6 +81,15 @@ export default function AdminVideosPage() {
 
   const totalPages = Math.ceil(filteredVideos.length / PER_PAGE);
   const pagedVideos = filteredVideos.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+
+  if (error) {
+    return (
+      <div className="d-flex flex-column justify-content-center align-items-center min-vh-100 gap-3">
+        <p className="text-danger mb-0">{error}</p>
+        <button className="btn btn-secondary btn-sm" onClick={() => window.location.reload()}>再試行</button>
+      </div>
+    );
+  }
 
   if (loading || !videosReady) {
     return (
