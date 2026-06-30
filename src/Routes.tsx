@@ -23,6 +23,10 @@ import AdminDashboardPage from './pages/admins/AdminDashboardPage';
 import AdminPage from './pages/adminpage';
 import AdminDetail from './pages/admins/AdminDetail';
 import AdminUsersPage from './pages/admins/AdminUsersPage';
+import AdminArticleIndexPage from './pages/admins/article/Index';
+import AdminArticlePostPage from './pages/admins/article/Post';
+import AdminArticleEditPage from './pages/admins/article/Edit';
+import AdminArticleShowPage from './pages/admins/article/Show';
 
 // アプリのルーティングを管理するコンポーネント。全ページのURL設定をここで一元管理する。
 function AppRoutes() {
@@ -50,7 +54,10 @@ function AppRoutes() {
         <Route path="/admin/message/:type" element={<AdminMessagePage />} />
         <Route path="/admin/reset" element={<AdminPassreset />} />
         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-        <Route path="/admin/articles" element={<div>記事一覧ページ（未実装）</div>} />
+        <Route path="/admin/articles" element={<AdminArticleIndexPage />} />
+        <Route path="/admin/articles/new" element={<AdminArticlePostPage />} />
+        <Route path="/admin/articles/:id/edit" element={<AdminArticleEditPage />} />
+        <Route path="/admin/articles/:id" element={<AdminArticleShowPage />} />
         <Route path="/admin/videos" element={<div>動画投稿一覧ページ（未実装）</div>} />
         <Route path="/admin/users" element={<AdminUsersPage />} />
         <Route path="/admin/inquiries" element={<div>問い合わせ一覧ページ（未実装）</div>} />

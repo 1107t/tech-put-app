@@ -7,9 +7,13 @@ type Props = {
   dropdownOpen: boolean;
   setDropdownOpen: (open: boolean) => void;
   onLogout: () => void;
+  onToggleSidebar: () => void;
+  title?: string;
+  action?: React.ReactNode;
+  breadcrumb?: { label: string; to: string };
 };
 
-export default function HeaderItem({ admin, dropdownOpen, setDropdownOpen, onLogout }: Props) {
+export default function HeaderItem({ admin, dropdownOpen, setDropdownOpen, onLogout, onToggleSidebar, title, action, breadcrumb }: Props) {
   return (
     <div
       className="d-flex justify-content-between align-items-center px-4"
@@ -19,26 +23,37 @@ export default function HeaderItem({ admin, dropdownOpen, setDropdownOpen, onLog
         height: "50px",
       }}
     >
-      {/* 左側：ハンバーガー＋タイトル */}
-      <div className="d-flex align-items-center">
-        <svg
-          width="18"
-          height="18"
-          fill="#6c757d"
-          viewBox="0 0 16 16"
-          className="me-3"
-          style={{ cursor: "pointer" }}
+      {/* 左側：ハンバーガー＋タイトル＋アクション */}
+      <div className="d-flex align-items-center gap-3">
+        <button
+          type="button"
+          className="hamburger-btn me-3"
+          onClick={onToggleSidebar}
         >
-          <path
-            fillRule="evenodd"
-            d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"
-          />
-        </svg>
-        <span style={{ fontSize: "15px", color: "#333" }}>管理者詳細画面</span>
+          <svg width="18" height="18" fill="#6c757d" viewBox="0 0 16 16">
+            <path
+              fillRule="evenodd"
+              d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"
+            />
+          </svg>
+        </button>
+        {breadcrumb && (
+          <Link
+            to={breadcrumb.to}
+            style={{ fontSize: "1.15rem", color: "#6c757d", textDecoration: "none", padding: "4px 10px", borderRadius: "4px" }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e9ecef")}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+          >
+            {breadcrumb.label}
+          </Link>
+        )}
+        {title && <span style={{ fontSize: "1.15rem", color: "#6c757d", padding: "4px 10px" }}>{title}</span>}
+        {!breadcrumb && !title && <span style={{ fontSize: "1.15rem", color: "#6c757d" }}>管理者詳細画面</span>}
       </div>
 
-      {/* 右側：アカウントアイコン＋ドロップダウン */}
-      <div className="d-flex align-items-center">
+      {/* 右側：アクション＋アカウントアイコン＋ドロップダウン */}
+      <div className="d-flex align-items-center gap-3">
+        {action && <div>{action}</div>}
         <div className="position-relative">
           <button
             className="btn p-0 border-0"
