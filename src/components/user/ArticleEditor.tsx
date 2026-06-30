@@ -11,6 +11,7 @@ type Props = {
   submitLabel: string;
   onSubmit: () => void;
   onCancel: () => void;
+  disabled?: boolean;
 };
 
 export default function ArticleEditor({
@@ -18,6 +19,7 @@ export default function ArticleEditor({
   subtitle, onSubtitleChange,
   body, onBodyChange,
   submitLabel, onSubmit, onCancel,
+  disabled = false,
 }: Props) {
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }}>
@@ -74,10 +76,10 @@ export default function ArticleEditor({
         </div>
 
         <div className="col-12 text-center my-3">
-          <button type="submit" className="btn btn-primary mx-2">
-            {submitLabel}
+          <button type="submit" className="btn btn-primary mx-2" disabled={disabled}>
+            {disabled ? "送信中..." : submitLabel}
           </button>
-          <button type="button" className="btn btn-secondary mx-2" onClick={onCancel}>
+          <button type="button" className="btn btn-secondary mx-2" onClick={onCancel} disabled={disabled}>
             キャンセル
           </button>
         </div>
