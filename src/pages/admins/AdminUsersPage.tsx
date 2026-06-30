@@ -1,42 +1,34 @@
+// src/pages/admins/AdminUsersPage.tsx
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { getCurrentAdmin, adminLogout, getUsers, type Admin } from "../../lib/adminApi";
+import { getUsers } from "../../lib/adminApi";
 import type { AdminUser } from "../../lib/userTypes";
 import AdminLayout from "../../components/admin/AdminLayout";
+import { useRequireAdmin } from "../../lib/useRequireAdmin";
 
 export default function AdminUsersPage() {
-  const navigate = useNavigate();
-  const [admin, setAdmin] = useState<Admin | null>(null);
+  const { admin, loading, error, handleLogout } = useRequireAdmin();
   const [users, setUsers] = useState<AdminUser[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [usersReady, setUsersReady] = useState(false);
 
   useEffect(() => {
+    if (!admin) return;
     let cancelled = false;
-    (async () => {
-      const currentAdmin = await getCurrentAdmin();
-      if (cancelled) return;
-      if (!currentAdmin) {
-        navigate("/admin/login", { replace: true });
-        return;
-      }
-      setAdmin(currentAdmin);
-      const allUsers = await getUsers();
-      if (!cancelled) {
-        setUsers(allUsers);
-        setLoading(false); // アンマウント後のstate更新を防ぐため、if (!cancelled) の中に移動
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [navigate]);
+    getUsers().then((allUsers) => {
+      if (!cancelled) { setUsers(allUsers); setUsersReady(true); }
+    });
+    return () => { cancelled = true; };
+  }, [admin]);
 
-  const handleLogout = async () => {
-    await adminLogout();
-    navigate("/admin/login", { replace: true });
-  };
+  if (error) {
+    return (
+      <div className="d-flex flex-column justify-content-center align-items-center min-vh-100 gap-3">
+        <p className="text-danger mb-0">{error}</p>
+        <button className="btn btn-secondary btn-sm" onClick={() => window.location.reload()}>再試行</button>
+      </div>
+    );
+  }
 
-  if (loading) {
+  if (loading || !usersReady) {
     return (
       <div className="d-flex justify-content-center align-items-center min-vh-100">
         <div className="spinner-border text-primary" role="status">

@@ -1,33 +1,18 @@
 // src/pages/admins/AdminDashboardPage.tsx
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { getCurrentAdmin, adminLogout, type Admin } from "../../lib/adminApi";
+import { useRequireAdmin } from "../../lib/useRequireAdmin";
 import AdminLayout from "../../components/admin/AdminLayout";
 
 export default function AdminDashboardPage() {
-  const navigate = useNavigate();
-  const [admin, setAdmin] = useState<Admin | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { admin, loading, error, handleLogout } = useRequireAdmin();
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const currentAdmin = await getCurrentAdmin();
-      if (cancelled) return;
-      if (!currentAdmin) {
-        navigate("/admin/login", { replace: true });
-        return;
-      }
-      setAdmin(currentAdmin);
-      setLoading(false);
-    })();
-    return () => { cancelled = true; };
-  }, [navigate]);
-
-  const handleLogout = async () => {
-    await adminLogout();
-    navigate("/admin/login", { replace: true });
-  };
+  if (error) {
+    return (
+      <div className="d-flex flex-column justify-content-center align-items-center min-vh-100 gap-3">
+        <p className="text-danger mb-0">{error}</p>
+        <button className="btn btn-secondary btn-sm" onClick={() => window.location.reload()}>再試行</button>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

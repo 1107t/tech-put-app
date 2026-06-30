@@ -28,6 +28,27 @@ export async function logout(): Promise<void> {
   tokenStorage.removeUser()
 }
 
+
+export interface UserPost {
+  id: string
+  title: string
+  body: string
+  youtubeUrl: string
+  userId: string | null
+  adminId: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export async function getUserPosts(): Promise<UserPost[]> {
+  const res = await api.get<{ posts: UserPost[] }>('/posts')
+  return res.data.posts
+}
+
+export async function deleteUserPost(id: string): Promise<void> {
+  await api.delete(`/posts/${id}`)
+}
+
 export async function getCurrentUser(): Promise<User | null> {
   const token = tokenStorage.getUser()
   if (!token) return null
