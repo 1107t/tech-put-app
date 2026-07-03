@@ -4,7 +4,7 @@
 // 管理者は user_id を持たないため、いいね・コメント投稿は提供せず閲覧専用とする。
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getCurrentAdmin, adminLogout, getAdminUserTweets, type Admin } from "../../lib/adminApi";
+import { getCurrentAdmin, adminLogout, getAdminUserTweets, getUser, type Admin } from "../../lib/adminApi";
 import type { Tweet } from "../../lib/tweets";
 import AdminLayout from "../../components/admin/AdminLayout";
 import "../../styles/pages/tweets.css";
@@ -48,17 +48,17 @@ export default function AdminUserTweetsPage() {
       if (!userId) return;
 
       try {
-        // 管理者専用エンドポイントからユーザーのつぶやきを取得する
-        // IndexedDB と異なり Rails DB のデータを返すため他ユーザーの投稿も取得できる
-        const userTweets = await getAdminUserTweets(userId);
+        // ユーザー情報とつぶやき一覧を並列取得する
+        // ユーザー名はつぶやき0件でも表示できるようユーザー情報から取得する
+        const [userInfo, userTweets] = await Promise.all([
+          getUser(userId),
+          getAdminUserTweets(userId),
+        ]);
         if (cancelled) return;
+        setUserName(userInfo.name);
         setTweets(userTweets);
-        // ユーザー名はツイートの userName フィールドから取得する
-        if (userTweets.length > 0) {
-          setUserName(userTweets[0].userName);
-        }
       } catch {
-        if (!cancelled) setError("つぶやきの取得に失敗しました");
+        if (!cancelled) setError("データの取得に失敗しました");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -102,8 +102,9 @@ export default function AdminUserTweetsPage() {
       )}
 
       {/* つぶやき一覧: 投稿がなければ空メッセージ、あればカード形式で表示 */}
+      {/* エラー時は空メッセージを出さない（エラーアラートと二重表示を防ぐ） */}
       {tweets.length === 0 ? (
-        <p className="text-muted text-center py-5">つぶやきはまだありません</p>
+        !error && <p className="text-muted text-center py-5">つぶやきはまだありません</p>
       ) : (
         <div className="d-grid gap-3">
           {tweets.map((tweet) => {

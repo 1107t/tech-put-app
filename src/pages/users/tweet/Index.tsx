@@ -5,6 +5,7 @@
 // UserLayout の render-prop から me を受け取るため、useRequireAuth の二重呼び出しを解消している。
 import { useEffect, useRef, useState } from "react";
 import { createTweet, deleteTweet, getTweets, updateTweet, likeTweet, unlikeTweet, addComment } from "../../../lib/tweetsStore";
+import { getApiErrorMessage } from "../../../lib/api";
 import type { User } from "../../../lib/userTypes";
 import type { Tweet } from "../../../lib/tweets";
 import UserLayout from "../../../components/user/UserLayout";
@@ -138,8 +139,8 @@ function TweetsContent({ me }: { me: User }) {
       setEditingId(null);
       setTweets(await getTweets());
       showFlash("success", "つぶやきを更新しました。");
-    } catch {
-      showFlash("error", "保存に失敗しました");
+    } catch (error) {
+      showFlash("error", getApiErrorMessage(error, "保存に失敗しました"));
     } finally {
       setIsLoading(false);
     }
@@ -152,8 +153,8 @@ function TweetsContent({ me }: { me: User }) {
       await deleteTweet(id);
       setTweets(await getTweets());
       showFlash("success", "つぶやきを削除しました。");
-    } catch {
-      showFlash("error", "削除に失敗しました");
+    } catch (error) {
+      showFlash("error", getApiErrorMessage(error, "削除に失敗しました"));
     } finally {
       setIsLoading(false);
     }
@@ -173,8 +174,8 @@ function TweetsContent({ me }: { me: User }) {
       setSelectedImages([]);
       setTweets(await getTweets());
       showFlash("success", "つぶやきを作成しました。");
-    } catch {
-      showFlash("error", "保存に失敗しました");
+    } catch (error) {
+      showFlash("error", getApiErrorMessage(error, "保存に失敗しました"));
     } finally {
       setIsLoading(false);
     }
@@ -383,8 +384,10 @@ function TweetsContent({ me }: { me: User }) {
                               }))
                             }
                             onKeyDown={(event) => {
-                              // Enterキーでもコメントを投稿できる
-                              if (event.key === "Enter") handleCommentSubmit(tweet.id);
+                              // 変換確定中(isComposing)のEnterは送信しない（IME対策）
+                              if (event.key === "Enter" && !event.nativeEvent.isComposing) {
+                                handleCommentSubmit(tweet.id);
+                              }
                             }}
                           />
                           <button

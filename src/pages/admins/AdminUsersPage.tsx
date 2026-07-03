@@ -198,24 +198,10 @@ export default function AdminUsersPage() {
                 <tr key={user.id}>
                   <td>{user.name}</td>
                   <td>{user.email}</td>
-                  {/* 記事投稿数クリックでユーザー別記事一覧へ遷移する */}
-                  <td>
-                    <button
-                      className="btn btn-link p-0 text-decoration-none"
-                      onClick={() => navigate(`/admin/users/${user.id}/articles`)}
-                    >
-                      {user.articlesCount}
-                    </button>
-                  </td>
-                  {/* 動画投稿数クリックでユーザー別動画投稿一覧へ遷移する */}
-                  <td>
-                    <button
-                      className="btn btn-link p-0 text-decoration-none"
-                      onClick={() => navigate(`/admin/users/${user.id}/posts`)}
-                    >
-                      {user.postsCount}
-                    </button>
-                  </td>
+                  {/* 記事一覧ページは別PRで実装予定のため、当面は件数のみ表示 */}
+                  <td>{user.articlesCount}</td>
+                  {/* 動画一覧ページは別PRで実装予定のため、当面は件数のみ表示 */}
+                  <td>{user.postsCount}</td>
                   <td>
                     {/* つぶやき数クリックでユーザー別つぶやき一覧へ遷移する */}
                     <button
@@ -244,13 +230,7 @@ export default function AdminUsersPage() {
                         style={{ position: "absolute", right: 0, top: "100%", zIndex: 1000, minWidth: "100px" }}
                         onClick={(clickEvent) => clickEvent.stopPropagation()}
                       >
-                        {/* 詳細：受講生詳細ページへ遷移する */}
-                        <button
-                          className="dropdown-item"
-                          onClick={() => navigate(`/admin/users/${user.id}`)}
-                        >
-                          詳細
-                        </button>
+                        {/* 詳細ページは別PRで実装予定のため削除ボタンのみ表示 */}
                         {/* 削除：確認ダイアログ後に削除APIを呼び出す */}
                         <button
                           className="dropdown-item text-danger"

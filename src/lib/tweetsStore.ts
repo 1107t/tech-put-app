@@ -22,8 +22,10 @@ export async function createTweet(content: string, images?: File[]): Promise<Twe
   if (images && images.length > 0) {
     images.forEach((imageFile) => formData.append('images[]', imageFile))
   }
+  // Content-Type を undefined にして axios/ブラウザに boundary 付きで自動設定させる
+  // 手動で 'multipart/form-data' を指定すると boundary が欠落し Rails 側でパースに失敗する
   const response = await api.post<{ tweet: Tweet }>('/tweets', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
+    headers: { 'Content-Type': undefined },
   })
   return response.data.tweet
 }

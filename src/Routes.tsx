@@ -24,9 +24,7 @@ import AdminPage from './pages/adminpage';
 import AdminDetail from './pages/admins/AdminDetail';
 import AdminUsersPage from './pages/admins/AdminUsersPage';
 import AdminUserTweetsPage from './pages/admins/AdminUserTweetsPage';
-import AdminUserDetailPage from './pages/admins/AdminUserDetailPage'
-import AdminUserArticlesPage from './pages/admins/AdminUserArticlesPage'
-import AdminUserPostsPage from './pages/admins/AdminUserPostsPage';
+// detail / articles / posts は対象ページ実装の別PRで一緒に追加する
 
 // アプリのルーティングを管理するコンポーネント。全ページのURL設定をここで一元管理する。
 function AppRoutes() {
@@ -57,14 +55,9 @@ function AppRoutes() {
         <Route path="/admin/articles" element={<div>記事一覧ページ（未実装）</div>} />
         <Route path="/admin/videos" element={<div>動画投稿一覧ページ（未実装）</div>} />
         <Route path="/admin/users" element={<AdminUsersPage />} />
-        {/* 受講生詳細ページ。/admin/users/:userId/tweets より前に定義する必要はないが明示的に並べる */}
-        <Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
-        {/* ユーザー別つぶやき一覧。動的パスより前に定義して優先ルーティングを確保する */}
+        {/* ユーザー別つぶやき一覧。react-router v6 は specificity でマッチするため定義順は問わない */}
         <Route path="/admin/users/:userId/tweets" element={<AdminUserTweetsPage />} />
-        {/* ユーザー別記事一覧 */}
-        <Route path="/admin/users/:userId/articles" element={<AdminUserArticlesPage />} />
-        {/* ユーザー別動画投稿一覧 */}
-        <Route path="/admin/users/:userId/posts" element={<AdminUserPostsPage />} />
+        {/* detail / articles / posts は対象ページ実装の別PRで追加する */}
         <Route path="/admin/inquiries" element={<div>問い合わせ一覧ページ（未実装）</div>} />
 
         {/* 管理者詳細（動的パスは固定パスの後に定義） */}
