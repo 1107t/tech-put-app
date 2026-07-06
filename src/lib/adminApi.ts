@@ -46,7 +46,7 @@ export async function getUsers(): Promise<AdminUser[]> {
   return res.data.users
 }
 
-// 受講生1件の詳細を取得する。詳細ページで使用する
+// 受講生1件の詳細を取得する。AdminUserTweetsPage で見出しのユーザー名表示に使用する
 export async function getUser(userId: string): Promise<AdminUser> {
   const res = await api.get<{ user: AdminUser }>(`/admin/users/${userId}`)
   return res.data.user

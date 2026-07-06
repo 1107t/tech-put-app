@@ -58,6 +58,7 @@ export default function AdminUserTweetsPage() {
         setUserName(userInfo.name);
         setTweets(userTweets);
       } catch {
+        // ユーザー情報・つぶやきの両方を取得するため、文言も「データ」に一般化する
         if (!cancelled) setError("データの取得に失敗しました");
       } finally {
         if (!cancelled) setLoading(false);
