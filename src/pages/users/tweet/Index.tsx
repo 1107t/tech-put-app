@@ -140,6 +140,7 @@ function TweetsContent({ me }: { me: User }) {
       setTweets(await getTweets());
       showFlash("success", "つぶやきを更新しました。");
     } catch (error) {
+      // 固定文言ではなくサーバーが返す具体的なエラーメッセージを表示する
       showFlash("error", getApiErrorMessage(error, "保存に失敗しました"));
     } finally {
       setIsLoading(false);
@@ -154,6 +155,7 @@ function TweetsContent({ me }: { me: User }) {
       setTweets(await getTweets());
       showFlash("success", "つぶやきを削除しました。");
     } catch (error) {
+      // 固定文言ではなくサーバーが返す具体的なエラーメッセージを表示する
       showFlash("error", getApiErrorMessage(error, "削除に失敗しました"));
     } finally {
       setIsLoading(false);
@@ -175,6 +177,7 @@ function TweetsContent({ me }: { me: User }) {
       setTweets(await getTweets());
       showFlash("success", "つぶやきを作成しました。");
     } catch (error) {
+      // 固定文言ではなくサーバーが返す具体的なエラーメッセージを表示する
       showFlash("error", getApiErrorMessage(error, "保存に失敗しました"));
     } finally {
       setIsLoading(false);
