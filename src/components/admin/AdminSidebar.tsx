@@ -28,7 +28,7 @@ export default function AdminSidebar({ isOpen }: Props) {
       </div>
 
       {/* 検索ボックス */}
-      <div className="mb-4">
+      <div className="mb-4 admin-sidebar__search">
         <div className="input-group input-group-sm">
           <input
             type="text"

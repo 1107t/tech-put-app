@@ -18,6 +18,7 @@ export default function AdminArticleShowPage() {
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [article, setArticle] = useState<AdminArticle | null>(null);
   const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [error, setError] = useState("");
 
@@ -37,7 +38,8 @@ export default function AdminArticleShowPage() {
         }
         setAdmin(currentAdmin);
         if (!data) {
-          navigate("/admin/articles");
+          setNotFound(true);
+          setLoading(false);
           return;
         }
         setArticle(data);
@@ -75,6 +77,14 @@ export default function AdminArticleShowPage() {
           <span className="visually-hidden">読み込み中...</span>
         </div>
       </div>
+    );
+  }
+
+  if (notFound) {
+    return (
+      <AdminLayout admin={admin} onLogout={handleLogout} headerBreadcrumb={{ label: "投稿した記事一覧", to: "/admin/articles" }}>
+        <p className="text-danger">記事が見つかりませんでした。</p>
+      </AdminLayout>
     );
   }
 

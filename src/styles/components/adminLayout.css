@@ -21,7 +21,7 @@
 /* ミニ時：タイトル・検索・フッターを非表示 */
 .admin-sidebar--collapsed .admin-sidebar__title-area,
 .admin-sidebar--collapsed .admin-sidebar__footer,
-.admin-sidebar--collapsed .mb-4:has(.input-group) {
+.admin-sidebar--collapsed .admin-sidebar__search {
   display: none;
 }
 
@@ -119,6 +119,38 @@
 
 .hamburger-btn:hover {
   background-color: #e9ecef;
+}
+
+.header-action-link {
+  font-size: 1.15rem;
+  color: #6c757d;
+  text-decoration: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+.header-action-link:hover {
+  background-color: #e9ecef;
+  color: #6c757d;
+  text-decoration: none;
+}
+
+.header-breadcrumb-link {
+  font-size: 1.15rem;
+  color: #6c757d;
+  text-decoration: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+.header-breadcrumb-link:hover {
+  background-color: #e9ecef;
+}
+
+.header-title-text {
+  font-size: 1.15rem;
+  color: #6c757d;
+  padding: 4px 10px;
 }
 
 .admin-main {

@@ -10,7 +10,6 @@ import {
 } from "../../../lib/adminApi";
 import { getApiErrorMessage } from "../../../lib/api";
 import AdminLayout from "../../../components/admin/AdminLayout";
-import "../../../styles/components/userLayout.css";
 
 function formatDate(isoString: string): string {
   const d = new Date(isoString);
@@ -103,6 +102,7 @@ export default function AdminArticleIndexPage() {
     >
       <div className="d-flex align-items-center gap-3 mb-4">
         <h4 className="mb-0">記事一覧</h4>
+        {/* TODO: 並べ替え・絞り込み検索機能は別タスクで実装予定。ここではUI配置のみ */}
         <button className="btn btn-success btn-sm">並べ替え</button>
         <button className="btn btn-success btn-sm">絞り込み検索</button>
       </div>
@@ -136,7 +136,7 @@ export default function AdminArticleIndexPage() {
                   <td>{article.title}</td>
                   <td>{article.subTitle}</td>
                   <td>{formatDate(article.createdAt)}</td>
-                  <td onClick={(e) => e.stopPropagation()}>
+                  <td className="position-relative" onClick={(e) => e.stopPropagation()}>
                     <>
                       <button
                         className="btn btn-sm text-secondary p-0"

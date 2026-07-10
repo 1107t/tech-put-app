@@ -29,6 +29,7 @@ export default function HeaderItem({ admin, dropdownOpen, setDropdownOpen, onLog
           type="button"
           className="hamburger-btn me-3"
           onClick={onToggleSidebar}
+          aria-label="サイドバーを開閉"
         >
           <svg width="18" height="18" fill="#6c757d" viewBox="0 0 16 16">
             <path
@@ -38,17 +39,12 @@ export default function HeaderItem({ admin, dropdownOpen, setDropdownOpen, onLog
           </svg>
         </button>
         {breadcrumb && (
-          <Link
-            to={breadcrumb.to}
-            style={{ fontSize: "1.15rem", color: "#6c757d", textDecoration: "none", padding: "4px 10px", borderRadius: "4px" }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e9ecef")}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-          >
+          <Link to={breadcrumb.to} className="header-breadcrumb-link">
             {breadcrumb.label}
           </Link>
         )}
-        {title && <span style={{ fontSize: "1.15rem", color: "#6c757d", padding: "4px 10px" }}>{title}</span>}
-        {!breadcrumb && !title && <span style={{ fontSize: "1.15rem", color: "#6c757d" }}>管理者詳細画面</span>}
+        {title && <span className="header-title-text">{title}</span>}
+        {!breadcrumb && !title && <span className="header-title-text">管理者詳細画面</span>}
       </div>
 
       {/* 右側：アクション＋アカウントアイコン＋ドロップダウン */}
