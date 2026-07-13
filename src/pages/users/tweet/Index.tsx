@@ -6,6 +6,8 @@
 import { useEffect, useRef, useState } from "react";
 import { createTweet, deleteTweet, getTweets, updateTweet, likeTweet, unlikeTweet, addComment } from "../../../lib/tweetsStore";
 import { getApiErrorMessage } from "../../../lib/api";
+// 日付整形はページ内の重複実装を廃止し、共通ユーティリティ formatDate を使う（DRY原則）
+import { formatDate } from "../../../lib/formatDate";
 import type { User } from "../../../lib/userTypes";
 import type { Tweet } from "../../../lib/tweets";
 import UserLayout from "../../../components/user/UserLayout";
@@ -20,17 +22,6 @@ type Flash = {
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;      // 1ファイルの上限: 5MB
 const MAX_FILES_PER_TWEET = 4;              // 1ツイートに添付できる画像の上限
-
-// ISO形式の日時文字列を「YYYY年MM月DD日 HH:mm」形式に変換するユーティリティ
-function formatDate(iso: string): string {
-  const date = new Date(iso);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0"); // 月は0始まりのため+1
-  const day = String(date.getDate()).padStart(2, "0");
-  const hour = String(date.getHours()).padStart(2, "0");
-  const minute = String(date.getMinutes()).padStart(2, "0");
-  return `${year}年${month}月${day}日 ${hour}:${minute}`;
-}
 
 // UserLayout の render-prop から me を受け取り、つぶやき一覧・投稿・編集・削除・いいね・コメントを担当するコンポーネント
 function TweetsContent({ me }: { me: User }) {
@@ -185,8 +176,10 @@ function TweetsContent({ me }: { me: User }) {
   };
 
   // いいねをトグルする: 未いいね→いいね追加、いいね済み→いいね解除
+  // isLoading で処理中ガードをかけ、連打による多重POST・無駄な再取得を防ぐ
   const handleLikeToggle = async (tweet: Tweet) => {
     try {
+      setIsLoading(true);
       if (tweet.likedByCurrentUser) {
         await unlikeTweet(tweet.id);
       } else {
@@ -194,8 +187,11 @@ function TweetsContent({ me }: { me: User }) {
       }
       // APIから最新状態を取得してカウントを反映する
       setTweets(await getTweets());
-    } catch {
-      showFlash("error", "いいねに失敗しました");
+    } catch (error) {
+      // 固定文言ではなく、APIのエラーレスポンスから具体的な失敗理由を取り出して表示する
+      showFlash("error", getApiErrorMessage(error, "いいねに失敗しました"));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -207,8 +203,9 @@ function TweetsContent({ me }: { me: User }) {
       await addComment(tweetId, commentText);
       setCommentInputs((previous) => ({ ...previous, [tweetId]: "" }));
       setTweets(await getTweets());
-    } catch {
-      showFlash("error", "コメントの投稿に失敗しました");
+    } catch (error) {
+      // 固定文言ではなく、APIのエラーレスポンスから具体的な失敗理由を取り出して表示する
+      showFlash("error", getApiErrorMessage(error, "コメントの投稿に失敗しました"));
     }
   };
 
@@ -344,10 +341,11 @@ function TweetsContent({ me }: { me: User }) {
                         <span>💬</span>
                         <span>{commentCount}</span>
                       </button>
-                      {/* いいねボタン: いいね済みのときはハートを赤く表示してカウントを増やす */}
+                      {/* いいねボタン: いいね済みのときはハートを赤く表示してカウントを増やす。連打防止のため処理中は無効化する */}
                       <button
                         className={`tweets-page__action-btn${isLiked ? " tweets-page__action-btn--liked" : ""}`}
                         onClick={() => handleLikeToggle(tweet)}
+                        disabled={isLoading}
                       >
                         <span>{isLiked ? "❤️" : "🤍"}</span>
                         <span>{likeCount}</span>

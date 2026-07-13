@@ -39,6 +39,9 @@ export default function AdminUsersPage() {
   // ⋮ドロップダウンメニューの開閉管理。開いている行のユーザーIDを保持する（nullで全て閉じた状態）
   const [openMenuUserId, setOpenMenuUserId] = useState<string | null>(null)
 
+  // 削除処理中のユーザーID。連打による多重DELETEを防ぐガードとして使う（nullは処理中なし）
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
   // 並べ替えモーダルの表示状態とモーダル内の選択値（一時的な入力値）
   const [showSortModal, setShowSortModal] = useState(false)
   const [sortCriteriaInput, setSortCriteriaInput] = useState<SortCriteria>("createdAt")
@@ -93,10 +96,14 @@ export default function AdminUsersPage() {
       return true
     })
 
-    // Step2: 並べ替え（文字列比較。登録日はISO形式なので辞書順=時系列順になる）
+    // Step2: 並べ替え。名前は localeCompare('ja') で五十音順、登録日はISO形式なので辞書順=時系列順で比較する
     const sortedUsers = [...filteredUsers].sort((userA, userB) => {
-      const valueA = appliedSortCriteria === "name" ? userA.name : userA.createdAt
-      const valueB = appliedSortCriteria === "name" ? userB.name : userB.createdAt
+      if (appliedSortCriteria === "name") {
+        const compared = userA.name.localeCompare(userB.name, "ja")
+        return appliedSortOrder === "asc" ? compared : -compared
+      }
+      const valueA = userA.createdAt
+      const valueB = userB.createdAt
       if (valueA < valueB) return appliedSortOrder === "asc" ? -1 : 1
       if (valueA > valueB) return appliedSortOrder === "asc" ? 1 : -1
       return 0
@@ -111,14 +118,18 @@ export default function AdminUsersPage() {
   }
 
   // 受講生削除処理。確認ダイアログ → DELETE API → 一覧から該当行を即時削除する
+  // deletingId で処理中フラグを持たせ、連打による多重DELETEを防ぐ
   const handleDelete = async (userId: string) => {
-    if (!window.confirm("本当に削除しますか？")) return
+    if (deletingId || !window.confirm("本当に削除しますか？")) return
+    setDeletingId(userId)
     try {
       await deleteUser(userId)
       // 削除成功後、一覧から該当ユーザーを除外して画面を更新する
       setUsers((previousUsers) => previousUsers.filter((user) => user.id !== userId))
     } catch {
       alert("削除に失敗しました。もう一度お試しください。")
+    } finally {
+      setDeletingId(null)
     }
     setOpenMenuUserId(null)
   }
@@ -231,12 +242,13 @@ export default function AdminUsersPage() {
                         onClick={(clickEvent) => clickEvent.stopPropagation()}
                       >
                         {/* 詳細ページは別PRで実装予定のため削除ボタンのみ表示 */}
-                        {/* 削除：確認ダイアログ後に削除APIを呼び出す */}
+                        {/* 削除：確認ダイアログ後に削除APIを呼び出す。処理中は無効化して連打による多重DELETEを防ぐ */}
                         <button
                           className="dropdown-item text-danger"
                           onClick={() => handleDelete(user.id)}
+                          disabled={deletingId === user.id}
                         >
-                          削除
+                          {deletingId === user.id ? "削除中..." : "削除"}
                         </button>
                       </div>
                     )}

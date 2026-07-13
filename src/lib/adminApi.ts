@@ -4,6 +4,8 @@
 import axios from 'axios'
 import { api, tokenStorage } from './api'
 import type { AdminUser } from './userTypes'
+// つぶやきの型。関数内でのインラインimport（import('./tweets').Tweet）をやめ、ファイル先頭で1回だけimportする
+import type { Tweet } from './tweets'
 
 export interface Admin {
   id: string
@@ -59,7 +61,7 @@ export async function deleteUser(userId: string): Promise<void> {
 
 // 指定ユーザーのつぶやき一覧を管理者権限で取得する。
 // 管理者は user_id を持たないためユーザー向けエンドポイントではなく専用の管理者エンドポイントを使う
-export async function getAdminUserTweets(userId: string): Promise<import('./tweets').Tweet[]> {
-  const res = await api.get<{ tweets: import('./tweets').Tweet[] }>(`/admin/users/${userId}/tweets`)
+export async function getAdminUserTweets(userId: string): Promise<Tweet[]> {
+  const res = await api.get<{ tweets: Tweet[] }>(`/admin/users/${userId}/tweets`)
   return res.data.tweets
 }

@@ -7,18 +7,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { getCurrentAdmin, adminLogout, getAdminUserTweets, getUser, type Admin } from "../../lib/adminApi";
 import type { Tweet } from "../../lib/tweets";
 import AdminLayout from "../../components/admin/AdminLayout";
+// 日付整形はページ内の重複実装を廃止し、共通ユーティリティ formatDate を使う（DRY原則）
+import { formatDate } from "../../lib/formatDate";
 import "../../styles/pages/tweets.css";
-
-// ISO形式の日時文字列を「YYYY年MM月DD日 HH:mm」形式に変換するユーティリティ
-function formatDate(iso: string): string {
-  const date = new Date(iso);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0"); // 月は0始まりのため+1
-  const day = String(date.getDate()).padStart(2, "0");
-  const hour = String(date.getHours()).padStart(2, "0");
-  const minute = String(date.getMinutes()).padStart(2, "0");
-  return `${year}年${month}月${day}日 ${hour}:${minute}`;
-}
 
 export default function AdminUserTweetsPage() {
   const navigate = useNavigate();
@@ -26,7 +17,7 @@ export default function AdminUserTweetsPage() {
   const { userId } = useParams<{ userId: string }>();
 
   const [admin, setAdmin] = useState<Admin | null>(null);
-  // 画面見出しに使うユーザー名（APIレスポンスの最初のツイートから取得する）
+  // 画面見出しに使うユーザー名（getUser で取得。つぶやき0件でも表示できる）
   const [userName, setUserName] = useState<string>("");
   // 対象ユーザーのつぶやき一覧（Rails DB から取得）
   const [tweets, setTweets] = useState<Tweet[]>([]);
