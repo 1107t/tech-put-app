@@ -16,7 +16,6 @@ export const dashboardMenu: MenuItem[] = [
   { label: "e-learning", to: "/dashboard", icon: "fa-solid fa-book-open" },
   { label: "記事一覧", to: "/articles", icon: "fa-solid fa-newspaper" },
   { label: "プロフィール一覧", to: "/profiles", icon: "fa-solid fa-address-card" },
-  { label: "動画投稿一覧", to: "/videos", icon: "fa-brands fa-youtube" },
   { label: "つぶやき一覧", to: "/tweets", icon: "fa-brands fa-twitter" },
   { label: "問い合わせ", to: "/inquiries", icon: "fa-solid fa-circle-info" },
 ];

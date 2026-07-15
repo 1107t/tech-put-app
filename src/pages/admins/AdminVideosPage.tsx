@@ -28,14 +28,19 @@ export default function AdminVideosPage() {
   const [page, setPage] = useState(1);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [videosError, setVideosError] = useState<string | null>(null);
   const PER_PAGE = 30;
 
   useEffect(() => {
     if (!admin) return;
     let cancelled = false;
-    getAdminPosts().then((posts) => {
-      if (!cancelled) { setVideos(posts); setVideosReady(true); }
-    });
+    getAdminPosts()
+      .then((posts) => {
+        if (!cancelled) { setVideos(posts); setVideosReady(true); }
+      })
+      .catch(() => {
+        if (!cancelled) { setVideosError("動画一覧の読み込みに失敗しました。"); setVideosReady(true); }
+      });
     return () => { cancelled = true; };
   }, [admin]);
 
@@ -97,6 +102,15 @@ export default function AdminVideosPage() {
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">読み込み中...</span>
         </div>
+      </div>
+    );
+  }
+
+  if (videosError) {
+    return (
+      <div className="d-flex flex-column justify-content-center align-items-center min-vh-100 gap-3">
+        <p className="text-danger mb-0">{videosError}</p>
+        <button className="btn btn-secondary btn-sm" onClick={() => window.location.reload()}>再試行</button>
       </div>
     );
   }

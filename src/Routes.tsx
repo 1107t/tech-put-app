@@ -13,7 +13,6 @@ import ArticlePostPage from './pages/users/article/Post';
 import ArticleIndexPage from './pages/users/article/Index';
 import ArticleEditPage from './pages/users/article/Edit';
 import ArticleShowPage from './pages/users/article/Show';
-import UserVideoIndexPage from './pages/users/video/Index';
 
 // 管理者用ページ
 import AdminLoginPage from './pages/admins/AdminLoginPage';
@@ -43,7 +42,6 @@ function AppRoutes() {
         <Route path="/message/:type" element={<UserMessagePage />} />
         <Route path="/reset" element={<UserPassreset />} />
         <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/videos" element={<UserVideoIndexPage />} />
         <Route path="/tweets" element={<TweetIndex />} />
         <Route path="/articles" element={<ArticleIndexPage />} />
         <Route path="/articles/new" element={<ArticlePostPage />} />
