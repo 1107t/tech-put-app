@@ -24,7 +24,10 @@ import AdminPage from './pages/adminpage';
 import AdminDetail from './pages/admins/AdminDetail';
 import AdminUsersPage from './pages/admins/AdminUsersPage';
 import AdminUserTweetsPage from './pages/admins/AdminUserTweetsPage';
-// detail / articles / posts は対象ページ実装の別PRで一緒に追加する
+// 受講生詳細・記事一覧・動画投稿一覧ページ（受講生一覧機能の追加分）
+import AdminUserDetailPage from './pages/admins/AdminUserDetailPage';
+import AdminUserArticlesPage from './pages/admins/AdminUserArticlesPage';
+import AdminUserPostsPage from './pages/admins/AdminUserPostsPage';
 
 // アプリのルーティングを管理するコンポーネント。全ページのURL設定をここで一元管理する。
 function AppRoutes() {
@@ -57,7 +60,11 @@ function AppRoutes() {
         <Route path="/admin/users" element={<AdminUsersPage />} />
         {/* ユーザー別つぶやき一覧。react-router v6 は specificity でマッチするため定義順は問わない */}
         <Route path="/admin/users/:userId/tweets" element={<AdminUserTweetsPage />} />
-        {/* detail / articles / posts は対象ページ実装の別PRで追加する */}
+        {/* 受講生別 記事一覧・動画投稿一覧。tweets と同じく specificity でマッチする */}
+        <Route path="/admin/users/:userId/articles" element={<AdminUserArticlesPage />} />
+        <Route path="/admin/users/:userId/posts" element={<AdminUserPostsPage />} />
+        {/* 受講生詳細。:userId 配下の固定セグメント（tweets/articles/posts）より下に置き誤マッチを避ける */}
+        <Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
         <Route path="/admin/inquiries" element={<div>問い合わせ一覧ページ（未実装）</div>} />
 
         {/* 管理者詳細（動的パスは固定パスの後に定義） */}

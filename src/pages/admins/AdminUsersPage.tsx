@@ -209,10 +209,24 @@ export default function AdminUsersPage() {
                 <tr key={user.id}>
                   <td>{user.name}</td>
                   <td>{user.email}</td>
-                  {/* 記事一覧ページは別PRで実装予定のため、当面は件数のみ表示 */}
-                  <td>{user.articlesCount}</td>
-                  {/* 動画一覧ページは別PRで実装予定のため、当面は件数のみ表示 */}
-                  <td>{user.postsCount}</td>
+                  <td>
+                    {/* 記事数クリックでユーザー別記事一覧へ遷移する（つぶやき数と同一パターン） */}
+                    <button
+                      className="btn btn-link p-0 text-decoration-none"
+                      onClick={() => navigate(`/admin/users/${user.id}/articles`)}
+                    >
+                      {user.articlesCount}
+                    </button>
+                  </td>
+                  <td>
+                    {/* 動画数クリックでユーザー別動画投稿一覧へ遷移する（つぶやき数と同一パターン） */}
+                    <button
+                      className="btn btn-link p-0 text-decoration-none"
+                      onClick={() => navigate(`/admin/users/${user.id}/posts`)}
+                    >
+                      {user.postsCount}
+                    </button>
+                  </td>
                   <td>
                     {/* つぶやき数クリックでユーザー別つぶやき一覧へ遷移する */}
                     <button
@@ -241,7 +255,13 @@ export default function AdminUsersPage() {
                         style={{ position: "absolute", right: 0, top: "100%", zIndex: 1000, minWidth: "100px" }}
                         onClick={(clickEvent) => clickEvent.stopPropagation()}
                       >
-                        {/* 詳細ページは別PRで実装予定のため削除ボタンのみ表示 */}
+                        {/* 詳細：クリックで受講生詳細ページへ遷移する。削除項目の上に配置する */}
+                        <button
+                          className="dropdown-item"
+                          onClick={() => navigate(`/admin/users/${user.id}`)}
+                        >
+                          詳細
+                        </button>
                         {/* 削除：確認ダイアログ後に削除APIを呼び出す。処理中は無効化して連打による多重DELETEを防ぐ */}
                         <button
                           className="dropdown-item text-danger"
