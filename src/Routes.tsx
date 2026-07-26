@@ -24,7 +24,7 @@ import AdminPage from './pages/adminpage';
 import AdminDetail from './pages/admins/AdminDetail';
 import AdminUsersPage from './pages/admins/AdminUsersPage';
 import AdminArticleIndexPage from './pages/admins/article/Index';
-import AdminArticlePostPage from './pages/admins/article/Post';
+import AdminArticleNewPage from './pages/admins/article/New';
 import AdminArticleEditPage from './pages/admins/article/Edit';
 import AdminArticleShowPage from './pages/admins/article/Show';
 
@@ -55,7 +55,7 @@ function AppRoutes() {
         <Route path="/admin/reset" element={<AdminPassreset />} />
         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
         <Route path="/admin/articles" element={<AdminArticleIndexPage />} />
-        <Route path="/admin/articles/new" element={<AdminArticlePostPage />} />
+        <Route path="/admin/articles/new" element={<AdminArticleNewPage />} />
         <Route path="/admin/articles/:id/edit" element={<AdminArticleEditPage />} />
         <Route path="/admin/articles/:id" element={<AdminArticleShowPage />} />
         <Route path="/admin/videos" element={<div>動画投稿一覧ページ（未実装）</div>} />

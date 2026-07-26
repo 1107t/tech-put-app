@@ -10,7 +10,7 @@ import { getApiErrorMessage } from "../../../lib/api";
 import AdminLayout from "../../../components/admin/AdminLayout";
 import ArticleEditor from "../../../components/user/ArticleEditor";
 
-export default function AdminArticlePostPage() {
+export default function AdminArticleNewPage() {
   const navigate = useNavigate();
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [loading, setLoading] = useState(true);
