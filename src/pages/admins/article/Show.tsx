@@ -11,6 +11,7 @@ import {
 import { getApiErrorMessage } from "../../../lib/api";
 import AdminLayout from "../../../components/admin/AdminLayout";
 import MarkdownView from "../../../components/user/MarkdownView";
+import "../../../styles/pages/adminArticleShow.css";
 
 export default function AdminArticleShowPage() {
   const { id } = useParams<{ id: string }>();
@@ -126,7 +127,9 @@ export default function AdminArticleShowPage() {
               </div>
               {error && <p className="text-danger mt-2 mb-0">{error}</p>}
               <hr />
-              <MarkdownView body={article.content} />
+              <div className="article-show-content">
+                <MarkdownView body={article.content} />
+              </div>
             </div>
           </div>
         </div>
