@@ -42,3 +42,58 @@ export async function getUsers(): Promise<AdminUser[]> {
   const res = await api.get<{ users: AdminUser[] }>('/admin/users')
   return res.data.users
 }
+
+export type AdminArticle = {
+  id: string
+  title: string
+  subTitle: string
+  content: string
+  articleType: string | null
+  userId: string | null
+  adminId: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export type AdminArticleInput = {
+  title: string
+  subTitle: string
+  content: string
+  articleType: string
+}
+
+export async function getAdminArticles(): Promise<AdminArticle[]> {
+  const res = await api.get<{ articles: AdminArticle[] }>('/admin/articles')
+  return res.data.articles
+}
+
+export async function getAdminArticle(id: string): Promise<AdminArticle | undefined> {
+  try {
+    const res = await api.get<{ article: AdminArticle }>(`/admin/articles/${id}`)
+    return res.data.article
+  } catch (err) {
+    if (axios.isAxiosError(err) && err.response?.status === 404) {
+      return undefined
+    }
+    throw err
+  }
+}
+
+export async function createAdminArticle(data: AdminArticleInput): Promise<string> {
+  const res = await api.post<{ article: AdminArticle }>('/admin/articles', {
+    title: data.title, sub_title: data.subTitle, content: data.content,
+    article_type: data.articleType,
+  })
+  return res.data.article.id
+}
+
+export async function updateAdminArticle(id: string, data: AdminArticleInput): Promise<void> {
+  await api.patch(`/admin/articles/${id}`, {
+    title: data.title, sub_title: data.subTitle, content: data.content,
+    article_type: data.articleType,
+  })
+}
+
+export async function deleteAdminArticle(id: string): Promise<void> {
+  await api.delete(`/admin/articles/${id}`)
+}

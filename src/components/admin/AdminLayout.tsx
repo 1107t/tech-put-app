@@ -10,25 +10,33 @@ type Props = {
   admin: Admin | null;
   onLogout: () => void;
   children: React.ReactNode;
+  headerTitle?: string;
+  headerAction?: React.ReactNode;
+  headerBreadcrumb?: { label: string; to: string };
 };
 
-export default function AdminLayout({ admin, onLogout, children }: Props) {
+export default function AdminLayout({ admin, onLogout, children, headerTitle, headerAction, headerBreadcrumb }: Props) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
     <div className="min-vh-100 admin-shell">
       <div className="d-flex">
         {/* 左サイドバー（専用コンポーネント） */}
-        <AdminSidebar />
+        <AdminSidebar isOpen={sidebarOpen} />
 
         {/* メインコンテンツ */}
-        <div className="flex-grow-1 admin-main">
+        <div className={`flex-grow-1 admin-main${sidebarOpen ? "" : " admin-main--expanded"}`}>
           {/* ヘッダー */}
           <HeaderItem
             admin={admin}
             dropdownOpen={dropdownOpen}
             setDropdownOpen={setDropdownOpen}
             onLogout={onLogout}
+            onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+            title={headerTitle}
+            action={headerAction}
+            breadcrumb={headerBreadcrumb}
           />
 
           {/* 各ページ固有のコンテンツ */}

@@ -14,17 +14,21 @@ const menuItems = [
   { id: 5, label: "問い合わせ一覧", to: "/admin/inquiries", icon: "fa-solid fa-list" },
 ];
 
-export default function AdminSidebar() {
+type Props = {
+  isOpen: boolean;
+};
+
+export default function AdminSidebar({ isOpen }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
-    <div className="text-white p-3 d-flex flex-column admin-sidebar">
+    <div className={`text-white p-3 d-flex flex-column admin-sidebar${isOpen ? "" : " admin-sidebar--collapsed"}`}>
       <div className="mb-4 pb-3 admin-sidebar__title-area">
         <h5 className="mb-0 admin-sidebar__title">TecPutt管理画面</h5>
       </div>
 
       {/* 検索ボックス */}
-      <div className="mb-4">
+      <div className="mb-4 admin-sidebar__search">
         <div className="input-group input-group-sm">
           <input
             type="text"
