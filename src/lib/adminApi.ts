@@ -1,6 +1,11 @@
+// src/lib/adminApi.ts【修正】
+// 管理者向けAPIクライアント。認証・ユーザー管理・つぶやき取得の関数を提供する。
+// AdminArticle / AdminPost は対象ページ実装の別PRで追加する
 import axios from 'axios'
 import { api, tokenStorage } from './api'
 import type { AdminUser } from './userTypes'
+// つぶやきの型。関数内でのインラインimport（import('./tweets').Tweet）をやめ、ファイル先頭で1回だけimportする
+import type { Tweet } from './tweets'
 
 export interface Admin {
   id: string
@@ -43,6 +48,26 @@ export async function getUsers(): Promise<AdminUser[]> {
   return res.data.users
 }
 
+// 受講生1件の詳細を取得する。AdminUserTweetsPage で見出しのユーザー名表示に使用する
+export async function getUser(userId: string): Promise<AdminUser> {
+  const res = await api.get<{ user: AdminUser }>(`/admin/users/${userId}`)
+  return res.data.user
+}
+
+// 受講生を削除する。DELETE /admin/users/:id を呼び出す
+export async function deleteUser(userId: string): Promise<void> {
+  await api.delete(`/admin/users/${userId}`)
+}
+
+// 指定ユーザーのつぶやき一覧を管理者権限で取得する。
+// 管理者は user_id を持たないためユーザー向けエンドポイントではなく専用の管理者エンドポイントを使う
+export async function getAdminUserTweets(userId: string): Promise<Tweet[]> {
+  const res = await api.get<{ tweets: Tweet[] }>(`/admin/users/${userId}/tweets`)
+  return res.data.tweets
+}
+
+// ここから下は管理者記事CRUD機能（別PR #23 で origin/main にマージ済み）。
+// PR #21 のつぶやき用関数と追加位置が重なったためコンフリクトしたが、内容は独立なので両方を残す。
 export type AdminArticle = {
   id: string
   title: string

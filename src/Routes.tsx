@@ -1,4 +1,4 @@
-// src/Routes.tsx
+// src/Routes.tsx【修正】
 // アプリ全体のルーティング定義。URLパスとページコンポーネントを対応付ける。
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
@@ -23,6 +23,9 @@ import AdminDashboardPage from './pages/admins/AdminDashboardPage';
 import AdminPage from './pages/adminpage';
 import AdminDetail from './pages/admins/AdminDetail';
 import AdminUsersPage from './pages/admins/AdminUsersPage';
+// ユーザー別つぶやき一覧ページ（PR #21 で追加）
+import AdminUserTweetsPage from './pages/admins/AdminUserTweetsPage';
+// 管理者記事CRUD機能のページ（別PR #23 で origin/main にマージ済み。コンフリクト解消で両方を残す）
 import AdminArticleIndexPage from './pages/admins/article/Index';
 import AdminArticleNewPage from './pages/admins/article/New';
 import AdminArticleEditPage from './pages/admins/article/Edit';
@@ -60,6 +63,9 @@ function AppRoutes() {
         <Route path="/admin/articles/:id" element={<AdminArticleShowPage />} />
         <Route path="/admin/videos" element={<div>動画投稿一覧ページ（未実装）</div>} />
         <Route path="/admin/users" element={<AdminUsersPage />} />
+        {/* ユーザー別つぶやき一覧。react-router v6 は specificity でマッチするため定義順は問わない */}
+        <Route path="/admin/users/:userId/tweets" element={<AdminUserTweetsPage />} />
+        {/* detail / articles / posts は対象ページ実装の別PRで追加する */}
         <Route path="/admin/inquiries" element={<div>問い合わせ一覧ページ（未実装）</div>} />
 
         {/* 管理者詳細（動的パスは固定パスの後に定義） */}
