@@ -10,7 +10,7 @@ import {
   getUser,
   getAdminUserPosts,
   type Admin,
-  type AdminPost,
+  type AdminUserPost,
 } from "../../lib/adminApi"
 import AdminLayout from "../../components/admin/AdminLayout"
 
@@ -40,7 +40,7 @@ export default function AdminUserPostsPage() {
   // 画面見出しに表示するユーザー名
   const [userName, setUserName] = useState<string>("")
   // 対象ユーザーの動画投稿一覧
-  const [posts, setPosts] = useState<AdminPost[]>([])
+  const [posts, setPosts] = useState<AdminUserPost[]>([])
   const [loading, setLoading] = useState(true)
   // データ取得失敗時に表示するエラーメッセージ（AdminUserTweetsPage と同じパターン）
   const [error, setError] = useState<string | null>(null)

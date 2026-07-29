@@ -14,7 +14,8 @@ export interface Admin {
 }
 
 // 管理者が閲覧する受講生別記事の型。受講生別記事一覧ページ（AdminUserArticlesPage）で使用する
-export interface AdminArticle {
+// ※main に管理者記事CRUD用の別の AdminArticle 型があるため、衝突回避で AdminUserArticle に改名（受講生の記事の意）
+export interface AdminUserArticle {
   id: string              // 記事ID
   title: string           // 記事タイトル
   content: string         // 記事本文（一覧ではプレビュー表示に使う）
@@ -23,7 +24,7 @@ export interface AdminArticle {
 }
 
 // 管理者が閲覧する受講生別動画投稿の型。受講生別動画投稿一覧ページ（AdminUserPostsPage）で使用する
-export interface AdminPost {
+export interface AdminUserPost {
   id: string                 // 動画投稿ID
   title: string              // 動画タイトル
   body: string               // 動画の説明本文（一覧ではプレビュー表示に使う）
@@ -86,14 +87,70 @@ export async function getAdminUserTweets(userId: string): Promise<Tweet[]> {
 
 // 指定ユーザーの記事一覧を管理者権限で取得する。
 // GET /admin/users/:userId/articles を呼び出す。並び順（createdAt desc）はAPI側で保証する
-export async function getAdminUserArticles(userId: string): Promise<AdminArticle[]> {
-  const res = await api.get<{ articles: AdminArticle[] }>(`/admin/users/${userId}/articles`)
+export async function getAdminUserArticles(userId: string): Promise<AdminUserArticle[]> {
+  const res = await api.get<{ articles: AdminUserArticle[] }>(`/admin/users/${userId}/articles`)
   return res.data.articles
 }
 
 // 指定ユーザーの動画投稿一覧を管理者権限で取得する。
 // GET /admin/users/:userId/posts を呼び出す。並び順（createdAt desc）はAPI側で保証する
-export async function getAdminUserPosts(userId: string): Promise<AdminPost[]> {
-  const res = await api.get<{ posts: AdminPost[] }>(`/admin/users/${userId}/posts`)
+export async function getAdminUserPosts(userId: string): Promise<AdminUserPost[]> {
+  const res = await api.get<{ posts: AdminUserPost[] }>(`/admin/users/${userId}/posts`)
   return res.data.posts
+}
+
+// ここから下は管理者記事CRUD機能（別PR #23 で origin/main にマージ済み）。受講生別の閲覧機能とは別物。
+export type AdminArticle = {
+  id: string
+  title: string
+  subTitle: string
+  content: string
+  articleType: string | null
+  userId: string | null
+  adminId: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export type AdminArticleInput = {
+  title: string
+  subTitle: string
+  content: string
+  articleType: string
+}
+
+export async function getAdminArticles(): Promise<AdminArticle[]> {
+  const res = await api.get<{ articles: AdminArticle[] }>('/admin/articles')
+  return res.data.articles
+}
+
+export async function getAdminArticle(id: string): Promise<AdminArticle | undefined> {
+  try {
+    const res = await api.get<{ article: AdminArticle }>(`/admin/articles/${id}`)
+    return res.data.article
+  } catch (err) {
+    if (axios.isAxiosError(err) && err.response?.status === 404) {
+      return undefined
+    }
+    throw err
+  }
+}
+
+export async function createAdminArticle(data: AdminArticleInput): Promise<string> {
+  const res = await api.post<{ article: AdminArticle }>('/admin/articles', {
+    title: data.title, sub_title: data.subTitle, content: data.content,
+    article_type: data.articleType,
+  })
+  return res.data.article.id
+}
+
+export async function updateAdminArticle(id: string, data: AdminArticleInput): Promise<void> {
+  await api.patch(`/admin/articles/${id}`, {
+    title: data.title, sub_title: data.subTitle, content: data.content,
+    article_type: data.articleType,
+  })
+}
+
+export async function deleteAdminArticle(id: string): Promise<void> {
+  await api.delete(`/admin/articles/${id}`)
 }

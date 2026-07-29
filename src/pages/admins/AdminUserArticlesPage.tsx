@@ -10,7 +10,7 @@ import {
   getUser,
   getAdminUserArticles,
   type Admin,
-  type AdminArticle,
+  type AdminUserArticle,
 } from "../../lib/adminApi"
 import AdminLayout from "../../components/admin/AdminLayout"
 
@@ -40,7 +40,7 @@ export default function AdminUserArticlesPage() {
   // 画面見出しに表示するユーザー名
   const [userName, setUserName] = useState<string>("")
   // 対象ユーザーの記事一覧
-  const [articles, setArticles] = useState<AdminArticle[]>([])
+  const [articles, setArticles] = useState<AdminUserArticle[]>([])
   const [loading, setLoading] = useState(true)
   // データ取得失敗時に表示するエラーメッセージ（AdminUserTweetsPage と同じパターン）
   const [error, setError] = useState<string | null>(null)
