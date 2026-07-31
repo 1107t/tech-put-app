@@ -4,7 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { createAdminPost } from "../../lib/adminApi";
 import { getApiErrorMessage } from "../../lib/api";
 import AdminLayout from "../../components/admin/AdminLayout";
+import PageSpinner from "../../components/admin/PageSpinner";
+import PageError from "../../components/admin/PageError";
 import { useRequireAdmin } from "../../lib/useRequireAdmin";
+import { getYouTubeVideoId } from "../../lib/youtube";
 
 const TITLE_MAX = 30;
 const BODY_MAX = 240;
@@ -17,37 +20,31 @@ export default function AdminVideoPostPage() {
   const [body, setBody] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!title.trim()) { setError("タイトルを入力してください。"); return; }
     if (!body.trim()) { setError("内容を入力してください。"); return; }
     if (!youtubeUrl.trim()) { setError("YoutubeのURLを入力してください。"); return; }
+    if (!getYouTubeVideoId(youtubeUrl)) { setError("有効なYouTubeのURLを入力してください。"); return; }
+    setIsSubmitting(true);
     try {
       await createAdminPost({ title, body, youtube_url: youtubeUrl });
       navigate("/admin/videos");
     } catch (err) {
       setError(getApiErrorMessage(err, "動画の投稿に失敗しました。"));
+      setIsSubmitting(false);
     }
   };
 
   if (networkError) {
-    return (
-      <div className="d-flex flex-column justify-content-center align-items-center min-vh-100 gap-3">
-        <p className="text-danger mb-0">{networkError}</p>
-        <button className="btn btn-secondary btn-sm" onClick={() => window.location.reload()}>再試行</button>
-      </div>
-    );
+    return <PageError message={networkError} />;
   }
 
   if (loading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center min-vh-100">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">読み込み中...</span>
-        </div>
-      </div>
-    );
+    return <PageSpinner />;
   }
 
   return (
@@ -119,11 +116,12 @@ export default function AdminVideoPostPage() {
                     type="button"
                     className="btn btn-secondary btn-sm"
                     onClick={() => navigate("/admin/videos")}
+                    disabled={isSubmitting}
                   >
                     キャンセル
                   </button>
-                  <button type="submit" className="btn btn-primary btn-sm">
-                    投稿する
+                  <button type="submit" className="btn btn-primary btn-sm" disabled={isSubmitting}>
+                    {isSubmitting ? "投稿中..." : "投稿する"}
                   </button>
                 </div>
               </form>

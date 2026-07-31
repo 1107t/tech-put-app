@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAdminPosts, deleteAdminPost, type AdminPost } from "../../lib/adminApi";
 import AdminLayout from "../../components/admin/AdminLayout";
+import PageSpinner from "../../components/admin/PageSpinner";
+import PageError from "../../components/admin/PageError";
 import { getYouTubeVideoId } from "../../lib/youtube";
 import { useRequireAdmin } from "../../lib/useRequireAdmin";
 
@@ -75,7 +77,7 @@ export default function AdminVideosPage() {
     if (applied.title && !v.title.includes(applied.title)) return false;
     if (applied.body && !v.body.includes(applied.body)) return false;
     const postedAt = new Date(v.createdAt);
-    if (applied.createdAtFrom && postedAt < new Date(applied.createdAtFrom)) return false;
+    if (applied.createdAtFrom && postedAt < new Date(applied.createdAtFrom + "T00:00:00")) return false;
     if (applied.createdAtTo && postedAt > new Date(applied.createdAtTo + "T23:59:59")) return false;
       return true;
     })
@@ -87,32 +89,22 @@ export default function AdminVideosPage() {
   const totalPages = Math.ceil(filteredVideos.length / PER_PAGE);
   const pagedVideos = filteredVideos.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
+  useEffect(() => {
+    if (totalPages > 0 && page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
   if (error) {
-    return (
-      <div className="d-flex flex-column justify-content-center align-items-center min-vh-100 gap-3">
-        <p className="text-danger mb-0">{error}</p>
-        <button className="btn btn-secondary btn-sm" onClick={() => window.location.reload()}>再試行</button>
-      </div>
-    );
+    return <PageError message={error} />;
   }
 
   if (loading || !videosReady) {
-    return (
-      <div className="d-flex justify-content-center align-items-center min-vh-100">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">読み込み中...</span>
-        </div>
-      </div>
-    );
+    return <PageSpinner />;
   }
 
   if (videosError) {
-    return (
-      <div className="d-flex flex-column justify-content-center align-items-center min-vh-100 gap-3">
-        <p className="text-danger mb-0">{videosError}</p>
-        <button className="btn btn-secondary btn-sm" onClick={() => window.location.reload()}>再試行</button>
-      </div>
-    );
+    return <PageError message={videosError} />;
   }
 
   return (

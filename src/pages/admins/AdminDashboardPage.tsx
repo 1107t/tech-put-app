@@ -1,27 +1,18 @@
 // src/pages/admins/AdminDashboardPage.tsx
 import { useRequireAdmin } from "../../lib/useRequireAdmin";
 import AdminLayout from "../../components/admin/AdminLayout";
+import PageSpinner from "../../components/admin/PageSpinner";
+import PageError from "../../components/admin/PageError";
 
 export default function AdminDashboardPage() {
   const { admin, loading, error, handleLogout } = useRequireAdmin();
 
   if (error) {
-    return (
-      <div className="d-flex flex-column justify-content-center align-items-center min-vh-100 gap-3">
-        <p className="text-danger mb-0">{error}</p>
-        <button className="btn btn-secondary btn-sm" onClick={() => window.location.reload()}>再試行</button>
-      </div>
-    );
+    return <PageError message={error} />;
   }
 
   if (loading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center min-vh-100">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">読み込み中...</span>
-        </div>
-      </div>
-    );
+    return <PageSpinner />;
   }
 
   return (

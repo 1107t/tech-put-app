@@ -1,65 +1,52 @@
 // src/pages/admins/AdminUserDetailPage.tsx
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getCurrentAdmin, adminLogout, getAdminUser, type Admin } from "../../lib/adminApi";
+import axios from "axios";
+import { getAdminUser } from "../../lib/adminApi";
 import type { AdminUser } from "../../lib/userTypes";
 import AdminLayout from "../../components/admin/AdminLayout";
+import PageSpinner from "../../components/admin/PageSpinner";
+import PageError from "../../components/admin/PageError";
+import { useRequireAdmin } from "../../lib/useRequireAdmin";
 
 export default function AdminUserDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [admin, setAdmin] = useState<Admin | null>(null);
+  const { admin, loading, error, handleLogout } = useRequireAdmin();
   const [user, setUser] = useState<AdminUser | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [userReady, setUserReady] = useState(false);
+  const [userError, setUserError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!id) return;
+    if (!admin || !id) return;
     let cancelled = false;
-    Promise.all([
-      getCurrentAdmin(),
-      getAdminUser(id).catch(() => null),
-    ]).then(([currentAdmin, userData]) => {
-      if (cancelled) return;
-      if (!currentAdmin) {
-        navigate("/admin/login", { replace: true });
-        return;
-      }
-      setAdmin(currentAdmin);
-      setUser(userData);
-      setLoading(false);
-    }).catch(() => {
-      if (cancelled) return;
-      setError("読み込みに失敗しました。時間をおいて再試行してください。");
-      setLoading(false);
-    });
+    getAdminUser(id)
+      .then((userData) => {
+        if (!cancelled) { setUser(userData); setUserReady(true); }
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        if (axios.isAxiosError(err) && err.response?.status === 404) {
+          setUser(null);
+          setUserReady(true);
+        } else {
+          setUserError("読み込みに失敗しました。時間をおいて再試行してください。");
+          setUserReady(true);
+        }
+      });
     return () => { cancelled = true; };
-  }, [navigate, id]);
-
-  const handleLogout = async () => {
-    await adminLogout();
-    navigate("/admin/login", { replace: true });
-  };
-
-  if (loading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center min-vh-100">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">読み込み中...</span>
-        </div>
-      </div>
-    );
-  }
+  }, [admin, id]);
 
   if (error) {
-    return (
-      <div className="d-flex flex-column justify-content-center align-items-center min-vh-100 gap-3">
-        <p className="text-danger mb-0">{error}</p>
-        <button className="btn btn-secondary btn-sm" onClick={() => window.location.reload()}>
-          再試行
-        </button>
-      </div>
-    );
+    return <PageError message={error} />;
+  }
+
+  if (loading || !userReady) {
+    return <PageSpinner />;
+  }
+
+  if (userError) {
+    return <PageError message={userError} />;
   }
 
   if (!user) {

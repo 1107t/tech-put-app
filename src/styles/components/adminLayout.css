@@ -80,3 +80,13 @@
 .admin-main {
   margin-left: var(--admin-sidebar-width);
 }
+
+/* ヘッダー右側のリンク（例: 動画投稿） */
+.admin-header-link {
+  font-size: 14px;
+  color: #6c757d;
+}
+
+.admin-header-link:hover {
+  color: #333;
+}

@@ -35,8 +35,11 @@ export function useRequireAdmin(): {
   }, [navigate]);
 
   const handleLogout = async () => {
-    await adminLogout();
-    navigate("/admin/login", { replace: true });
+    try {
+      await adminLogout();
+    } finally {
+      navigate("/admin/login", { replace: true });
+    }
   };
 
   return { admin, loading, error, handleLogout };

@@ -42,13 +42,7 @@ export default function HeaderItem({ admin, dropdownOpen, setDropdownOpen, onLog
       {/* 右側：動画投稿タグ＋アカウントアイコン＋ドロップダウン */}
       <div className="d-flex align-items-center gap-3">
         {pathname === "/admin/videos" && (
-          <Link
-            to="/admin/videos/new"
-            className="text-decoration-none"
-            style={{ fontSize: "14px", color: "#6c757d" }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "#333")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "#6c757d")}
-          >
+          <Link to="/admin/videos/new" className="text-decoration-none admin-header-link">
             動画投稿
           </Link>
         )}

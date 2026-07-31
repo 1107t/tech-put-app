@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getAdminPost, type AdminPost } from "../../lib/adminApi";
 import AdminLayout from "../../components/admin/AdminLayout";
+import PageSpinner from "../../components/admin/PageSpinner";
+import PageError from "../../components/admin/PageError";
 import { getYouTubeVideoId } from "../../lib/youtube";
 import { useRequireAdmin } from "../../lib/useRequireAdmin";
 
@@ -25,22 +27,11 @@ export default function VideoDetail() {
   }, [admin, id]);
 
   if (error) {
-    return (
-      <div className="d-flex flex-column justify-content-center align-items-center min-vh-100 gap-3">
-        <p className="text-danger mb-0">{error}</p>
-        <button className="btn btn-secondary btn-sm" onClick={() => window.location.reload()}>再試行</button>
-      </div>
-    );
+    return <PageError message={error} />;
   }
 
   if (loading || !videoReady) {
-    return (
-      <div className="d-flex justify-content-center align-items-center min-vh-100">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">読み込み中...</span>
-        </div>
-      </div>
-    );
+    return <PageSpinner />;
   }
 
   if (!video) {
