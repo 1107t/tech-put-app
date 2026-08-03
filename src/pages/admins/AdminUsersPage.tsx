@@ -96,12 +96,14 @@ export default function AdminUsersPage() {
     })
 
     // Step2: 並べ替え。名前は localeCompare('ja') で五十音順、登録日は共通の比較関数で時系列順に並べる
+    // 比較関数はsort()呼び出し前に1回だけ生成し、コールバック内で再生成しないようにする
+    const compareCreatedAt = compareByCreatedAt(appliedSortOrder)
     const sortedUsers = [...filteredUsers].sort((userA, userB) => {
       if (appliedSortCriteria === "name") {
         const compared = userA.name.localeCompare(userB.name, "ja")
         return appliedSortOrder === "asc" ? compared : -compared
       }
-      return compareByCreatedAt(appliedSortOrder)(userA, userB)
+      return compareCreatedAt(userA, userB)
     })
 
     return sortedUsers
