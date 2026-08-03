@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   getCurrentAdmin,
@@ -10,6 +10,9 @@ import {
 } from "../../../lib/adminApi";
 import { getApiErrorMessage } from "../../../lib/api";
 import AdminLayout from "../../../components/admin/AdminLayout";
+
+// 並べ替え順序の型定義（昇順 or 降順）
+type SortOrder = "asc" | "desc";
 
 function formatDate(isoString: string): string {
   const d = new Date(isoString);
@@ -28,6 +31,12 @@ export default function AdminArticleIndexPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
+  // 並べ替えモーダルの表示状態とモーダル内の選択値（一時的な入力値）
+  const [showSortModal, setShowSortModal] = useState(false);
+  const [sortOrderInput, setSortOrderInput] = useState<SortOrder>("desc");
+  // 実際に一覧に適用されている並べ替え順序（「並べ替える」ボタン押下で確定される）
+  const [appliedSortOrder, setAppliedSortOrder] = useState<SortOrder>("desc");
 
   useEffect(() => {
     let cancelled = false;
@@ -62,6 +71,16 @@ export default function AdminArticleIndexPage() {
     return () => document.removeEventListener("click", closeMenu);
   }, [openMenuId]);
 
+  // 並べ替えを適用した表示用記事一覧を算出する。createdAtはISO 8601形式のため文字列比較で時系列順になる
+  const displayedArticles = useMemo(() => {
+    const sortedArticles = [...articles].sort((articleA, articleB) => {
+      if (articleA.createdAt < articleB.createdAt) return appliedSortOrder === "asc" ? -1 : 1;
+      if (articleA.createdAt > articleB.createdAt) return appliedSortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+    return sortedArticles;
+  }, [articles, appliedSortOrder]);
+
   const handleLogout = async () => {
     await adminLogout();
     navigate("/admin/login", { replace: true });
@@ -77,6 +96,18 @@ export default function AdminArticleIndexPage() {
       setOpenMenuId(null);
       setError(getApiErrorMessage(err, "記事の削除に失敗しました。"));
     }
+  };
+
+  // 並べ替えモーダルを開く。現在の適用済み順序をモーダルの初期値として設定する
+  const openSortModal = () => {
+    setSortOrderInput(appliedSortOrder);
+    setShowSortModal(true);
+  };
+
+  // 並べ替えモーダルの「並べ替える」ボタン処理。入力値を適用済み順序として確定する
+  const applySortModal = () => {
+    setAppliedSortOrder(sortOrderInput);
+    setShowSortModal(false);
   };
 
   if (loading) {
@@ -102,8 +133,10 @@ export default function AdminArticleIndexPage() {
     >
       <div className="d-flex align-items-center gap-3 mb-4">
         <h4 className="mb-0">記事一覧</h4>
-        {/* TODO: 並べ替え・絞り込み検索機能は別タスクで実装予定。ここではUI配置のみ */}
-        <button className="btn btn-success btn-sm">並べ替え</button>
+        <button className="btn btn-success btn-sm" onClick={openSortModal}>
+          並べ替え
+        </button>
+        {/* TODO: 絞り込み検索機能は別タスクで実装予定。ここではUI配置のみ */}
         <button className="btn btn-success btn-sm">絞り込み検索</button>
       </div>
 
@@ -120,14 +153,14 @@ export default function AdminArticleIndexPage() {
             </tr>
           </thead>
           <tbody>
-            {articles.length === 0 ? (
+            {displayedArticles.length === 0 ? (
               <tr>
                 <td colSpan={4} className="text-center text-muted py-4">
                   記事がありません
                 </td>
               </tr>
             ) : (
-              articles.map((article) => (
+              displayedArticles.map((article) => (
                 <tr
                   key={article.id}
                   style={{ cursor: "pointer" }}
@@ -183,6 +216,47 @@ export default function AdminArticleIndexPage() {
           </tbody>
         </table>
       </div>
+
+      {/* 並べ替えモーダル */}
+      {showSortModal && (
+        <>
+          <div className="modal show d-block" tabIndex={-1}>
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">並べ替え</h5>
+                </div>
+                <div className="modal-body d-grid gap-3">
+                  {/* 並べ替え順セレクトボックス（新しい順=降順 or 古い順=昇順） */}
+                  <div>
+                    <label className="form-label fw-semibold">並べ替え順</label>
+                    <select
+                      className="form-select"
+                      value={sortOrderInput}
+                      onChange={(changeEvent) =>
+                        setSortOrderInput(changeEvent.target.value as SortOrder)
+                      }
+                    >
+                      <option value="desc">新しい順</option>
+                      <option value="asc">古い順</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button className="btn btn-secondary" onClick={() => setShowSortModal(false)}>
+                    戻る
+                  </button>
+                  <button className="btn btn-success" onClick={applySortModal}>
+                    並べ替える
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* モーダル背景オーバーレイ。クリックでモーダルを閉じる */}
+          <div className="modal-backdrop fade show" onClick={() => setShowSortModal(false)} />
+        </>
+      )}
     </AdminLayout>
   );
 }
