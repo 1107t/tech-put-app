@@ -214,7 +214,20 @@ export default function AdminArticleIndexPage() {
       {/* 並べ替えモーダル */}
       {showSortModal && (
         <>
-          <div className="modal show d-block" tabIndex={-1}>
+          {/*
+            .modalは画面全体を覆いz-indexも.modal-backdropより前面にあるため、
+            背景クリックで閉じる処理は.modal-backdrop側ではなく.modal側に付け、
+            クリックされた要素がダイアログ自身（.modal自体）かどうかを判定する
+          */}
+          <div
+            className="modal show d-block"
+            tabIndex={-1}
+            onClick={(clickEvent) => {
+              if (clickEvent.target === clickEvent.currentTarget) {
+                setShowSortModal(false);
+              }
+            }}
+          >
             <div className="modal-dialog">
               <div className="modal-content">
                 <div className="modal-header">
@@ -250,12 +263,8 @@ export default function AdminArticleIndexPage() {
               </div>
             </div>
           </div>
-          {/* モーダル背景オーバーレイ。クリックでモーダルを閉じる */}
-          <div
-            className="modal-backdrop fade show"
-            aria-label="モーダルを閉じる"
-            onClick={() => setShowSortModal(false)}
-          />
+          {/* 純粋な視覚的背景。クリックハンドラは.modal側に付けたためここでは不要 */}
+          <div className="modal-backdrop fade show" />
         </>
       )}
     </AdminLayout>
