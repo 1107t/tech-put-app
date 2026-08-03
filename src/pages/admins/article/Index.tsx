@@ -10,9 +10,7 @@ import {
 } from "../../../lib/adminApi";
 import { getApiErrorMessage } from "../../../lib/api";
 import AdminLayout from "../../../components/admin/AdminLayout";
-
-// 並べ替え順序の型定義（昇順 or 降順）
-type SortOrder = "asc" | "desc";
+import { compareByCreatedAt, type SortOrder } from "../../../lib/sort";
 
 function formatDate(isoString: string): string {
   const d = new Date(isoString);
@@ -73,11 +71,7 @@ export default function AdminArticleIndexPage() {
 
   // 並べ替えを適用した表示用記事一覧を算出する。createdAtはISO 8601形式のため文字列比較で時系列順になる
   const displayedArticles = useMemo(() => {
-    const sortedArticles = [...articles].sort((articleA, articleB) => {
-      if (articleA.createdAt < articleB.createdAt) return appliedSortOrder === "asc" ? -1 : 1;
-      if (articleA.createdAt > articleB.createdAt) return appliedSortOrder === "asc" ? 1 : -1;
-      return 0;
-    });
+    const sortedArticles = [...articles].sort(compareByCreatedAt(appliedSortOrder));
     return sortedArticles;
   }, [articles, appliedSortOrder]);
 
@@ -229,8 +223,11 @@ export default function AdminArticleIndexPage() {
                 <div className="modal-body d-grid gap-3">
                   {/* 並べ替え順セレクトボックス（新しい順=降順 or 古い順=昇順） */}
                   <div>
-                    <label className="form-label fw-semibold">並べ替え順</label>
+                    <label htmlFor="sort-order-select" className="form-label fw-semibold">
+                      並べ替え順
+                    </label>
                     <select
+                      id="sort-order-select"
                       className="form-select"
                       value={sortOrderInput}
                       onChange={(changeEvent) =>
@@ -254,7 +251,11 @@ export default function AdminArticleIndexPage() {
             </div>
           </div>
           {/* モーダル背景オーバーレイ。クリックでモーダルを閉じる */}
-          <div className="modal-backdrop fade show" onClick={() => setShowSortModal(false)} />
+          <div
+            className="modal-backdrop fade show"
+            aria-label="モーダルを閉じる"
+            onClick={() => setShowSortModal(false)}
+          />
         </>
       )}
     </AdminLayout>

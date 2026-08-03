@@ -13,11 +13,10 @@ import {
 } from "../../lib/adminApi"
 import type { AdminUser } from "../../lib/userTypes"
 import AdminLayout from "../../components/admin/AdminLayout"
+import { compareByCreatedAt, type SortOrder } from "../../lib/sort"
 
 // 並べ替え基準の型定義（登録日 or 名前）
 type SortCriteria = "createdAt" | "name"
-// 並べ替え順序の型定義（昇順 or 降順）
-type SortOrder = "asc" | "desc"
 
 // 絞り込み検索条件の型定義
 interface FilterCondition {
@@ -96,17 +95,13 @@ export default function AdminUsersPage() {
       return true
     })
 
-    // Step2: 並べ替え。名前は localeCompare('ja') で五十音順、登録日はISO形式なので辞書順=時系列順で比較する
+    // Step2: 並べ替え。名前は localeCompare('ja') で五十音順、登録日は共通の比較関数で時系列順に並べる
     const sortedUsers = [...filteredUsers].sort((userA, userB) => {
       if (appliedSortCriteria === "name") {
         const compared = userA.name.localeCompare(userB.name, "ja")
         return appliedSortOrder === "asc" ? compared : -compared
       }
-      const valueA = userA.createdAt
-      const valueB = userB.createdAt
-      if (valueA < valueB) return appliedSortOrder === "asc" ? -1 : 1
-      if (valueA > valueB) return appliedSortOrder === "asc" ? 1 : -1
-      return 0
+      return compareByCreatedAt(appliedSortOrder)(userA, userB)
     })
 
     return sortedUsers
