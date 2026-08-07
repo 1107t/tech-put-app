@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import UserLayout, { dashboardMenu } from "../../../components/user/UserLayout";
-import { getAllArticles, deleteArticle, seedSampleArticles, type Article } from "../../../lib/articleDb";
+import { getAllArticles, deleteArticle, type Article } from "../../../lib/articleApi";
+import { getApiErrorMessage } from "../../../lib/api";
 import "../../../styles/pages/articleList.css";
 
 function formatDate(isoString: string): string {
@@ -17,12 +18,11 @@ function formatDate(isoString: string): string {
 export default function ArticleIndexPage() {
   const navigate = useNavigate();
   const [articles, setArticles] = useState<Article[]>([]);
-  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
   const load = async () => {
     try {
-      await seedSampleArticles();
       const data = await getAllArticles();
       setArticles(data);
     } catch {
@@ -41,14 +41,14 @@ export default function ArticleIndexPage() {
     return () => document.removeEventListener("click", closeMenu);
   }, [openMenuId]);
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (!window.confirm("この記事を削除しますか？")) return;
     try {
       await deleteArticle(id);
       setOpenMenuId(null);
       await load();
-    } catch {
-      setError("記事の削除に失敗しました。");
+    } catch (err) {
+      setError(getApiErrorMessage(err, "記事の削除に失敗しました。"));
     }
   };
 
@@ -58,7 +58,7 @@ export default function ArticleIndexPage() {
       headerTitle="投稿した記事一覧"
       headerAction={<Link to="/articles/new" className="header-action-link">記事投稿</Link>}
     >
-      {(_me) => (
+      {(me) => (
         <>
           {error && <p className="text-danger">{error}</p>}
           <h2 className="article-list-title mb-4">記事一覧</h2>
@@ -82,37 +82,41 @@ export default function ArticleIndexPage() {
                     onClick={() => navigate(`/articles/${article.id}`)}
                   >
                     <td className="link-td">{article.title}</td>
-                    <td className="link-td">{article.subtitle}</td>
+                    <td className="link-td">{article.subTitle}</td>
                     <td className="link-td"></td>
                     <td className="link-td">{formatDate(article.createdAt)}</td>
                     <td className="menu-td" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        className="btn menu-btn"
-                        onClick={() =>
-                          setOpenMenuId(openMenuId === article.id ? null : article.id)
-                        }
-                      >
-                        ︙
-                      </button>
-                      {openMenuId === article.id && (
-                        <ul className="dropdown-menu show">
-                          <li>
-                            <Link
-                              className="nav-link"
-                              to={`/articles/${article.id}/edit`}
-                            >
-                              編集
-                            </Link>
-                          </li>
-                          <li>
-                            <button
-                              className="nav-link delete-btn"
-                              onClick={() => handleDelete(article.id)}
-                            >
-                              削除
-                            </button>
-                          </li>
-                        </ul>
+                      {article.userId === me.id && (
+                        <>
+                          <button
+                            className="btn menu-btn"
+                            onClick={() =>
+                              setOpenMenuId(openMenuId === article.id ? null : article.id)
+                            }
+                          >
+                            ︙
+                          </button>
+                          {openMenuId === article.id && (
+                            <ul className="dropdown-menu show">
+                              <li>
+                                <Link
+                                  className="nav-link"
+                                  to={`/articles/${article.id}/edit`}
+                                >
+                                  編集
+                                </Link>
+                              </li>
+                              <li>
+                                <button
+                                  className="nav-link delete-btn"
+                                  onClick={() => handleDelete(article.id)}
+                                >
+                                  削除
+                                </button>
+                              </li>
+                            </ul>
+                          )}
+                        </>
                       )}
                     </td>
                   </tr>

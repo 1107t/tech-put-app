@@ -1,6 +1,10 @@
+// src/lib/adminApi.ts
+// 管理者向けAPIクライアント。認証・ユーザー管理・つぶやき取得・動画/記事CRUDの関数を提供する。
 import axios from 'axios'
 import { api, tokenStorage } from './api'
 import type { AdminUser } from './userTypes'
+// つぶやきの型。関数内でのインラインimport（import('./tweets').Tweet）をやめ、ファイル先頭で1回だけimportする
+import type { Tweet } from './tweets'
 
 export interface Admin {
   id: string
@@ -48,6 +52,24 @@ export async function getAdminUser(id: string): Promise<AdminUser> {
   return res.data.user
 }
 
+// 受講生1件の詳細を取得する。AdminUserTweetsPage で見出しのユーザー名表示に使用する
+export async function getUser(userId: string): Promise<AdminUser> {
+  const res = await api.get<{ user: AdminUser }>(`/admin/users/${userId}`)
+  return res.data.user
+}
+
+// 受講生を削除する。DELETE /admin/users/:id を呼び出す
+export async function deleteUser(userId: string): Promise<void> {
+  await api.delete(`/admin/users/${userId}`)
+}
+
+// 指定ユーザーのつぶやき一覧を管理者権限で取得する。
+// 管理者は user_id を持たないためユーザー向けエンドポイントではなく専用の管理者エンドポイントを使う
+export async function getAdminUserTweets(userId: string): Promise<Tweet[]> {
+  const res = await api.get<{ tweets: Tweet[] }>(`/admin/users/${userId}/tweets`)
+  return res.data.tweets
+}
+
 export interface AdminPost {
   id: string
   title: string
@@ -81,4 +103,59 @@ export async function createAdminPost(params: {
 
 export async function deleteAdminPost(id: string): Promise<void> {
   await api.delete(`/admin/posts/${id}`)
+}
+
+export type AdminArticle = {
+  id: string
+  title: string
+  subTitle: string
+  content: string
+  articleType: string | null
+  userId: string | null
+  adminId: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export type AdminArticleInput = {
+  title: string
+  subTitle: string
+  content: string
+  articleType: string
+}
+
+export async function getAdminArticles(): Promise<AdminArticle[]> {
+  const res = await api.get<{ articles: AdminArticle[] }>('/admin/articles')
+  return res.data.articles
+}
+
+export async function getAdminArticle(id: string): Promise<AdminArticle | undefined> {
+  try {
+    const res = await api.get<{ article: AdminArticle }>(`/admin/articles/${id}`)
+    return res.data.article
+  } catch (err) {
+    if (axios.isAxiosError(err) && err.response?.status === 404) {
+      return undefined
+    }
+    throw err
+  }
+}
+
+export async function createAdminArticle(data: AdminArticleInput): Promise<string> {
+  const res = await api.post<{ article: AdminArticle }>('/admin/articles', {
+    title: data.title, sub_title: data.subTitle, content: data.content,
+    article_type: data.articleType,
+  })
+  return res.data.article.id
+}
+
+export async function updateAdminArticle(id: string, data: AdminArticleInput): Promise<void> {
+  await api.patch(`/admin/articles/${id}`, {
+    title: data.title, sub_title: data.subTitle, content: data.content,
+    article_type: data.articleType,
+  })
+}
+
+export async function deleteAdminArticle(id: string): Promise<void> {
+  await api.delete(`/admin/articles/${id}`)
 }
