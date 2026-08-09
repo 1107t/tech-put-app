@@ -26,6 +26,7 @@ import AdminUsersPage from './pages/admins/AdminUsersPage';
 import AdminUserDetailPage from './pages/admins/AdminUserDetailPage';
 import AdminVideosPage from './pages/admins/AdminVideosPage';
 import AdminVideoPostPage from './pages/admins/AdminVideoPostPage';
+import AdminVideoEditPage from './pages/admins/AdminVideoEditPage';
 import VideoDetail from './pages/admins/VideoDetail';
 // ユーザー別つぶやき一覧ページ（PR #21 で追加）
 import AdminUserTweetsPage from './pages/admins/AdminUserTweetsPage';
@@ -67,6 +68,7 @@ function AppRoutes() {
         <Route path="/admin/articles/:id" element={<AdminArticleShowPage />} />
         <Route path="/admin/videos" element={<AdminVideosPage />} />
         <Route path="/admin/videos/new" element={<AdminVideoPostPage />} />
+        <Route path="/admin/videos/:id/edit" element={<AdminVideoEditPage />} />
         <Route path="/admin/videos/:id" element={<VideoDetail />} />
         <Route path="/admin/users" element={<AdminUsersPage />} />
         {/* ユーザー別つぶやき一覧。react-router v6 は specificity でマッチするため定義順は問わない */}
