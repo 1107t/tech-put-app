@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, type MouseEvent as ReactMouseEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   getCurrentAdmin,
@@ -10,17 +10,14 @@ import {
 } from "../../../lib/adminApi";
 import { getApiErrorMessage } from "../../../lib/api";
 import AdminLayout from "../../../components/admin/AdminLayout";
-import { compareByCreatedAt, isSortOrder, type SortOrder } from "../../../lib/sort";
-
-// 並べ替えの既定順序。モーダルの初期表示と一覧の初期並び順の両方がこの定数を参照する
-// （本番Rails版で並べ替えパラメータなしのデフォルトがDESC=新しい順だったことに合わせている）
-const DEFAULT_SORT_ORDER: SortOrder = "desc";
-
-// 並べ替え順セレクトの選択肢。値とラベルの対応をここ1箇所で定義する
-const SORT_ORDER_OPTIONS: { value: SortOrder; label: string }[] = [
-  { value: "desc", label: "新しい順" },
-  { value: "asc", label: "古い順" },
-];
+import {
+  compareByCreatedAt,
+  isSortOrder,
+  DEFAULT_SORT_ORDER,
+  SORT_ORDER_OPTIONS,
+  type SortOrder,
+} from "../../../lib/sort";
+import { useModalA11y } from "../../../lib/useModalA11y";
 
 function formatDate(isoString: string): string {
   const d = new Date(isoString);
@@ -45,8 +42,6 @@ export default function AdminArticleIndexPage() {
   const [sortOrderInput, setSortOrderInput] = useState<SortOrder>(DEFAULT_SORT_ORDER);
   // 実際に一覧に適用されている並べ替え順序（「並べ替える」ボタン押下で確定される）
   const [appliedSortOrder, setAppliedSortOrder] = useState<SortOrder>(DEFAULT_SORT_ORDER);
-  // モーダルを開いた直後にフォーカスを移すためのセレクトへの参照
-  const sortOrderSelectRef = useRef<HTMLSelectElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -82,10 +77,10 @@ export default function AdminArticleIndexPage() {
   }, [openMenuId]);
 
   // 並べ替えを適用した表示用記事一覧を算出する。元のarticles配列は変更しない
-  const displayedArticles = useMemo(() => {
-    const sortedArticles = [...articles].sort(compareByCreatedAt(appliedSortOrder));
-    return sortedArticles;
-  }, [articles, appliedSortOrder]);
+  const displayedArticles = useMemo(
+    () => [...articles].sort(compareByCreatedAt(appliedSortOrder)),
+    [articles, appliedSortOrder]
+  );
 
   const handleLogout = async () => {
     await adminLogout();
@@ -110,7 +105,8 @@ export default function AdminArticleIndexPage() {
     setShowSortModal(true);
   };
 
-  // 並べ替えモーダルを閉じる。「戻る」ボタン・背景クリック・Escキーの3箇所から呼ぶ
+  // 並べ替えモーダルを閉じる共通処理。
+  // 「戻る」ボタン・背景クリック・Escキーに加え、並べ替え確定後（applySortModal）からも呼ばれる
   const closeSortModal = () => {
     setShowSortModal(false);
   };
@@ -121,22 +117,23 @@ export default function AdminArticleIndexPage() {
     closeSortModal();
   };
 
-  // 並べ替えモーダル表示中のみEscキーで閉じられるようにする
-  useEffect(() => {
-    if (!showSortModal) return;
-    const closeOnEscape = (keyboardEvent: KeyboardEvent) => {
-      if (keyboardEvent.key === "Escape") closeSortModal();
-    };
-    document.addEventListener("keydown", closeOnEscape);
-    return () => document.removeEventListener("keydown", closeOnEscape);
-  }, [showSortModal]);
+  // モーダルのEsc・フォーカス制御（初期フォーカス／トラップ／閉じたあとの復帰）を委譲する
+  const sortModalRef = useModalA11y(showSortModal, closeSortModal);
 
-  // モーダルを開いた直後にセレクトへフォーカスを移す。
-  // フォーカスがページ側に残ったままだとキーボード操作でモーダル内に到達できないため
-  useEffect(() => {
-    if (!showSortModal) return;
-    sortOrderSelectRef.current?.focus();
-  }, [showSortModal]);
+  // ダブルクリックの2打目かどうか。
+  // モーダルのボタンを素早く2回押すと、1打目でモーダルが開閉するため2打目は別の要素に届く。
+  // 開くときは手前に出現した.modalへ、閉じるときは背後に露出した記事行へ着弾し、
+  // どちらもユーザーが意図していない操作を起こしてしまう。
+  // event.detailはブラウザが数えた連続クリック回数で、着弾した要素が変わっても引き継がれるため、
+  // これで「ひとつのジェスチャの2打目」だけを弾ける。
+  // キーボード（Enter/Space）由来のclickはdetailが0になるので、detail !== 1 と書いてはいけない
+  const isSecondClickOfDoubleClick = (clickEvent: ReactMouseEvent) => clickEvent.detail > 1;
+
+  // 記事詳細への遷移。モーダルを閉じた2打目が背後の行に届いた場合は無視する
+  const handleRowClick = (articleId: string, clickEvent: ReactMouseEvent) => {
+    if (isSecondClickOfDoubleClick(clickEvent)) return;
+    navigate(`/admin/articles/${articleId}`);
+  };
 
   if (loading) {
     return (
@@ -176,7 +173,8 @@ export default function AdminArticleIndexPage() {
             <tr>
               <th>タイトル</th>
               <th>サブタイトル</th>
-              <th>投稿日時</th>
+              {/* 並べ替えが適用されている列であることと現在の順序を支援技術に伝える */}
+              <th aria-sort={appliedSortOrder === "asc" ? "ascending" : "descending"}>投稿日時</th>
               <th></th>
             </tr>
           </thead>
@@ -192,7 +190,7 @@ export default function AdminArticleIndexPage() {
                 <tr
                   key={article.id}
                   style={{ cursor: "pointer" }}
-                  onClick={() => navigate(`/admin/articles/${article.id}`)}
+                  onClick={(clickEvent) => handleRowClick(article.id, clickEvent)}
                 >
                   <td>{article.title}</td>
                   <td>{article.subTitle}</td>
@@ -254,12 +252,17 @@ export default function AdminArticleIndexPage() {
             クリックされた要素がダイアログ自身（.modal自体）かどうかを判定する
           */}
           <div
+            ref={sortModalRef}
             className="modal show d-block"
             tabIndex={-1}
             role="dialog"
             aria-modal="true"
             aria-labelledby="sort-modal-title"
             onClick={(clickEvent) => {
+              // モーダルを開いた2打目がこのオーバーレイに届いた場合は背景クリックとみなさない。
+              // .modalはトリガーボタンの上に重なるため、これがないと素早い2回押しで
+              // 開いた直後のモーダルが即座に閉じてしまう
+              if (isSecondClickOfDoubleClick(clickEvent)) return;
               if (clickEvent.target === clickEvent.currentTarget) {
                 closeSortModal();
               }
@@ -281,10 +284,11 @@ export default function AdminArticleIndexPage() {
                     <select
                       id="sort-order-select"
                       className="form-select"
-                      ref={sortOrderSelectRef}
                       value={sortOrderInput}
                       onChange={(changeEvent) => {
-                        // 型ガードを通してから反映し、選択肢を増やしたときの値の不一致を型で検出できるようにする
+                        // DOM由来の値（string）を型アサーションなしでSortOrderへ絞り込む。
+                        // 想定外の値は黙って捨てられるため、選択肢を増やすときは
+                        // sort.tsのSORT_ORDERSにも必ず追加すること
                         const selectedValue = changeEvent.target.value;
                         if (isSortOrder(selectedValue)) setSortOrderInput(selectedValue);
                       }}

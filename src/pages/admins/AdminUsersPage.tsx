@@ -13,10 +13,24 @@ import {
 } from "../../lib/adminApi"
 import type { AdminUser } from "../../lib/userTypes"
 import AdminLayout from "../../components/admin/AdminLayout"
-import { compareByCreatedAt, type SortOrder } from "../../lib/sort"
+import {
+  compareByCreatedAt,
+  isSortOrder,
+  DEFAULT_SORT_ORDER,
+  SORT_ORDER_OPTIONS,
+  type SortOrder,
+} from "../../lib/sort"
 
+// 並べ替え基準として許容する値の一覧。型定義と実行時の検証の両方をここから導出する
+const SORT_CRITERIA = ["createdAt", "name"] as const
 // 並べ替え基準の型定義（登録日 or 名前）
-type SortCriteria = "createdAt" | "name"
+type SortCriteria = (typeof SORT_CRITERIA)[number]
+
+// 任意の文字列がSortCriteriaかどうかを判定する型ガード。
+// 並べ替え順（isSortOrder）と同じくDOM由来の値を型アサーションなしで絞り込むために使う
+function isSortCriteria(value: string): value is SortCriteria {
+  return SORT_CRITERIA.some((sortCriteria) => sortCriteria === value)
+}
 
 // 絞り込み検索条件の型定義
 interface FilterCondition {
@@ -44,10 +58,10 @@ export default function AdminUsersPage() {
   // 並べ替えモーダルの表示状態とモーダル内の選択値（一時的な入力値）
   const [showSortModal, setShowSortModal] = useState(false)
   const [sortCriteriaInput, setSortCriteriaInput] = useState<SortCriteria>("createdAt")
-  const [sortOrderInput, setSortOrderInput] = useState<SortOrder>("desc")
+  const [sortOrderInput, setSortOrderInput] = useState<SortOrder>(DEFAULT_SORT_ORDER)
   // 実際に一覧に適用されている並べ替え条件（「並べ替える」ボタン押下で確定される）
   const [appliedSortCriteria, setAppliedSortCriteria] = useState<SortCriteria>("createdAt")
-  const [appliedSortOrder, setAppliedSortOrder] = useState<SortOrder>("desc")
+  const [appliedSortOrder, setAppliedSortOrder] = useState<SortOrder>(DEFAULT_SORT_ORDER)
 
   // 絞り込み検索モーダルの表示状態とモーダル内の入力値（一時的な入力値）
   const [showFilterModal, setShowFilterModal] = useState(false)
@@ -273,9 +287,12 @@ export default function AdminUsersPage() {
                     <select
                       className="form-select"
                       value={sortCriteriaInput}
-                      onChange={(changeEvent) =>
-                        setSortCriteriaInput(changeEvent.target.value as SortCriteria)
-                      }
+                      onChange={(changeEvent) => {
+                        // 並べ替え順のセレクトと同じく、型ガードでSortCriteriaへ絞り込んでから反映する。
+                        // 選択肢を増やすときはSORT_CRITERIAにも必ず追加すること
+                        const selectedValue = changeEvent.target.value
+                        if (isSortCriteria(selectedValue)) setSortCriteriaInput(selectedValue)
+                      }}
                     >
                       <option value="createdAt">登録日</option>
                       <option value="name">名前</option>
@@ -287,12 +304,19 @@ export default function AdminUsersPage() {
                     <select
                       className="form-select"
                       value={sortOrderInput}
-                      onChange={(changeEvent) =>
-                        setSortOrderInput(changeEvent.target.value as SortOrder)
-                      }
+                      onChange={(changeEvent) => {
+                        // DOM由来の値（string）を型アサーションなしでSortOrderへ絞り込む。
+                        // 想定外の値は黙って捨てられるため、選択肢を増やすときは
+                        // sort.tsのSORT_ORDERSにも必ず追加すること
+                        const selectedValue = changeEvent.target.value
+                        if (isSortOrder(selectedValue)) setSortOrderInput(selectedValue)
+                      }}
                     >
-                      <option value="desc">新しい順</option>
-                      <option value="asc">古い順</option>
+                      {SORT_ORDER_OPTIONS.map((sortOrderOption) => (
+                        <option key={sortOrderOption.value} value={sortOrderOption.value}>
+                          {sortOrderOption.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
