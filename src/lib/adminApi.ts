@@ -1,6 +1,5 @@
-// src/lib/adminApi.ts【修正】
-// 管理者向けAPIクライアント。認証・ユーザー管理・つぶやき取得の関数を提供する。
-// AdminArticle / AdminPost は対象ページ実装の別PRで追加する
+// src/lib/adminApi.ts
+// 管理者向けAPIクライアント。認証・ユーザー管理・つぶやき取得・動画/記事CRUDの関数を提供する。
 import axios from 'axios'
 import { api, tokenStorage } from './api'
 import type { AdminUser } from './userTypes'
@@ -48,6 +47,11 @@ export async function getUsers(): Promise<AdminUser[]> {
   return res.data.users
 }
 
+export async function getAdminUser(id: string): Promise<AdminUser> {
+  const res = await api.get<{ user: AdminUser }>(`/admin/users/${id}`)
+  return res.data.user
+}
+
 // 受講生1件の詳細を取得する。AdminUserTweetsPage で見出しのユーザー名表示に使用する
 export async function getUser(userId: string): Promise<AdminUser> {
   const res = await api.get<{ user: AdminUser }>(`/admin/users/${userId}`)
@@ -66,8 +70,41 @@ export async function getAdminUserTweets(userId: string): Promise<Tweet[]> {
   return res.data.tweets
 }
 
-// ここから下は管理者記事CRUD機能（別PR #23 で origin/main にマージ済み）。
-// PR #21 のつぶやき用関数と追加位置が重なったためコンフリクトしたが、内容は独立なので両方を残す。
+export interface AdminPost {
+  id: string
+  title: string
+  body: string
+  youtubeUrl: string
+  adminId: string | null
+  userId: string | null
+  posterName: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export async function getAdminPosts(): Promise<AdminPost[]> {
+  const res = await api.get<{ posts: AdminPost[] }>('/admin/posts')
+  return res.data.posts
+}
+
+export async function getAdminPost(id: string): Promise<AdminPost> {
+  const res = await api.get<{ post: AdminPost }>(`/admin/posts/${id}`)
+  return res.data.post
+}
+
+export async function createAdminPost(params: {
+  title: string
+  body: string
+  youtube_url: string
+}): Promise<AdminPost> {
+  const res = await api.post<{ post: AdminPost }>('/admin/posts', params)
+  return res.data.post
+}
+
+export async function deleteAdminPost(id: string): Promise<void> {
+  await api.delete(`/admin/posts/${id}`)
+}
+
 export type AdminArticle = {
   id: string
   title: string

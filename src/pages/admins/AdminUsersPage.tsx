@@ -1,25 +1,22 @@
-// src/pages/admins/AdminUsersPage.tsx【修正】
+// src/pages/admins/AdminUsersPage.tsx
 // 登録ユーザー一覧ページ。並べ替え・絞り込み検索・⋮メニュー（詳細・削除）機能を含む。
 // 絞り込みと並べ替えはフロントエンド側のみで処理し、API再取得は行わない。
 
-import { useEffect, useState, useMemo } from "react"
-import { useNavigate } from "react-router-dom"
-import {
-  getCurrentAdmin,
-  adminLogout,
-  getUsers,
-  deleteUser,
-  type Admin,
-} from "../../lib/adminApi"
-import type { AdminUser } from "../../lib/userTypes"
-import AdminLayout from "../../components/admin/AdminLayout"
+import { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { getUsers, deleteUser } from "../../lib/adminApi";
+import type { AdminUser } from "../../lib/userTypes";
+import AdminLayout from "../../components/admin/AdminLayout";
+import PageSpinner from "../../components/admin/PageSpinner";
+import PageError from "../../components/admin/PageError";
+import { useRequireAdmin } from "../../lib/useRequireAdmin";
 import {
   compareByCreatedAt,
   isSortOrder,
   DEFAULT_SORT_ORDER,
   SORT_ORDER_OPTIONS,
   type SortOrder,
-} from "../../lib/sort"
+} from "../../lib/sort";
 
 // 並べ替え基準として許容する値の一覧。型定義と実行時の検証の両方をここから導出する
 const SORT_CRITERIA = ["createdAt", "name"] as const
@@ -45,9 +42,9 @@ const EMPTY_FILTER: FilterCondition = { name: "", email: "", fromDate: "", toDat
 
 export default function AdminUsersPage() {
   const navigate = useNavigate()
-  const [admin, setAdmin] = useState<Admin | null>(null)
+  const { admin, loading, error, handleLogout } = useRequireAdmin();
   const [users, setUsers] = useState<AdminUser[]>([])
-  const [loading, setLoading] = useState(true)
+  const [usersReady, setUsersReady] = useState(false);
 
   // ⋮ドロップダウンメニューの開閉管理。開いている行のユーザーIDを保持する（nullで全て閉じた状態）
   const [openMenuUserId, setOpenMenuUserId] = useState<string | null>(null)
@@ -69,26 +66,15 @@ export default function AdminUsersPage() {
   // 実際に一覧に適用されている絞り込み条件（「検索する」ボタン押下で確定される）
   const [appliedFilter, setAppliedFilter] = useState<FilterCondition>(EMPTY_FILTER)
 
-  // 管理者ログイン確認とユーザー一覧取得
+  // ユーザー一覧取得（管理者認証確認後）
   useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      const currentAdmin = await getCurrentAdmin()
-      if (cancelled) return
-      if (!currentAdmin) {
-        navigate("/admin/login", { replace: true })
-        return
-      }
-      setAdmin(currentAdmin)
-
-      const allUsers = await getUsers()
-      if (!cancelled) {
-        setUsers(allUsers)
-        setLoading(false)
-      }
-    })()
-    return () => { cancelled = true }
-  }, [navigate])
+    if (!admin) return;
+    let cancelled = false;
+    getUsers().then((allUsers) => {
+      if (!cancelled) { setUsers(allUsers); setUsersReady(true); }
+    });
+    return () => { cancelled = true; };
+  }, [admin]);
 
   // ⋮メニュー外のクリックでドロップダウンを閉じる処理
   useEffect(() => {
@@ -122,11 +108,6 @@ export default function AdminUsersPage() {
 
     return sortedUsers
   }, [users, appliedFilter, appliedSortCriteria, appliedSortOrder])
-
-  const handleLogout = async () => {
-    await adminLogout()
-    navigate("/admin/login", { replace: true })
-  }
 
   // 受講生削除処理。確認ダイアログ → DELETE API → 一覧から該当行を即時削除する
   // deletingId で処理中フラグを持たせ、連打による多重DELETEを防ぐ
@@ -171,15 +152,13 @@ export default function AdminUsersPage() {
     setShowFilterModal(false)
   }
 
+  if (error) {
+    return <PageError message={error} />;
+  }
+
   // データ取得中はスピナーを表示する
-  if (loading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center min-vh-100">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">読み込み中...</span>
-        </div>
-      </div>
-    )
+  if (loading || !usersReady) {
+    return <PageSpinner />;
   }
 
   return (
@@ -413,5 +392,5 @@ export default function AdminUsersPage() {
         </>
       )}
     </AdminLayout>
-  )
+  );
 }

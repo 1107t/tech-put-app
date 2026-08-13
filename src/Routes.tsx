@@ -23,9 +23,13 @@ import AdminDashboardPage from './pages/admins/AdminDashboardPage';
 import AdminPage from './pages/adminpage';
 import AdminDetail from './pages/admins/AdminDetail';
 import AdminUsersPage from './pages/admins/AdminUsersPage';
+import AdminUserDetailPage from './pages/admins/AdminUserDetailPage';
+import AdminVideosPage from './pages/admins/AdminVideosPage';
+import AdminVideoPostPage from './pages/admins/AdminVideoPostPage';
+import VideoDetail from './pages/admins/VideoDetail';
 // ユーザー別つぶやき一覧ページ（PR #21 で追加）
 import AdminUserTweetsPage from './pages/admins/AdminUserTweetsPage';
-// 管理者記事CRUD機能のページ（別PR #23 で origin/main にマージ済み。コンフリクト解消で両方を残す）
+// 管理者記事CRUD機能のページ（別PR #23 で origin/main にマージ済み）
 import AdminArticleIndexPage from './pages/admins/article/Index';
 import AdminArticleNewPage from './pages/admins/article/New';
 import AdminArticleEditPage from './pages/admins/article/Edit';
@@ -61,11 +65,13 @@ function AppRoutes() {
         <Route path="/admin/articles/new" element={<AdminArticleNewPage />} />
         <Route path="/admin/articles/:id/edit" element={<AdminArticleEditPage />} />
         <Route path="/admin/articles/:id" element={<AdminArticleShowPage />} />
-        <Route path="/admin/videos" element={<div>動画投稿一覧ページ（未実装）</div>} />
+        <Route path="/admin/videos" element={<AdminVideosPage />} />
+        <Route path="/admin/videos/new" element={<AdminVideoPostPage />} />
+        <Route path="/admin/videos/:id" element={<VideoDetail />} />
         <Route path="/admin/users" element={<AdminUsersPage />} />
         {/* ユーザー別つぶやき一覧。react-router v6 は specificity でマッチするため定義順は問わない */}
         <Route path="/admin/users/:userId/tweets" element={<AdminUserTweetsPage />} />
-        {/* detail / articles / posts は対象ページ実装の別PRで追加する */}
+        <Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
         <Route path="/admin/inquiries" element={<div>問い合わせ一覧ページ（未実装）</div>} />
 
         {/* 管理者詳細（動的パスは固定パスの後に定義） */}
