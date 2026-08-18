@@ -19,15 +19,18 @@ export function isSortOrder(value: string): value is SortOrder {
 // （本番Rails版で並べ替えパラメータなしのデフォルトがDESC=新しい順だったことに合わせている）
 export const DEFAULT_SORT_ORDER: SortOrder = "desc";
 
-// 並べ替え順セレクトの選択肢。値とラベルの対応をここ1箇所で定義し、
+// 並べ替え順セレクトの選択肢1件分の型。
+// 基準（日時・名前など）ごとに選択肢の組を作れるよう、型だけを共通で公開する
+export type SortOrderOption = { readonly value: SortOrder; readonly label: string };
+
+// 日時を基準に並べる画面の選択肢。値とラベルの対応をここ1箇所で定義し、
 // 一覧画面ごとに文言や値がずれることを防ぐ。
-// ラベルは日時を基準に並べることを前提にした文言のため、
-// 日時以外を基準にする画面で使う場合は基準に応じたラベルを別途用意すること
-export const SORT_ORDER_OPTIONS: readonly { readonly value: SortOrder; readonly label: string }[] =
-  [
-    { value: "desc", label: "新しい順" },
-    { value: "asc", label: "古い順" },
-  ];
+// ラベルも並べる順序（新しい順を先頭に置くか）も基準に依存するため、
+// 日時以外を基準にする画面は、この定数を使い回さず基準ごとに1組ずつ定義すること
+export const DATE_SORT_ORDER_OPTIONS: readonly SortOrderOption[] = [
+  { value: "desc", label: "新しい順" },
+  { value: "asc", label: "古い順" },
+];
 
 // createdAtを持つオブジェクト同士をArray.prototype.sortで使える比較関数を返す。
 // createdAtはDate.parseで数値（エポックミリ秒）に変換してから比較する。

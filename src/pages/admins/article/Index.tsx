@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, type MouseEvent as ReactMouseEvent } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   getCurrentAdmin,
@@ -14,10 +14,10 @@ import {
   compareByCreatedAt,
   isSortOrder,
   DEFAULT_SORT_ORDER,
-  SORT_ORDER_OPTIONS,
+  DATE_SORT_ORDER_OPTIONS,
   type SortOrder,
 } from "../../../lib/sort";
-import { useModalA11y } from "../../../lib/useModalA11y";
+import Modal from "../../../components/admin/Modal";
 
 function formatDate(isoString: string): string {
   const d = new Date(isoString);
@@ -82,6 +82,11 @@ export default function AdminArticleIndexPage() {
     [articles, appliedSortOrder]
   );
 
+  // 適用中の並べ替え順のラベル。支援技術への読み上げ文に使う
+  const appliedSortOrderLabel =
+    DATE_SORT_ORDER_OPTIONS.find((sortOrderOption) => sortOrderOption.value === appliedSortOrder)
+      ?.label ?? "";
+
   const handleLogout = async () => {
     await adminLogout();
     navigate("/admin/login", { replace: true });
@@ -106,7 +111,8 @@ export default function AdminArticleIndexPage() {
   };
 
   // 並べ替えモーダルを閉じる共通処理。
-  // 「戻る」ボタン・背景クリック・Escキーに加え、並べ替え確定後（applySortModal）からも呼ばれる
+  // 「戻る」ボタン・背景クリック・Escキーに加え、並べ替え確定後（applySortModal）からも呼ばれる。
+  // ダブルクリックの2打目の握り潰しとフォーカス制御はModal側が持つため、ここでは状態だけを変える
   const closeSortModal = () => {
     setShowSortModal(false);
   };
@@ -117,21 +123,9 @@ export default function AdminArticleIndexPage() {
     closeSortModal();
   };
 
-  // モーダルのEsc・フォーカス制御（初期フォーカス／トラップ／閉じたあとの復帰）を委譲する
-  const sortModalRef = useModalA11y(showSortModal, closeSortModal);
-
-  // ダブルクリックの2打目かどうか。
-  // モーダルのボタンを素早く2回押すと、1打目でモーダルが開閉するため2打目は別の要素に届く。
-  // 開くときは手前に出現した.modalへ、閉じるときは背後に露出した記事行へ着弾し、
-  // どちらもユーザーが意図していない操作を起こしてしまう。
-  // event.detailはブラウザが数えた連続クリック回数で、着弾した要素が変わっても引き継がれるため、
-  // これで「ひとつのジェスチャの2打目」だけを弾ける。
-  // キーボード（Enter/Space）由来のclickはdetailが0になるので、detail !== 1 と書いてはいけない
-  const isSecondClickOfDoubleClick = (clickEvent: ReactMouseEvent) => clickEvent.detail > 1;
-
-  // 記事詳細への遷移。モーダルを閉じた2打目が背後の行に届いた場合は無視する
-  const handleRowClick = (articleId: string, clickEvent: ReactMouseEvent) => {
-    if (isSecondClickOfDoubleClick(clickEvent)) return;
+  // 記事詳細への遷移。
+  // モーダルを閉じた2打目はcloseSortModal側で握り潰されるため、ここでのガードは不要
+  const handleRowClick = (articleId: string) => {
     navigate(`/admin/articles/${articleId}`);
   };
 
@@ -167,6 +161,16 @@ export default function AdminArticleIndexPage() {
 
       {error && <p className="text-danger">{error}</p>}
 
+      {/*
+        並べ替えが適用されたことを支援技術へ通知する領域。
+        th の aria-sort は「いま何順か」を静的に伝えるだけで、
+        「たったいま並べ替わった」ことは伝わらないため別に用意する。
+        視覚的には見せないので visually-hidden を付ける
+      */}
+      <p className="visually-hidden" role="status" aria-live="polite">
+        {`${appliedSortOrderLabel}で並べ替えました`}
+      </p>
+
       <div className="card shadow-sm">
         <table className="table table-hover mb-0">
           <thead className="table-light">
@@ -190,7 +194,7 @@ export default function AdminArticleIndexPage() {
                 <tr
                   key={article.id}
                   style={{ cursor: "pointer" }}
-                  onClick={(clickEvent) => handleRowClick(article.id, clickEvent)}
+                  onClick={() => handleRowClick(article.id)}
                 >
                   <td>{article.title}</td>
                   <td>{article.subTitle}</td>
@@ -243,79 +247,48 @@ export default function AdminArticleIndexPage() {
         </table>
       </div>
 
-      {/* 並べ替えモーダル */}
-      {showSortModal && (
-        <>
-          {/*
-            .modalは画面全体を覆いz-indexも.modal-backdropより前面にあるため、
-            背景クリックで閉じる処理は.modal-backdrop側ではなく.modal側に付け、
-            クリックされた要素がダイアログ自身（.modal自体）かどうかを判定する
-          */}
-          <div
-            ref={sortModalRef}
-            className="modal show d-block"
-            tabIndex={-1}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="sort-modal-title"
-            onClick={(clickEvent) => {
-              // モーダルを開いた2打目がこのオーバーレイに届いた場合は背景クリックとみなさない。
-              // .modalはトリガーボタンの上に重なるため、これがないと素早い2回押しで
-              // 開いた直後のモーダルが即座に閉じてしまう
-              if (isSecondClickOfDoubleClick(clickEvent)) return;
-              if (clickEvent.target === clickEvent.currentTarget) {
-                closeSortModal();
-              }
+      {/* 並べ替えモーダル。骨格・背景クリック・Esc・フォーカス制御は共通のModalが持つ */}
+      <Modal
+        isOpen={showSortModal}
+        onClose={closeSortModal}
+        title="並べ替え"
+        titleId="sort-modal-title"
+        footer={
+          <>
+            <button className="btn btn-secondary" onClick={closeSortModal}>
+              戻る
+            </button>
+            <button className="btn btn-success" onClick={applySortModal}>
+              並べ替える
+            </button>
+          </>
+        }
+      >
+        {/* 並べ替え順セレクトボックス（新しい順=降順 or 古い順=昇順） */}
+        <div>
+          <label htmlFor="sort-order-select" className="form-label fw-semibold">
+            並べ替え順
+          </label>
+          <select
+            id="sort-order-select"
+            className="form-select"
+            value={sortOrderInput}
+            onChange={(changeEvent) => {
+              // DOM由来の値（string）を型アサーションなしでSortOrderへ絞り込む。
+              // 想定外の値は黙って捨てられるため、選択肢を増やすときは
+              // sort.tsのSORT_ORDERSにも必ず追加すること
+              const selectedValue = changeEvent.target.value;
+              if (isSortOrder(selectedValue)) setSortOrderInput(selectedValue);
             }}
           >
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title" id="sort-modal-title">
-                    並べ替え
-                  </h5>
-                </div>
-                <div className="modal-body d-grid gap-3">
-                  {/* 並べ替え順セレクトボックス（新しい順=降順 or 古い順=昇順） */}
-                  <div>
-                    <label htmlFor="sort-order-select" className="form-label fw-semibold">
-                      並べ替え順
-                    </label>
-                    <select
-                      id="sort-order-select"
-                      className="form-select"
-                      value={sortOrderInput}
-                      onChange={(changeEvent) => {
-                        // DOM由来の値（string）を型アサーションなしでSortOrderへ絞り込む。
-                        // 想定外の値は黙って捨てられるため、選択肢を増やすときは
-                        // sort.tsのSORT_ORDERSにも必ず追加すること
-                        const selectedValue = changeEvent.target.value;
-                        if (isSortOrder(selectedValue)) setSortOrderInput(selectedValue);
-                      }}
-                    >
-                      {SORT_ORDER_OPTIONS.map((sortOrderOption) => (
-                        <option key={sortOrderOption.value} value={sortOrderOption.value}>
-                          {sortOrderOption.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <button className="btn btn-secondary" onClick={closeSortModal}>
-                    戻る
-                  </button>
-                  <button className="btn btn-success" onClick={applySortModal}>
-                    並べ替える
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          {/* 純粋な視覚的背景。クリックハンドラは.modal側に付けたためここでは不要 */}
-          <div className="modal-backdrop fade show" />
-        </>
-      )}
+            {DATE_SORT_ORDER_OPTIONS.map((sortOrderOption) => (
+              <option key={sortOrderOption.value} value={sortOrderOption.value}>
+                {sortOrderOption.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </Modal>
     </AdminLayout>
   );
 }
