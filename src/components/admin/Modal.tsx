@@ -1,34 +1,21 @@
-// src/components/admin/Modal.tsx【新規作成】
-// 講師側のモーダルUIを1箇所にまとめた共通コンポーネント。
-// 骨格（.modal → .modal-dialog → .modal-content → header/body/footer）に加え、
-// 背景クリックでのクローズ・Escキー・フォーカス制御・ダブルクリック対策を内包する。
-//
-// 共通化前は同じ骨格が3コピー存在し、記事一覧だけが背景クリックとフォーカス制御を持ち、
-// 受講生一覧の2つは持たない、という「見た目は同じなのに挙動が違う」状態になっていた。
-// ここに集約することで、モーダルを増やしても挙動が分岐しないようにする。
+// 講師側のモーダルUIの骨格と、閉じる際の挙動（背景クリック・Escキー・
+// フォーカス制御・ダブルクリック対策）を1箇所に集約する共通コンポーネント。
 
 import { useEffect, type ReactNode } from "react";
 import { useModalA11y } from "../../lib/useModalA11y";
 
 // モーダルを閉じた直後、同じジェスチャの2打目を背後の要素に着弾させないための処理。
-//
-// モーダルは画面全体を覆うため、1打目で閉じると2打目はその下に露出した要素へ届く。
-// 露出しうるのはサイドバー・ヘッダー・一覧の行・各種ボタンなど画面上のほぼ全てで、
-// 着弾する側それぞれにガードを配ると、要素が増えるたびに漏れる。
-// そのため「閉じる」側で1回だけ握り潰し、対象範囲を1箇所に閉じ込める。
-//
-// Reactのイベントはルート要素に委譲されるため、それより先に走るdocumentのキャプチャ段で止める。
-// リスナは次のclickで自ら外れるので、閉じたあとの通常の操作には影響しない。
-// キーボード（Enter/Space）由来のclickはdetailが0になるので、detail !== 1 と書いてはいけない
-function swallowNextClickOfGesture() {
-  const swallowClick = (mouseEvent: MouseEvent) => {
-    document.removeEventListener("click", swallowClick, true);
+// NOTE: Reactのイベント委譲より先に止めるため、documentのキャプチャ段に張る
+// NOTE: キーボード由来のclickはdetailが0。detail !== 1 と書くと全部握り潰す
+function suppressSecondClickOfDoubleClick() {
+  const suppressClick = (mouseEvent: MouseEvent) => {
+    document.removeEventListener("click", suppressClick, true);
     if (mouseEvent.detail > 1) {
       mouseEvent.stopPropagation();
       mouseEvent.preventDefault();
     }
   };
-  document.addEventListener("click", swallowClick, true);
+  document.addEventListener("click", suppressClick, true);
 }
 
 type ModalProps = {
@@ -72,7 +59,7 @@ export default function Modal({
   useEffect(() => {
     if (!isOpen) return;
     return () => {
-      swallowNextClickOfGesture();
+      suppressSecondClickOfDoubleClick();
     };
   }, [isOpen]);
 
@@ -93,10 +80,8 @@ export default function Modal({
         aria-modal="true"
         aria-labelledby={titleId}
         onClick={(clickEvent) => {
-          // モーダルを開いた2打目がこのオーバーレイに届いた場合は背景クリックとみなさない。
-          // .modalはトリガーボタンの上に重なるため、これがないと素早い2回押しで
-          // 開いた直後のモーダルが即座に閉じてしまう。
-          // キーボード由来のclickはdetailが0になるので、detail !== 1 と書いてはいけない
+          // 開いた2打目がここに届いた場合は背景クリックとみなさない
+          // （detailの扱いは suppressSecondClickOfDoubleClick のコメントを参照）
           if (clickEvent.detail > 1) return;
           if (clickEvent.target === clickEvent.currentTarget) {
             onClose();

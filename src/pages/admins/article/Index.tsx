@@ -11,10 +11,11 @@ import {
 import { getApiErrorMessage } from "../../../lib/api";
 import AdminLayout from "../../../components/admin/AdminLayout";
 import {
-  compareByCreatedAt,
+  createCreatedAtComparator,
   isSortOrder,
   DEFAULT_SORT_ORDER,
   DATE_SORT_ORDER_OPTIONS,
+  DATE_SORT_ORDER_LABELS,
   type SortOrder,
 } from "../../../lib/sort";
 import Modal from "../../../components/admin/Modal";
@@ -42,6 +43,8 @@ export default function AdminArticleIndexPage() {
   const [sortOrderInput, setSortOrderInput] = useState<SortOrder>(DEFAULT_SORT_ORDER);
   // 実際に一覧に適用されている並べ替え順序（「並べ替える」ボタン押下で確定される）
   const [appliedSortOrder, setAppliedSortOrder] = useState<SortOrder>(DEFAULT_SORT_ORDER);
+  // 並べ替えを実行したことの読み上げ文。初期表示では何も並べ替えていないので空にする
+  const [sortAnnouncement, setSortAnnouncement] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -78,14 +81,9 @@ export default function AdminArticleIndexPage() {
 
   // 並べ替えを適用した表示用記事一覧を算出する。元のarticles配列は変更しない
   const displayedArticles = useMemo(
-    () => [...articles].sort(compareByCreatedAt(appliedSortOrder)),
+    () => [...articles].sort(createCreatedAtComparator(appliedSortOrder)),
     [articles, appliedSortOrder]
   );
-
-  // 適用中の並べ替え順のラベル。支援技術への読み上げ文に使う
-  const appliedSortOrderLabel =
-    DATE_SORT_ORDER_OPTIONS.find((sortOrderOption) => sortOrderOption.value === appliedSortOrder)
-      ?.label ?? "";
 
   const handleLogout = async () => {
     await adminLogout();
@@ -110,8 +108,7 @@ export default function AdminArticleIndexPage() {
     setShowSortModal(true);
   };
 
-  // 並べ替えモーダルを閉じる共通処理。
-  // 「戻る」ボタン・背景クリック・Escキーに加え、並べ替え確定後（applySortModal）からも呼ばれる。
+  // 並べ替えモーダルを閉じる共通処理。閉じる経路をここ1箇所に集約する。
   // ダブルクリックの2打目の握り潰しとフォーカス制御はModal側が持つため、ここでは状態だけを変える
   const closeSortModal = () => {
     setShowSortModal(false);
@@ -120,11 +117,13 @@ export default function AdminArticleIndexPage() {
   // 並べ替えモーダルの「並べ替える」ボタン処理。入力値を適用済み順序として確定して閉じる
   const applySortModal = () => {
     setAppliedSortOrder(sortOrderInput);
+    setSortAnnouncement(`${DATE_SORT_ORDER_LABELS[sortOrderInput]}で並べ替えました`);
     closeSortModal();
   };
 
   // 記事詳細への遷移。
-  // モーダルを閉じた2打目はcloseSortModal側で握り潰されるため、ここでのガードは不要
+  // モーダルを閉じた2打目はModal側（閉じたときのクリーンアップ）で握り潰されるため、
+  // ここでのガードは不要
   const handleRowClick = (articleId: string) => {
     navigate(`/admin/articles/${articleId}`);
   };
@@ -161,14 +160,9 @@ export default function AdminArticleIndexPage() {
 
       {error && <p className="text-danger">{error}</p>}
 
-      {/*
-        並べ替えが適用されたことを支援技術へ通知する領域。
-        th の aria-sort は「いま何順か」を静的に伝えるだけで、
-        「たったいま並べ替わった」ことは伝わらないため別に用意する。
-        視覚的には見せないので visually-hidden を付ける
-      */}
-      <p className="visually-hidden" role="status" aria-live="polite">
-        {`${appliedSortOrderLabel}で並べ替えました`}
+      {/* th の aria-sort は「いま何順か」、こちらは「たったいま並べ替わった」を伝える */}
+      <p className="visually-hidden" role="status">
+        {sortAnnouncement}
       </p>
 
       <div className="card shadow-sm">
@@ -274,9 +268,7 @@ export default function AdminArticleIndexPage() {
             className="form-select"
             value={sortOrderInput}
             onChange={(changeEvent) => {
-              // DOM由来の値（string）を型アサーションなしでSortOrderへ絞り込む。
-              // 想定外の値は黙って捨てられるため、選択肢を増やすときは
-              // sort.tsのSORT_ORDERSにも必ず追加すること
+              // 型ガードで絞り込む（詳細は sort.ts の isSortOrder）
               const selectedValue = changeEvent.target.value;
               if (isSortOrder(selectedValue)) setSortOrderInput(selectedValue);
             }}

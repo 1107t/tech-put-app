@@ -1,7 +1,4 @@
-// src/lib/sort.ts【新規作成】
-// 並べ替え順序の型と、createdAtによる比較関数を共通化するモジュール。
-// 記事一覧（Index.tsx）・ユーザー一覧（AdminUsersPage.tsx）など、
-// 複数の一覧画面で同じ並べ替え順序の概念とcreatedAt比較ロジックを使い回すために切り出す。
+// 並べ替え順序の型と、一覧画面が共通で使う比較関数を提供する。
 
 // 並べ替え順序として許容する値の一覧。型定義と実行時の検証の両方をここから導出する。
 // 外部へは型・型ガード・選択肢だけを公開し、この配列自体はモジュール内に閉じる
@@ -10,7 +7,8 @@ const SORT_ORDERS = ["asc", "desc"] as const;
 export type SortOrder = (typeof SORT_ORDERS)[number];
 
 // 任意の文字列がSortOrderかどうかを判定する型ガード。
-// select等のDOM由来の値（string型）を型アサーションなしでSortOrderへ絞り込むために使う
+// select等のDOM由来の値（string型）を型アサーションなしでSortOrderへ絞り込むために使う。
+// 想定外の値は黙って捨てられるため、選択肢を増やすときはSORT_ORDERSにも必ず追加すること
 export function isSortOrder(value: string): value is SortOrder {
   return SORT_ORDERS.some((sortOrder) => sortOrder === value);
 }
@@ -23,20 +21,24 @@ export const DEFAULT_SORT_ORDER: SortOrder = "desc";
 // 基準（日時・名前など）ごとに選択肢の組を作れるよう、型だけを共通で公開する
 export type SortOrderOption = { readonly value: SortOrder; readonly label: string };
 
-// 日時を基準に並べる画面の選択肢。値とラベルの対応をここ1箇所で定義し、
-// 一覧画面ごとに文言や値がずれることを防ぐ。
+// 日時を基準に並べる画面のラベル。SortOrderをキーにしたRecordにすることで、
+// 順序を増やしたときにラベルの追加漏れがコンパイルエラーになる。
 // ラベルも並べる順序（新しい順を先頭に置くか）も基準に依存するため、
 // 日時以外を基準にする画面は、この定数を使い回さず基準ごとに1組ずつ定義すること
+export const DATE_SORT_ORDER_LABELS: Record<SortOrder, string> = {
+  desc: "新しい順",
+  asc: "古い順",
+};
+
+// 日時を基準に並べる画面のセレクト選択肢。ラベルは上の定数から引くため二重定義にならない
 export const DATE_SORT_ORDER_OPTIONS: readonly SortOrderOption[] = [
-  { value: "desc", label: "新しい順" },
-  { value: "asc", label: "古い順" },
+  { value: "desc", label: DATE_SORT_ORDER_LABELS.desc },
+  { value: "asc", label: DATE_SORT_ORDER_LABELS.asc },
 ];
 
-// createdAtを持つオブジェクト同士をArray.prototype.sortで使える比較関数を返す。
-// createdAtはDate.parseで数値（エポックミリ秒）に変換してから比較する。
-// 文字列比較にすると "2026-07-31T21:53:13+09:00" と "2026-07-31T12:53:13Z" のように
-// 同一時刻でも表記が異なる場合に誤った順序になるため、必ず時刻値として比較する。
-export function compareByCreatedAt(
+// createdAtの比較関数を作る。オフセット表記が異なるISO 8601は辞書順と時系列順が一致しないため、
+// Date.parseで時刻値に直してから比較する
+export function createCreatedAtComparator(
   order: SortOrder
 ): (itemA: { createdAt: string }, itemB: { createdAt: string }) => number {
   return (itemA, itemB) => {
@@ -51,5 +53,17 @@ export function compareByCreatedAt(
     if (timeA < timeB) return order === "asc" ? -1 : 1;
     if (timeA > timeB) return order === "asc" ? 1 : -1;
     return 0;
+  };
+}
+
+// nameを持つオブジェクト同士をArray.prototype.sortで比較する関数を作る。
+// localeCompareに"ja"を渡すことで、ひらがな・カタカナ・漢字を五十音順に並べる。
+// createdAt側と対で置くことで、基準が増えたときにどちらに倣うかが決まる
+export function createNameComparator(
+  order: SortOrder
+): (itemA: { name: string }, itemB: { name: string }) => number {
+  return (itemA, itemB) => {
+    const compared = itemA.name.localeCompare(itemB.name, "ja");
+    return order === "asc" ? compared : -compared;
   };
 }

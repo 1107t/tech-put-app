@@ -1,4 +1,3 @@
-// src/lib/useModalA11y.ts【新規作成】
 // モーダルのキーボード操作まわり（Escで閉じる・初期フォーカス・フォーカストラップ・
 // 閉じたあとのフォーカス復帰）を集約したカスタムフック。
 // aria-modal="true" を宣言したモーダルは「開いている間フォーカスが外へ出ない」ことが
@@ -23,10 +22,8 @@ function getFocusableElements(container: HTMLElement | null): HTMLElement[] {
   const focusableElements = Array.from(
     container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
   );
-  // display:none 等で描画されていない要素はfocus()しても何も起きず、
-  // 先頭にあれば初期フォーカスを、末尾にあればトラップを静かに壊すため除外する。
-  // offsetParent は position:fixed の要素に対してもnullを返すため使わない
-  // （モーダル内に固定配置の要素を置いた瞬間、理由の分からないままトラップが壊れる）
+  // CSSボックスを持たない要素はfocus()しても何も起きず、フォーカス制御を静かに壊すため除外する。
+  // offsetParent は position:fixed にもnullを返すので使わない（固定配置の要素まで落ちる）
   return focusableElements.filter((element) => element.getClientRects().length > 0);
 }
 

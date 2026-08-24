@@ -12,7 +12,8 @@ import PageError from "../../components/admin/PageError";
 import Modal from "../../components/admin/Modal";
 import { useRequireAdmin } from "../../lib/useRequireAdmin";
 import {
-  compareByCreatedAt,
+  createCreatedAtComparator,
+  createNameComparator,
   isSortOrder,
   DEFAULT_SORT_ORDER,
   DATE_SORT_ORDER_OPTIONS,
@@ -22,17 +23,17 @@ import {
 // 並べ替え基準として許容する値の一覧。型定義と実行時の検証の両方をここから導出する
 const SORT_CRITERIA = ["createdAt", "name"] as const
 // 並べ替え基準の型定義（登録日 or 名前）
-type SortCriteria = (typeof SORT_CRITERIA)[number]
+type SortCriterion = (typeof SORT_CRITERIA)[number]
 
-// 任意の文字列がSortCriteriaかどうかを判定する型ガード。
+// 任意の文字列がSortCriterionかどうかを判定する型ガード。
 // 並べ替え順（isSortOrder）と同じくDOM由来の値を型アサーションなしで絞り込むために使う
-function isSortCriteria(value: string): value is SortCriteria {
-  return SORT_CRITERIA.some((sortCriteria) => sortCriteria === value)
+function isSortCriterion(value: string): value is SortCriterion {
+  return SORT_CRITERIA.some((sortCriterion) => sortCriterion === value)
 }
 
 // 並べ替え基準の既定値。モーダルの初期表示と一覧の初期並び順の両方がこの定数を参照する。
 // 並べ替え順のDEFAULT_SORT_ORDER（sort.ts）と対になる
-const DEFAULT_SORT_CRITERIA: SortCriteria = "createdAt"
+const DEFAULT_SORT_CRITERION: SortCriterion = "createdAt"
 
 // 絞り込み検索条件の型定義
 interface FilterCondition {
@@ -59,10 +60,10 @@ export default function AdminUsersPage() {
 
   // 並べ替えモーダルの表示状態とモーダル内の選択値（一時的な入力値）
   const [showSortModal, setShowSortModal] = useState(false)
-  const [sortCriteriaInput, setSortCriteriaInput] = useState<SortCriteria>(DEFAULT_SORT_CRITERIA)
+  const [sortCriterionInput, setSortCriterionInput] = useState<SortCriterion>(DEFAULT_SORT_CRITERION)
   const [sortOrderInput, setSortOrderInput] = useState<SortOrder>(DEFAULT_SORT_ORDER)
   // 実際に一覧に適用されている並べ替え条件（「並べ替える」ボタン押下で確定される）
-  const [appliedSortCriteria, setAppliedSortCriteria] = useState<SortCriteria>(DEFAULT_SORT_CRITERIA)
+  const [appliedSortCriterion, setAppliedSortCriterion] = useState<SortCriterion>(DEFAULT_SORT_CRITERION)
   const [appliedSortOrder, setAppliedSortOrder] = useState<SortOrder>(DEFAULT_SORT_ORDER)
 
   // 絞り込み検索モーダルの表示状態とモーダル内の入力値（一時的な入力値）
@@ -91,7 +92,7 @@ export default function AdminUsersPage() {
   // 絞り込み → 並べ替えの順で適用した表示用ユーザー一覧を算出する
   const displayedUsers = useMemo(() => {
     // Step1: 絞り込み（各条件は空欄なら無視する）
-    let filteredUsers = users.filter((user) => {
+    const filteredUsers = users.filter((user) => {
       if (appliedFilter.name && !user.name.includes(appliedFilter.name)) return false
       if (appliedFilter.email && !user.email.includes(appliedFilter.email)) return false
       // createdAt はISO 8601形式のため先頭10文字（YYYY-MM-DD）で日付比較する
@@ -100,19 +101,16 @@ export default function AdminUsersPage() {
       return true
     })
 
-    // Step2: 並べ替え。名前は localeCompare('ja') で五十音順、登録日は共通の比較関数で時系列順に並べる
-    // 比較関数はsort()呼び出し前に1回だけ生成し、コールバック内で再生成しないようにする
-    const compareCreatedAt = compareByCreatedAt(appliedSortOrder)
-    const sortedUsers = [...filteredUsers].sort((userA, userB) => {
-      if (appliedSortCriteria === "name") {
-        const compared = userA.name.localeCompare(userB.name, "ja")
-        return appliedSortOrder === "asc" ? compared : -compared
-      }
-      return compareCreatedAt(userA, userB)
-    })
+    // Step2: 並べ替え。どちらの基準を使うかはsort()の前に1回だけ決め、
+    // コールバック内では基準の分岐も比較関数の生成も行わない
+    const compareUsers =
+      appliedSortCriterion === "name"
+        ? createNameComparator(appliedSortOrder)
+        : createCreatedAtComparator(appliedSortOrder)
 
-    return sortedUsers
-  }, [users, appliedFilter, appliedSortCriteria, appliedSortOrder])
+    // filter は新しい配列を返すため、users state を壊さずそのまま並べ替えられる
+    return filteredUsers.sort(compareUsers)
+  }, [users, appliedFilter, appliedSortCriterion, appliedSortOrder])
 
   // 受講生削除処理。確認ダイアログ → DELETE API → 一覧から該当行を即時削除する
   // deletingId で処理中フラグを持たせ、連打による多重DELETEを防ぐ
@@ -133,7 +131,7 @@ export default function AdminUsersPage() {
 
   // 並べ替えモーダルを開く。現在の適用済み条件をモーダルの初期値として設定する
   const openSortModal = () => {
-    setSortCriteriaInput(appliedSortCriteria)
+    setSortCriterionInput(appliedSortCriterion)
     setSortOrderInput(appliedSortOrder)
     setShowSortModal(true)
   }
@@ -145,7 +143,7 @@ export default function AdminUsersPage() {
 
   // 並べ替えモーダルの「並べ替える」ボタン処理。入力値を適用済み条件として確定する
   const applySortModal = () => {
-    setAppliedSortCriteria(sortCriteriaInput)
+    setAppliedSortCriterion(sortCriterionInput)
     setAppliedSortOrder(sortOrderInput)
     closeSortModal()
   }
@@ -290,12 +288,12 @@ export default function AdminUsersPage() {
           <select
             id="user-sort-criteria-select"
             className="form-select"
-            value={sortCriteriaInput}
+            value={sortCriterionInput}
             onChange={(changeEvent) => {
-              // 並べ替え順のセレクトと同じく、型ガードでSortCriteriaへ絞り込んでから反映する。
+              // 並べ替え順のセレクトと同じく、型ガードでSortCriterionへ絞り込んでから反映する。
               // 選択肢を増やすときはSORT_CRITERIAにも必ず追加すること
               const selectedValue = changeEvent.target.value
-              if (isSortCriteria(selectedValue)) setSortCriteriaInput(selectedValue)
+              if (isSortCriterion(selectedValue)) setSortCriterionInput(selectedValue)
             }}
           >
             <option value="createdAt">登録日</option>
@@ -314,9 +312,7 @@ export default function AdminUsersPage() {
             className="form-select"
             value={sortOrderInput}
             onChange={(changeEvent) => {
-              // DOM由来の値（string）を型アサーションなしでSortOrderへ絞り込む。
-              // 想定外の値は黙って捨てられるため、選択肢を増やすときは
-              // sort.tsのSORT_ORDERSにも必ず追加すること
+              // 型ガードで絞り込む（詳細は sort.ts の isSortOrder）
               const selectedValue = changeEvent.target.value
               if (isSortOrder(selectedValue)) setSortOrderInput(selectedValue)
             }}
