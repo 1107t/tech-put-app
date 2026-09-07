@@ -1,35 +1,27 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
 import { MailIcon, LockIcon } from "../../components/Icons";
-import { getCurrentUser, login } from "../../lib/userApi";
+import { managerLogin, getCurrentManager } from "../../lib/managerApi";
 import { getApiErrorMessage } from "../../lib/api";
-import { useTenantPath } from "../../lib/useTenantPath";
 
-export default function LoginPage() {
+export default function ManagerLoginPage() {
   const navigate = useNavigate();
-  const path = useTenantPath();
-  const { tenantId } = useParams<{ tenantId: string }>();
 
-
-  // 入力値
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  // UI状態
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    (async () => {
-      const saved = localStorage.getItem("remember_email");
-      if (saved) setEmail(saved);
+    const saved = localStorage.getItem("manager_remember_email");
+    if (saved) setEmail(saved);
 
-      const user = await getCurrentUser();
-      if (user) navigate(path("/articles"), { replace: true });
-    })();
-  }, [navigate, path]);
+    getCurrentManager().then((manager) => {
+      if (manager) navigate("/manager/dashboard", { replace: true });
+    });
+  }, [navigate]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -40,16 +32,13 @@ export default function LoginPage() {
       if (!email || !password) {
         throw new Error("メールアドレスとパスワードを入力してください。");
       }
-      if (!tenantId) {
-        throw new Error("テナントIDが不正です。");
-      }
 
-      if (remember) localStorage.setItem("remember_email", email);
-      else localStorage.removeItem("remember_email");
+      if (remember) localStorage.setItem("manager_remember_email", email);
+      else localStorage.removeItem("manager_remember_email");
 
-      await login(email, password, tenantId);
+      await managerLogin(email, password);
 
-      navigate(path("/articles"), { replace: true });
+      navigate("/manager/dashboard", { replace: true });
     } catch (err) {
       setErrorMsg(getApiErrorMessage(err, "ログインに失敗しました。"));
     } finally {
@@ -58,47 +47,7 @@ export default function LoginPage() {
   };
 
   return (
-    <AuthLayout
-      subtitle="tech out put!"
-      brandHref={path("/login")}
-      footer={
-        <ul className="list-unstyled mb-0 d-grid gap-1">
-          <li>
-            <Link className="link-primary text-decoration-none" to={path("/signup")}>
-              アカウント登録
-            </Link>
-          </li>
-          <li>
-            <Link className="link-primary text-decoration-none" to={path("/reset")}>
-              パスワードを忘れましたか？
-            </Link>
-          </li>
-          <li>
-            <Link
-              className="link-primary text-decoration-none"
-              to={path("/message/resend")}
-            >
-              認証メールの再送信
-            </Link>
-          </li>
-          <li>
-            <Link className="link-primary text-decoration-none" to={path("/message/google")}>
-              Googleでのログイン
-            </Link>
-          </li>
-          <li>
-            <Link className="link-primary text-decoration-none" to={path("/message/line")}>
-              LINEでのログイン
-            </Link>
-          </li>
-          <li>
-            <Link className="link-primary text-decoration-none" to={path("/message/facebook")}>
-              Facebookでのログイン
-            </Link>
-          </li>
-        </ul>
-      }
-    >
+    <AuthLayout subtitle="マネージャーログイン" brandHref="/manager/login">
       <form onSubmit={handleSubmit} className="d-grid gap-3">
         {errorMsg && (
           <div className="alert alert-danger py-2 mb-0" role="alert">
@@ -113,7 +62,7 @@ export default function LoginPage() {
               type="email"
               required
               className="form-control"
-              placeholder="example@mail.com"
+              placeholder="manager@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}

@@ -2,9 +2,11 @@ import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
 import { MailIcon } from "../../components/Icons";
+import { useTenantPath } from "../../lib/useTenantPath";
 
 export default function Passreset() {
   const navigate = useNavigate();
+  const path = useTenantPath();
 
   useEffect(() => {
     (async () => {
@@ -19,18 +21,18 @@ export default function Passreset() {
 
   const onSend = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate("/message/resend");
+    navigate(path("/message/resend"));
   };
 
   return (
     <AuthLayout
       subtitle="パスワード再設定"
-      brandHref="/reset"
+      brandHref={path("/reset")}
       footer={
         <ul className="list-unstyled mb-0 d-grid gap-1">
-          <li><Link className="link-primary text-decoration-none" to="/signup">アカウント登録</Link></li>
-          <li><Link className="link-primary text-decoration-none" to="/login">ログイン</Link></li>
-          <li><Link className="link-primary text-decoration-none" to="/message/resend">認証メールの再送信</Link></li>
+          <li><Link className="link-primary text-decoration-none" to={path("/signup")}>アカウント登録</Link></li>
+          <li><Link className="link-primary text-decoration-none" to={path("/login")}>ログイン</Link></li>
+          <li><Link className="link-primary text-decoration-none" to={path("/message/resend")}>認証メールの再送信</Link></li>
         </ul>
       }
     >

@@ -4,10 +4,12 @@ import UserLayout, { dashboardMenu } from "../../../components/user/UserLayout";
 import ArticleEditor from "../../../components/user/ArticleEditor";
 import { getArticle, updateArticle } from "../../../lib/articleApi";
 import { getApiErrorMessage } from "../../../lib/api";
+import { useTenantPath } from "../../../lib/useTenantPath";
 
 export default function ArticleEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const path = useTenantPath();
   const [title, setTitle] = useState("");
   const [subTitle, setSubTitle] = useState("");
   const [content, setContent] = useState("");
@@ -39,7 +41,7 @@ export default function ArticleEditPage() {
     if (!id) return;
     try {
       await updateArticle(id, { title, subTitle, content });
-      navigate("/articles");
+      navigate(path("/articles"));
     } catch (err) {
       setError(getApiErrorMessage(err, "記事の更新に失敗しました。"));
     }
@@ -74,7 +76,7 @@ export default function ArticleEditPage() {
       {(me) => authorId !== me.id ? (
         <>
           <p className="text-danger">この記事を編集する権限がありません。</p>
-          <button className="btn btn-secondary btn-sm" onClick={() => navigate(`/articles/${id}`)}>
+          <button className="btn btn-secondary btn-sm" onClick={() => navigate(path(`/articles/${id}`))}>
             記事に戻る
           </button>
         </>
@@ -88,7 +90,7 @@ export default function ArticleEditPage() {
             body={content} onBodyChange={setContent}
             submitLabel="更新"
             onSubmit={handleUpdate}
-            onCancel={() => navigate("/articles")}
+            onCancel={() => navigate(path("/articles"))}
           />
         </>
       )}

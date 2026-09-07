@@ -11,14 +11,16 @@ export async function signup(params: {
   password: string
   birthday?: string
   gender?: GenderValue
+  tenantId: string
 }): Promise<User> {
-  const res = await api.post<{ token: string; user: User }>('/auth/signup', params)
+  const { tenantId, ...rest } = params
+  const res = await api.post<{ token: string; user: User }>('/auth/signup', { ...rest, tenant_id: tenantId })
   tokenStorage.setUser(res.data.token)
   return res.data.user
 }
 
-export async function login(email: string, password: string): Promise<User> {
-  const res = await api.post<{ token: string; user: User }>('/auth/login', { email, password })
+export async function login(email: string, password: string, tenantId: string): Promise<User> {
+  const res = await api.post<{ token: string; user: User }>('/auth/login', { email, password, tenant_id: tenantId })
   tokenStorage.setUser(res.data.token)
   return res.data.user
 }
