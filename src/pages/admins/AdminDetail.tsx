@@ -1,41 +1,27 @@
 // src/pages/admins/AdminDetail.tsx
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getCurrentAdmin, adminLogout, type Admin } from "../../lib/adminApi";
+import { useRequireAdmin } from "../../lib/useRequireAdmin";
 import AdminLayout from "../../components/admin/AdminLayout";
+import PageSpinner from "../../components/admin/PageSpinner";
+import PageError from "../../components/admin/PageError";
 
 export default function AdminDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [admin, setAdmin] = useState<Admin | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { admin, loading, error, handleLogout } = useRequireAdmin();
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const currentAdmin = await getCurrentAdmin();
-      if (cancelled) return;
-      if (!currentAdmin) { navigate("/admin/login", { replace: true }); return; }
-      if (id !== currentAdmin.id) { navigate(`/admin/${currentAdmin.id}`, { replace: true }); return; }
-      setAdmin(currentAdmin);
-      setLoading(false);
-    })();
-    return () => { cancelled = true; };
-  }, [navigate, id]);
+    if (!admin) return;
+    if (id !== admin.id) navigate(`/admin/${admin.id}`, { replace: true });
+  }, [admin, id, navigate]);
 
-  const handleLogout = async () => {
-    await adminLogout();
-    navigate("/admin/login", { replace: true });
-  };
+  if (error) {
+    return <PageError message={error} />;
+  }
 
   if (loading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center min-vh-100">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">読み込み中...</span>
-        </div>
-      </div>
-    );
+    return <PageSpinner />;
   }
 
   const infoItems = [
@@ -45,7 +31,6 @@ export default function AdminDetail() {
 
   return (
     <AdminLayout admin={admin} onLogout={handleLogout}>
-      {/* ここが各ページ固有のコンテンツ */}
       <div className="row justify-content-center">
         <div className="col-md-5 col-lg-4">
           <div className="card shadow-sm">

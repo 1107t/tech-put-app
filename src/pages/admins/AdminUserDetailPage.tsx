@@ -1,59 +1,59 @@
-// src/pages/admins/AdminUserDetailPage.tsx【新規作成】
-// 受講生詳細ページ。管理者が個別の受講生のプロフィール・投稿数を確認する画面。
-// URLパラメータ :id で受講生を特定し、GET /admin/users/:id からデータを取得する。
+// src/pages/admins/AdminUserDetailPage.tsx【修正】
+// 受講生のプロフィールと投稿数を表示し、受講生別の投稿一覧へ案内する。
+// 認証は共通フックに任せ、詳細取得の404と通信失敗を分けて表示する。
 
 import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { getCurrentAdmin, adminLogout, getUser, type Admin } from "../../lib/adminApi"
+import axios from "axios"
+import { getAdminUser } from "../../lib/adminApi"
 import type { AdminUser } from "../../lib/userTypes"
 import { genderLabel } from "../../lib/userTypes"
 import AdminLayout from "../../components/admin/AdminLayout"
+import PageSpinner from "../../components/admin/PageSpinner"
+import PageError from "../../components/admin/PageError"
+import { useRequireAdmin } from "../../lib/useRequireAdmin"
 
+// URLの受講生IDに対応するプロフィールを取得して表示する。
 export default function AdminUserDetailPage() {
   const navigate = useNavigate()
-  // URLパラメータから受講生IDを取得する
-  const { id } = useParams<{ id: string }>()
-  const [admin, setAdmin] = useState<Admin | null>(null)
+  const { id: userId } = useParams<{ id: string }>()
+  const { admin, loading, error, handleLogout } = useRequireAdmin()
   const [user, setUser] = useState<AdminUser | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [userReady, setUserReady] = useState(false)
+  const [userError, setUserError] = useState<string | null>(null)
 
+  // 管理者認証後に詳細を取得する。ID変更時は前の受講生・エラーを持ち越さない。
   useEffect(() => {
+    if (!admin) return
+    setUser(null)
+    setUserError(null)
+    setUserReady(false)
+    if (!userId) {
+      setUserReady(true)
+      return
+    }
     let cancelled = false
-    ;(async () => {
-      // 管理者ログイン確認。未ログインならログインページへリダイレクトする
-      const currentAdmin = await getCurrentAdmin()
-      if (cancelled) return
-      if (!currentAdmin) {
-        navigate("/admin/login", { replace: true })
-        return
-      }
-      setAdmin(currentAdmin)
-
-      // 受講生詳細をAPIから取得する
-      const fetchedUser = await getUser(id!)
-      if (!cancelled) {
-        setUser(fetchedUser)
-        setLoading(false)
-      }
-    })()
+    getAdminUser(userId)
+      .then((userData) => {
+        if (cancelled) return
+        setUser(userData)
+        setUserReady(true)
+      })
+      .catch((requestError: unknown) => {
+        if (cancelled) return
+        // 404は「見つからない」と表示し、それ以外は再試行できるエラー画面へ進める。
+        if (!axios.isAxiosError(requestError) || requestError.response?.status !== 404) {
+          setUserError("読み込みに失敗しました。時間をおいて再試行してください。")
+        }
+        setUserReady(true)
+      })
     return () => { cancelled = true }
-  }, [navigate, id])
+  }, [admin, userId])
 
-  const handleLogout = async () => {
-    await adminLogout()
-    navigate("/admin/login", { replace: true })
-  }
-
-  // データ取得中はスピナーを表示する
-  if (loading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center min-vh-100">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">読み込み中...</span>
-        </div>
-      </div>
-    )
-  }
+  // 認証と詳細取得の失敗を読み込み中から分け、スピナーが残り続けることを防ぐ。
+  if (error) return <PageError message={error} />
+  if (loading || !userReady) return <PageSpinner />
+  if (userError) return <PageError message={userError} />
 
   // ユーザーが見つからない場合のフォールバック表示
   if (!user) {

@@ -2,28 +2,42 @@
 // 登録ユーザー一覧ページ。並べ替え・絞り込み検索・⋮メニュー（詳細・削除）機能を含む。
 // 絞り込みと並べ替えはフロントエンド側のみで処理し、API再取得は行わない。
 
-import { useEffect, useState, useMemo } from "react"
-import { useNavigate } from "react-router-dom"
+import { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { getUsers, deleteUser } from "../../lib/adminApi";
+import type { AdminUser } from "../../lib/userTypes";
+import AdminLayout from "../../components/admin/AdminLayout";
+import PageSpinner from "../../components/admin/PageSpinner";
+import PageError from "../../components/admin/PageError";
+import Modal from "../../components/admin/Modal";
+import { useRequireAdmin } from "../../lib/useRequireAdmin";
 import {
-  getCurrentAdmin,
-  adminLogout,
-  getUsers,
-  deleteUser,
-  type Admin,
-} from "../../lib/adminApi"
-import type { AdminUser } from "../../lib/userTypes"
-import AdminLayout from "../../components/admin/AdminLayout"
-// 【修正】削除操作の結果の通知（成功=緑 / エラー=赤）
+  createCreatedAtComparator,
+  createNameComparator,
+  isSortOrder,
+  DEFAULT_SORT_ORDER,
+  DATE_SORT_ORDER_OPTIONS,
+  type SortOrder,
+} from "../../lib/sort";
+// 削除結果の通知と、取得失敗を区別する読み込み状態。
 import FlashMessage from "../../components/admin/FlashMessage"
 import { useFlash } from "../../lib/useFlash"
-// 【修正】ページ全体の読み込みに失敗したときの、本文に代わる恒久的なエラー表示
-import PageError from "../../components/admin/PageError"
 import type { LoadStatus } from "../../lib/loadStatus"
 
+// 並べ替え基準として許容する値の一覧。型定義と実行時の検証の両方をここから導出する
+const SORT_CRITERIA = ["createdAt", "name"] as const
 // 並べ替え基準の型定義（登録日 or 名前）
-type SortCriteria = "createdAt" | "name"
-// 並べ替え順序の型定義（昇順 or 降順）
-type SortOrder = "asc" | "desc"
+type SortCriterion = (typeof SORT_CRITERIA)[number]
+
+// 任意の文字列がSortCriterionかどうかを判定する型ガード。
+// 並べ替え順（isSortOrder）と同じくDOM由来の値を型アサーションなしで絞り込むために使う
+function isSortCriterion(value: string): value is SortCriterion {
+  return SORT_CRITERIA.some((sortCriterion) => sortCriterion === value)
+}
+
+// 並べ替え基準の既定値。モーダルの初期表示と一覧の初期並び順の両方がこの定数を参照する。
+// 並べ替え順のDEFAULT_SORT_ORDER（sort.ts）と対になる
+const DEFAULT_SORT_CRITERION: SortCriterion = "createdAt"
 
 // 絞り込み検索条件の型定義
 interface FilterCondition {
@@ -36,9 +50,10 @@ interface FilterCondition {
 // 絞り込み条件の初期値（条件なし = 全件表示）
 const EMPTY_FILTER: FilterCondition = { name: "", email: "", fromDate: "", toDate: "" }
 
+// 共通の管理者認証後、一覧の検索・並べ替え・個別画面への遷移と削除を提供する。
 export default function AdminUsersPage() {
   const navigate = useNavigate()
-  const [admin, setAdmin] = useState<Admin | null>(null)
+  const { admin, loading, error, handleLogout } = useRequireAdmin();
   const [users, setUsers] = useState<AdminUser[]>([])
 
   // 【修正】ページ全体の読み込み状態。
@@ -59,11 +74,11 @@ export default function AdminUsersPage() {
 
   // 並べ替えモーダルの表示状態とモーダル内の選択値（一時的な入力値）
   const [showSortModal, setShowSortModal] = useState(false)
-  const [sortCriteriaInput, setSortCriteriaInput] = useState<SortCriteria>("createdAt")
-  const [sortOrderInput, setSortOrderInput] = useState<SortOrder>("desc")
+  const [sortCriterionInput, setSortCriterionInput] = useState<SortCriterion>(DEFAULT_SORT_CRITERION)
+  const [sortOrderInput, setSortOrderInput] = useState<SortOrder>(DEFAULT_SORT_ORDER)
   // 実際に一覧に適用されている並べ替え条件（「並べ替える」ボタン押下で確定される）
-  const [appliedSortCriteria, setAppliedSortCriteria] = useState<SortCriteria>("createdAt")
-  const [appliedSortOrder, setAppliedSortOrder] = useState<SortOrder>("desc")
+  const [appliedSortCriterion, setAppliedSortCriterion] = useState<SortCriterion>(DEFAULT_SORT_CRITERION)
+  const [appliedSortOrder, setAppliedSortOrder] = useState<SortOrder>(DEFAULT_SORT_ORDER)
 
   // 絞り込み検索モーダルの表示状態とモーダル内の入力値（一時的な入力値）
   const [showFilterModal, setShowFilterModal] = useState(false)
@@ -71,35 +86,23 @@ export default function AdminUsersPage() {
   // 実際に一覧に適用されている絞り込み条件（「検索する」ボタン押下で確定される）
   const [appliedFilter, setAppliedFilter] = useState<FilterCondition>(EMPTY_FILTER)
 
-  // 管理者ログイン確認とユーザー一覧取得
+  // ユーザー一覧取得（管理者認証確認後）
   useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      // 【修正】ログイン確認から一覧取得までを1つの try で囲む。
-      // getCurrentAdmin は 401 のときだけ null を返し、500・タイムアウト・通信断では throw する。
-      // try の外に置くと throw を捕まえられず、スピナーが回り続ける
-      try {
-        const currentAdmin = await getCurrentAdmin()
-        if (cancelled) return
-        if (!currentAdmin) {
-          navigate("/admin/login", { replace: true })
-          return
-        }
-        setAdmin(currentAdmin)
-
-        const allUsers = await getUsers()
-        if (cancelled) return
-        setUsers(allUsers)
-        setLoadStatus("loaded")
-      } catch {
-        // 【修正】読み込みの失敗は PageError が伝えるので、ここでは状態を立てるだけでよい。
-        // フラッシュは削除操作の結果を伝える役割に限定する
-        // （3秒で消える通知に、消えては困る「読み込みに失敗した」状態を兼ねさせない）
-        if (!cancelled) setLoadStatus("failed")
-      }
-    })()
-    return () => { cancelled = true }
-  }, [navigate])
+    if (!admin) return;
+    let cancelled = false;
+    setLoadStatus("loading");
+    // 認証は共通フックが担い、ここでは一覧の取得成功・失敗を必ず確定する。
+    getUsers()
+      .then((allUsers) => {
+        if (cancelled) return;
+        setUsers(allUsers);
+        setLoadStatus("loaded");
+      })
+      .catch(() => {
+        if (!cancelled) setLoadStatus("failed");
+      });
+    return () => { cancelled = true; };
+  }, [admin]);
 
   // ⋮メニュー外のクリックでドロップダウンを閉じる処理
   useEffect(() => {
@@ -111,7 +114,7 @@ export default function AdminUsersPage() {
   // 絞り込み → 並べ替えの順で適用した表示用ユーザー一覧を算出する
   const displayedUsers = useMemo(() => {
     // Step1: 絞り込み（各条件は空欄なら無視する）
-    let filteredUsers = users.filter((user) => {
+    const filteredUsers = users.filter((user) => {
       if (appliedFilter.name && !user.name.includes(appliedFilter.name)) return false
       if (appliedFilter.email && !user.email.includes(appliedFilter.email)) return false
       // createdAt はISO 8601形式のため先頭10文字（YYYY-MM-DD）で日付比較する
@@ -120,26 +123,16 @@ export default function AdminUsersPage() {
       return true
     })
 
-    // Step2: 並べ替え。名前は localeCompare('ja') で五十音順、登録日はISO形式なので辞書順=時系列順で比較する
-    const sortedUsers = [...filteredUsers].sort((userA, userB) => {
-      if (appliedSortCriteria === "name") {
-        const compared = userA.name.localeCompare(userB.name, "ja")
-        return appliedSortOrder === "asc" ? compared : -compared
-      }
-      const valueA = userA.createdAt
-      const valueB = userB.createdAt
-      if (valueA < valueB) return appliedSortOrder === "asc" ? -1 : 1
-      if (valueA > valueB) return appliedSortOrder === "asc" ? 1 : -1
-      return 0
-    })
+    // Step2: 並べ替え。どちらの基準を使うかはsort()の前に1回だけ決め、
+    // コールバック内では基準の分岐も比較関数の生成も行わない
+    const compareUsers =
+      appliedSortCriterion === "name"
+        ? createNameComparator(appliedSortOrder)
+        : createCreatedAtComparator(appliedSortOrder)
 
-    return sortedUsers
-  }, [users, appliedFilter, appliedSortCriteria, appliedSortOrder])
-
-  const handleLogout = async () => {
-    await adminLogout()
-    navigate("/admin/login", { replace: true })
-  }
+    // filter は新しい配列を返すため、users state を壊さずそのまま並べ替えられる
+    return filteredUsers.sort(compareUsers)
+  }, [users, appliedFilter, appliedSortCriterion, appliedSortOrder])
 
   // 受講生削除処理。確認ダイアログ → DELETE API → 一覧から該当行を即時削除する
   // deletingId で処理中フラグを持たせ、連打による多重DELETEを防ぐ
@@ -165,16 +158,21 @@ export default function AdminUsersPage() {
 
   // 並べ替えモーダルを開く。現在の適用済み条件をモーダルの初期値として設定する
   const openSortModal = () => {
-    setSortCriteriaInput(appliedSortCriteria)
+    setSortCriterionInput(appliedSortCriterion)
     setSortOrderInput(appliedSortOrder)
     setShowSortModal(true)
   }
 
+  // 並べ替えモーダルを閉じる共通処理。「戻る」ボタン・背景クリック・Escキーから呼ばれる
+  const closeSortModal = () => {
+    setShowSortModal(false)
+  }
+
   // 並べ替えモーダルの「並べ替える」ボタン処理。入力値を適用済み条件として確定する
   const applySortModal = () => {
-    setAppliedSortCriteria(sortCriteriaInput)
+    setAppliedSortCriterion(sortCriterionInput)
     setAppliedSortOrder(sortOrderInput)
-    setShowSortModal(false)
+    closeSortModal()
   }
 
   // 絞り込み検索モーダルを開く。現在の適用済み条件をモーダルの初期値として設定する
@@ -183,21 +181,24 @@ export default function AdminUsersPage() {
     setShowFilterModal(true)
   }
 
-  // 絞り込み検索モーダルの「検索する」ボタン処理。入力値を適用済み条件として確定する
-  const applyFilterModal = () => {
-    setAppliedFilter(filterInput)
+  // 絞り込み検索モーダルを閉じる共通処理。「戻る」ボタン・背景クリック・Escキーから呼ばれる
+  const closeFilterModal = () => {
     setShowFilterModal(false)
   }
 
+  // 絞り込み検索モーダルの「検索する」ボタン処理。入力値を適用済み条件として確定する
+  const applyFilterModal = () => {
+    setAppliedFilter(filterInput)
+    closeFilterModal()
+  }
+
+  if (error) {
+    return <PageError message={error} />;
+  }
+
   // データ取得中はスピナーを表示する
-  if (loadStatus === "loading") {
-    return (
-      <div className="d-flex justify-content-center align-items-center min-vh-100">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">読み込み中...</span>
-        </div>
-      </div>
-    )
+  if (loading || loadStatus === "loading") {
+    return <PageSpinner />;
   }
 
   // 【修正】取得に失敗したときは、本文の代わりにエラー画面を出す。
@@ -319,137 +320,149 @@ export default function AdminUsersPage() {
         </table>
       </div>
 
-      {/* 並べ替えモーダル */}
-      {showSortModal && (
-        <>
-          <div className="modal show d-block" tabIndex={-1}>
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">並べ替え</h5>
-                </div>
-                <div className="modal-body d-grid gap-3">
-                  {/* 並べ替え基準セレクトボックス（登録日 or 名前） */}
-                  <div>
-                    <label className="form-label fw-semibold">並べ替え基準</label>
-                    <select
-                      className="form-select"
-                      value={sortCriteriaInput}
-                      onChange={(changeEvent) =>
-                        setSortCriteriaInput(changeEvent.target.value as SortCriteria)
-                      }
-                    >
-                      <option value="createdAt">登録日</option>
-                      <option value="name">名前</option>
-                    </select>
-                  </div>
-                  {/* 並べ替え順セレクトボックス（新しい順=降順 or 古い順=昇順） */}
-                  <div>
-                    <label className="form-label fw-semibold">並べ替え順</label>
-                    <select
-                      className="form-select"
-                      value={sortOrderInput}
-                      onChange={(changeEvent) =>
-                        setSortOrderInput(changeEvent.target.value as SortOrder)
-                      }
-                    >
-                      <option value="desc">新しい順</option>
-                      <option value="asc">古い順</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <button className="btn btn-secondary" onClick={() => setShowSortModal(false)}>
-                    戻る
-                  </button>
-                  <button className="btn btn-success" onClick={applySortModal}>
-                    並べ替える
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          {/* モーダル背景オーバーレイ。クリックでモーダルを閉じる */}
-          <div className="modal-backdrop fade show" onClick={() => setShowSortModal(false)} />
-        </>
-      )}
+      {/* 並べ替えモーダル。骨格・背景クリック・Esc・フォーカス制御は共通のModalが持つ */}
+      <Modal
+        isOpen={showSortModal}
+        onClose={closeSortModal}
+        title="並べ替え"
+        titleId="user-sort-modal-title"
+        footer={
+          <>
+            <button className="btn btn-secondary" onClick={closeSortModal}>
+              戻る
+            </button>
+            <button className="btn btn-success" onClick={applySortModal}>
+              並べ替える
+            </button>
+          </>
+        }
+      >
+        {/* 並べ替え基準セレクトボックス（登録日 or 名前） */}
+        <div>
+          <label htmlFor="user-sort-criteria-select" className="form-label fw-semibold">
+            並べ替え基準
+          </label>
+          <select
+            id="user-sort-criteria-select"
+            className="form-select"
+            value={sortCriterionInput}
+            onChange={(changeEvent) => {
+              // 並べ替え順のセレクトと同じく、型ガードでSortCriterionへ絞り込んでから反映する。
+              // 選択肢を増やすときはSORT_CRITERIAにも必ず追加すること
+              const selectedValue = changeEvent.target.value
+              if (isSortCriterion(selectedValue)) setSortCriterionInput(selectedValue)
+            }}
+          >
+            <option value="createdAt">登録日</option>
+            <option value="name">名前</option>
+          </select>
+        </div>
+        {/* 並べ替え順セレクトボックス（新しい順=降順 or 古い順=昇順）。
+            基準に「名前」を選んでも日時基準のラベルのままになる問題が残っている。
+            基準ごとの選択肢の出し分けは、文言の仕様確認が必要なため別タスクとする */}
+        <div>
+          <label htmlFor="user-sort-order-select" className="form-label fw-semibold">
+            並べ替え順
+          </label>
+          <select
+            id="user-sort-order-select"
+            className="form-select"
+            value={sortOrderInput}
+            onChange={(changeEvent) => {
+              // 型ガードで絞り込む（詳細は sort.ts の isSortOrder）
+              const selectedValue = changeEvent.target.value
+              if (isSortOrder(selectedValue)) setSortOrderInput(selectedValue)
+            }}
+          >
+            {DATE_SORT_ORDER_OPTIONS.map((sortOrderOption) => (
+              <option key={sortOrderOption.value} value={sortOrderOption.value}>
+                {sortOrderOption.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </Modal>
 
-      {/* 絞り込み検索モーダル */}
-      {showFilterModal && (
-        <>
-          <div className="modal show d-block" tabIndex={-1}>
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">絞り込み検索</h5>
-                </div>
-                <div className="modal-body d-grid gap-3">
-                  {/* 名前入力（部分一致） */}
-                  <div>
-                    <label className="form-label fw-semibold">名前</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="例：田中"
-                      value={filterInput.name}
-                      onChange={(changeEvent) =>
-                        setFilterInput({ ...filterInput, name: changeEvent.target.value })
-                      }
-                    />
-                  </div>
-                  {/* メールアドレス入力（部分一致） */}
-                  <div>
-                    <label className="form-label fw-semibold">メールアドレス</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="例：example@gmail.com"
-                      value={filterInput.email}
-                      onChange={(changeEvent) =>
-                        setFilterInput({ ...filterInput, email: changeEvent.target.value })
-                      }
-                    />
-                  </div>
-                  {/* 登録日（から）日付ピッカー */}
-                  <div>
-                    <label className="form-label fw-semibold">登録日（から）</label>
-                    <input
-                      type="date"
-                      className="form-control"
-                      value={filterInput.fromDate}
-                      onChange={(changeEvent) =>
-                        setFilterInput({ ...filterInput, fromDate: changeEvent.target.value })
-                      }
-                    />
-                  </div>
-                  {/* 登録日（まで）日付ピッカー */}
-                  <div>
-                    <label className="form-label fw-semibold">登録日（まで）</label>
-                    <input
-                      type="date"
-                      className="form-control"
-                      value={filterInput.toDate}
-                      onChange={(changeEvent) =>
-                        setFilterInput({ ...filterInput, toDate: changeEvent.target.value })
-                      }
-                    />
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <button className="btn btn-secondary" onClick={() => setShowFilterModal(false)}>
-                    戻る
-                  </button>
-                  <button className="btn btn-success" onClick={applyFilterModal}>
-                    検索する
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          {/* モーダル背景オーバーレイ。クリックでモーダルを閉じる */}
-          <div className="modal-backdrop fade show" onClick={() => setShowFilterModal(false)} />
-        </>
-      )}
+      {/* 絞り込み検索モーダル。骨格・背景クリック・Esc・フォーカス制御は共通のModalが持つ */}
+      <Modal
+        isOpen={showFilterModal}
+        onClose={closeFilterModal}
+        title="絞り込み検索"
+        titleId="user-filter-modal-title"
+        footer={
+          <>
+            <button className="btn btn-secondary" onClick={closeFilterModal}>
+              戻る
+            </button>
+            <button className="btn btn-success" onClick={applyFilterModal}>
+              検索する
+            </button>
+          </>
+        }
+      >
+        {/* 名前入力（部分一致） */}
+        <div>
+          <label htmlFor="user-filter-name" className="form-label fw-semibold">
+            名前
+          </label>
+          <input
+            id="user-filter-name"
+            type="text"
+            className="form-control"
+            placeholder="例：田中"
+            value={filterInput.name}
+            onChange={(changeEvent) =>
+              setFilterInput({ ...filterInput, name: changeEvent.target.value })
+            }
+          />
+        </div>
+        {/* メールアドレス入力（部分一致） */}
+        <div>
+          <label htmlFor="user-filter-email" className="form-label fw-semibold">
+            メールアドレス
+          </label>
+          <input
+            id="user-filter-email"
+            type="text"
+            className="form-control"
+            placeholder="例：example@gmail.com"
+            value={filterInput.email}
+            onChange={(changeEvent) =>
+              setFilterInput({ ...filterInput, email: changeEvent.target.value })
+            }
+          />
+        </div>
+        {/* 登録日（から）日付ピッカー */}
+        <div>
+          <label htmlFor="user-filter-from-date" className="form-label fw-semibold">
+            登録日（から）
+          </label>
+          <input
+            id="user-filter-from-date"
+            type="date"
+            className="form-control"
+            value={filterInput.fromDate}
+            onChange={(changeEvent) =>
+              setFilterInput({ ...filterInput, fromDate: changeEvent.target.value })
+            }
+          />
+        </div>
+        {/* 登録日（まで）日付ピッカー */}
+        <div>
+          <label htmlFor="user-filter-to-date" className="form-label fw-semibold">
+            登録日（まで）
+          </label>
+          <input
+            id="user-filter-to-date"
+            type="date"
+            className="form-control"
+            value={filterInput.toDate}
+            onChange={(changeEvent) =>
+              setFilterInput({ ...filterInput, toDate: changeEvent.target.value })
+            }
+          />
+        </div>
+      </Modal>
     </AdminLayout>
-  )
+  );
 }

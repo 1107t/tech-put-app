@@ -28,6 +28,7 @@ export async function logout(): Promise<void> {
   tokenStorage.removeUser()
 }
 
+
 export async function getCurrentUser(): Promise<User | null> {
   const token = tokenStorage.getUser()
   if (!token) return null
