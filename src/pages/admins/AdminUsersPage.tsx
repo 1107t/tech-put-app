@@ -13,6 +13,12 @@ import {
 } from "../../lib/adminApi"
 import type { AdminUser } from "../../lib/userTypes"
 import AdminLayout from "../../components/admin/AdminLayout"
+// 【修正】削除操作の結果の通知（成功=緑 / エラー=赤）
+import FlashMessage from "../../components/admin/FlashMessage"
+import { useFlash } from "../../lib/useFlash"
+// 【修正】ページ全体の読み込みに失敗したときの、本文に代わる恒久的なエラー表示
+import PageError from "../../components/admin/PageError"
+import type { LoadStatus } from "../../lib/loadStatus"
 
 // 並べ替え基準の型定義（登録日 or 名前）
 type SortCriteria = "createdAt" | "name"
@@ -34,7 +40,16 @@ export default function AdminUsersPage() {
   const navigate = useNavigate()
   const [admin, setAdmin] = useState<Admin | null>(null)
   const [users, setUsers] = useState<AdminUser[]>([])
-  const [loading, setLoading] = useState(true)
+
+  // 【修正】ページ全体の読み込み状態。
+  // 「読み込み中」と「失敗」を別々の boolean で持つと、失敗を表示しないまま
+  // 空状態のメッセージ（「登録されているユーザーがいません」＝0件と断定する文言）を
+  // 出してしまう事故が起きる。1つの状態にまとめ、描画側で failed の分岐を必ず書くようにしている
+  const [loadStatus, setLoadStatus] = useState<LoadStatus>("loading")
+
+  // 【修正】削除操作の結果の通知（成功=緑 / エラー=赤）。
+  // 読み込みの失敗は PageError が担うため、フラッシュは操作の結果だけに使う
+  const { flash, showSuccessFlash, showErrorFlash, clearFlash } = useFlash()
 
   // ⋮ドロップダウンメニューの開閉管理。開いている行のユーザーIDを保持する（nullで全て閉じた状態）
   const [openMenuUserId, setOpenMenuUserId] = useState<string | null>(null)
@@ -60,18 +75,27 @@ export default function AdminUsersPage() {
   useEffect(() => {
     let cancelled = false
     ;(async () => {
-      const currentAdmin = await getCurrentAdmin()
-      if (cancelled) return
-      if (!currentAdmin) {
-        navigate("/admin/login", { replace: true })
-        return
-      }
-      setAdmin(currentAdmin)
+      // 【修正】ログイン確認から一覧取得までを1つの try で囲む。
+      // getCurrentAdmin は 401 のときだけ null を返し、500・タイムアウト・通信断では throw する。
+      // try の外に置くと throw を捕まえられず、スピナーが回り続ける
+      try {
+        const currentAdmin = await getCurrentAdmin()
+        if (cancelled) return
+        if (!currentAdmin) {
+          navigate("/admin/login", { replace: true })
+          return
+        }
+        setAdmin(currentAdmin)
 
-      const allUsers = await getUsers()
-      if (!cancelled) {
+        const allUsers = await getUsers()
+        if (cancelled) return
         setUsers(allUsers)
-        setLoading(false)
+        setLoadStatus("loaded")
+      } catch {
+        // 【修正】読み込みの失敗は PageError が伝えるので、ここでは状態を立てるだけでよい。
+        // フラッシュは削除操作の結果を伝える役割に限定する
+        // （3秒で消える通知に、消えては困る「読み込みに失敗した」状態を兼ねさせない）
+        if (!cancelled) setLoadStatus("failed")
       }
     })()
     return () => { cancelled = true }
@@ -126,12 +150,17 @@ export default function AdminUsersPage() {
       await deleteUser(userId)
       // 削除成功後、一覧から該当ユーザーを除外して画面を更新する
       setUsers((previousUsers) => previousUsers.filter((user) => user.id !== userId))
+      // 【修正】削除できたことを成功フラッシュ（緑）で明示する
+      showSuccessFlash("受講生を削除しました。")
     } catch {
-      alert("削除に失敗しました。もう一度お試しください。")
+      // 【修正】ブラウザ標準の window.alert をやめ、画面内のエラーフラッシュ（赤）に置き換えた
+      showErrorFlash("削除に失敗しました。もう一度お試しください。")
     } finally {
       setDeletingId(null)
+      // 【修正】成功・失敗（catch）のどちらでも ⋮メニューを閉じる。
+      // 失敗時にメニューが開いたままだと、画面上部のエラーフラッシュに重なって見づらくなるため
+      setOpenMenuUserId(null)
     }
-    setOpenMenuUserId(null)
   }
 
   // 並べ替えモーダルを開く。現在の適用済み条件をモーダルの初期値として設定する
@@ -161,7 +190,7 @@ export default function AdminUsersPage() {
   }
 
   // データ取得中はスピナーを表示する
-  if (loading) {
+  if (loadStatus === "loading") {
     return (
       <div className="d-flex justify-content-center align-items-center min-vh-100">
         <div className="spinner-border text-primary" role="status">
@@ -171,8 +200,18 @@ export default function AdminUsersPage() {
     )
   }
 
+  // 【修正】取得に失敗したときは、本文の代わりにエラー画面を出す。
+  // ここで止めないと「登録されているユーザーがいません」と表示され、
+  // 実際には登録があるのに0件だと断定して伝えてしまう
+  if (loadStatus === "failed") {
+    return <PageError message="受講生一覧を取得できませんでした。" />
+  }
+
   return (
     <AdminLayout admin={admin} onLogout={handleLogout}>
+      {/* 【修正】削除操作の結果の通知（成功=緑 / エラー=赤）。見出しのすぐ上に置く */}
+      <FlashMessage flash={flash} onClose={clearFlash} />
+
       {/* ページタイトルと並べ替え・絞り込みボタン */}
       <div className="d-flex align-items-center gap-3 mb-4">
         <h4 className="mb-0">登録ユーザー一覧</h4>

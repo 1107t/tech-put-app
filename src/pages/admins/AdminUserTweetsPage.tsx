@@ -9,6 +9,10 @@ import type { Tweet } from "../../lib/tweets";
 import AdminLayout from "../../components/admin/AdminLayout";
 // 日付整形はページ内の重複実装を廃止し、共通ユーティリティ formatDate を使う（DRY原則）
 import { formatDate } from "../../lib/formatDate";
+// 【修正】ページ全体の読み込みに失敗したときの、本文に代わる恒久的なエラー表示。
+// このページは閲覧専用で操作を持たないため、通知はこれだけでよく、フラッシュメッセージは使わない
+import PageError from "../../components/admin/PageError";
+import type { LoadStatus } from "../../lib/loadStatus";
 import "../../styles/pages/tweets.css";
 
 export default function AdminUserTweetsPage() {
@@ -21,24 +25,34 @@ export default function AdminUserTweetsPage() {
   const [userName, setUserName] = useState<string>("");
   // 対象ユーザーのつぶやき一覧（Rails DB から取得）
   const [tweets, setTweets] = useState<Tweet[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  // 【修正】ページ全体の読み込み状態。
+  // 「読み込み中」と「失敗」を別々の boolean で持つと、失敗を表示しないまま
+  // 空状態のメッセージ（＝0件と断定する文言）を出してしまう事故が起きる。
+  // 1つの状態にまとめ、描画側で failed の分岐を必ず書くようにしている
+  const [loadStatus, setLoadStatus] = useState<LoadStatus>("loading");
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      // 管理者ログイン確認。未ログインならログインページへリダイレクトする
-      const currentAdmin = await getCurrentAdmin();
-      if (cancelled) return;
-      if (!currentAdmin) {
-        navigate("/admin/login", { replace: true });
-        return;
-      }
-      setAdmin(currentAdmin);
-
-      if (!userId) return;
-
       try {
+        // 管理者ログイン確認。未ログインならログインページへリダイレクトする。
+        // 【修正】getCurrentAdmin は 401 のときだけ null を返し、500・タイムアウト・通信断では throw する。
+        // try の外に置くと throw を捕まえられず、スピナーが回り続けるため必ず try の中で呼ぶ
+        const currentAdmin = await getCurrentAdmin();
+        if (cancelled) return;
+        if (!currentAdmin) {
+          navigate("/admin/login", { replace: true });
+          return;
+        }
+        setAdmin(currentAdmin);
+
+        // 【修正】URLにユーザーIDが無ければ取得しようがないので、失敗として扱う（読み込み中のまま止めない）
+        if (!userId) {
+          if (!cancelled) setLoadStatus("failed");
+          return;
+        }
+
         // ユーザー情報とつぶやき一覧を並列取得する
         // ユーザー名はつぶやき0件でも表示できるようユーザー情報から取得する
         const [userInfo, userTweets] = await Promise.all([
@@ -48,11 +62,11 @@ export default function AdminUserTweetsPage() {
         if (cancelled) return;
         setUserName(userInfo.name);
         setTweets(userTweets);
+        setLoadStatus("loaded");
       } catch {
-        // ユーザー情報・つぶやきの両方を取得するため、文言も「データ」に一般化する
-        if (!cancelled) setError("データの取得に失敗しました");
-      } finally {
-        if (!cancelled) setLoading(false);
+        // 【修正】ログイン確認・ユーザー情報・つぶやきのいずれの失敗もここに来る。
+        // 失敗の表示は PageError が担うので、ここでは状態を立てるだけでよい
+        if (!cancelled) setLoadStatus("failed");
       }
     })();
     return () => {
@@ -65,7 +79,7 @@ export default function AdminUserTweetsPage() {
     navigate("/admin/login", { replace: true });
   };
 
-  if (loading) {
+  if (loadStatus === "loading") {
     return (
       <div className="d-flex justify-content-center align-items-center min-vh-100">
         <div className="spinner-border text-primary" role="status">
@@ -75,28 +89,32 @@ export default function AdminUserTweetsPage() {
     );
   }
 
+  // 【修正】取得に失敗したときは、本文の代わりにエラー画面を出す。
+  // フラッシュは3秒で消えるため、失敗した状態を伝え続ける役割はこちらが担う
+  if (loadStatus === "failed") {
+    return <PageError message="データを取得できませんでした。" />;
+  }
+
   return (
     <AdminLayout admin={admin} onLogout={handleLogout}>
       {/* ページヘッダー: ユーザー名 + 並べ替え・絞り込みボタン */}
       <div className="d-flex align-items-center gap-3 mb-4">
+        {/* 【修正】このページだけ「さん」が付かないのは揃え忘れではなく現状維持の判断。
+            提出済みの画面遷移図（PR #24）に「◯◯のつぶやき一覧」と描かれているため、
+            記事一覧・動画投稿一覧で使っている buildUserPageHeading（「◯◯さんの〜」）には寄せていない。
+            文言の統一は、資料の差し替えとセットで行うこと。
+            名前が取得できなかったときだけは「のつぶやき一覧」になるのを避け、一般名に倒す */}
         <h4 className="mb-0">
-          {userName ? `${userName}のつぶやき一覧` : "つぶやき一覧"}
+          {userName ? `${userName}のつぶやき一覧` : "受講生のつぶやき一覧"}
         </h4>
         <button className="btn btn-success btn-sm">並べ替え</button>
         <button className="btn btn-success btn-sm">絞り込み検索</button>
       </div>
 
-      {/* エラーメッセージ */}
-      {error && (
-        <div className="alert alert-danger" role="alert">
-          {error}
-        </div>
-      )}
-
-      {/* つぶやき一覧: 投稿がなければ空メッセージ、あればカード形式で表示 */}
-      {/* エラー時は空メッセージを出さない（エラーアラートと二重表示を防ぐ） */}
+      {/* つぶやき一覧: 投稿がなければ空メッセージ、あればカード形式で表示。
+          【修正】取得失敗はこの手前で PageError に分岐済みなので、ここは成功時だけを考えればよい */}
       {tweets.length === 0 ? (
-        !error && <p className="text-muted text-center py-5">つぶやきはまだありません</p>
+        <p className="text-muted text-center py-5">つぶやきはまだありません</p>
       ) : (
         <div className="d-grid gap-3">
           {tweets.map((tweet) => {
