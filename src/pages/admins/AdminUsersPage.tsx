@@ -1,4 +1,4 @@
-// src/pages/admins/AdminUsersPage.tsx
+// src/pages/admins/AdminUsersPage.tsx【修正】
 // 登録ユーザー一覧ページ。並べ替え・絞り込み検索・⋮メニュー（詳細・削除）機能を含む。
 // 絞り込みと並べ替えはフロントエンド側のみで処理し、API再取得は行わない。
 
@@ -19,6 +19,10 @@ import {
   DATE_SORT_ORDER_OPTIONS,
   type SortOrder,
 } from "../../lib/sort";
+// 削除結果の通知と、取得失敗を区別する読み込み状態。
+import FlashMessage from "../../components/admin/FlashMessage"
+import { useFlash } from "../../lib/useFlash"
+import type { LoadStatus } from "../../lib/loadStatus"
 
 // 並べ替え基準として許容する値の一覧。型定義と実行時の検証の両方をここから導出する
 const SORT_CRITERIA = ["createdAt", "name"] as const
@@ -46,11 +50,21 @@ interface FilterCondition {
 // 絞り込み条件の初期値（条件なし = 全件表示）
 const EMPTY_FILTER: FilterCondition = { name: "", email: "", fromDate: "", toDate: "" }
 
+// 共通の管理者認証後、一覧の検索・並べ替え・個別画面への遷移と削除を提供する。
 export default function AdminUsersPage() {
   const navigate = useNavigate()
   const { admin, loading, error, handleLogout } = useRequireAdmin();
   const [users, setUsers] = useState<AdminUser[]>([])
-  const [usersReady, setUsersReady] = useState(false);
+
+  // 【修正】ページ全体の読み込み状態。
+  // 「読み込み中」と「失敗」を別々の boolean で持つと、失敗を表示しないまま
+  // 空状態のメッセージ（「登録されているユーザーがいません」＝0件と断定する文言）を
+  // 出してしまう事故が起きる。1つの状態にまとめ、描画側で failed の分岐を必ず書くようにしている
+  const [loadStatus, setLoadStatus] = useState<LoadStatus>("loading")
+
+  // 【修正】削除操作の結果の通知（成功=緑 / エラー=赤）。
+  // 読み込みの失敗は PageError が担うため、フラッシュは操作の結果だけに使う
+  const { flash, showSuccessFlash, showErrorFlash, clearFlash } = useFlash()
 
   // ⋮ドロップダウンメニューの開閉管理。開いている行のユーザーIDを保持する（nullで全て閉じた状態）
   const [openMenuUserId, setOpenMenuUserId] = useState<string | null>(null)
@@ -76,9 +90,17 @@ export default function AdminUsersPage() {
   useEffect(() => {
     if (!admin) return;
     let cancelled = false;
-    getUsers().then((allUsers) => {
-      if (!cancelled) { setUsers(allUsers); setUsersReady(true); }
-    });
+    setLoadStatus("loading");
+    // 認証は共通フックが担い、ここでは一覧の取得成功・失敗を必ず確定する。
+    getUsers()
+      .then((allUsers) => {
+        if (cancelled) return;
+        setUsers(allUsers);
+        setLoadStatus("loaded");
+      })
+      .catch(() => {
+        if (!cancelled) setLoadStatus("failed");
+      });
     return () => { cancelled = true; };
   }, [admin]);
 
@@ -121,12 +143,17 @@ export default function AdminUsersPage() {
       await deleteUser(userId)
       // 削除成功後、一覧から該当ユーザーを除外して画面を更新する
       setUsers((previousUsers) => previousUsers.filter((user) => user.id !== userId))
+      // 【修正】削除できたことを成功フラッシュ（緑）で明示する
+      showSuccessFlash("受講生を削除しました。")
     } catch {
-      alert("削除に失敗しました。もう一度お試しください。")
+      // 【修正】ブラウザ標準の window.alert をやめ、画面内のエラーフラッシュ（赤）に置き換えた
+      showErrorFlash("削除に失敗しました。もう一度お試しください。")
     } finally {
       setDeletingId(null)
+      // 【修正】成功・失敗（catch）のどちらでも ⋮メニューを閉じる。
+      // 失敗時にメニューが開いたままだと、画面上部のエラーフラッシュに重なって見づらくなるため
+      setOpenMenuUserId(null)
     }
-    setOpenMenuUserId(null)
   }
 
   // 並べ替えモーダルを開く。現在の適用済み条件をモーダルの初期値として設定する
@@ -170,12 +197,22 @@ export default function AdminUsersPage() {
   }
 
   // データ取得中はスピナーを表示する
-  if (loading || !usersReady) {
+  if (loading || loadStatus === "loading") {
     return <PageSpinner />;
+  }
+
+  // 【修正】取得に失敗したときは、本文の代わりにエラー画面を出す。
+  // ここで止めないと「登録されているユーザーがいません」と表示され、
+  // 実際には登録があるのに0件だと断定して伝えてしまう
+  if (loadStatus === "failed") {
+    return <PageError message="受講生一覧を取得できませんでした。" />
   }
 
   return (
     <AdminLayout admin={admin} onLogout={handleLogout}>
+      {/* 【修正】削除操作の結果の通知（成功=緑 / エラー=赤）。見出しのすぐ上に置く */}
+      <FlashMessage flash={flash} onClose={clearFlash} />
+
       {/* ページタイトルと並べ替え・絞り込みボタン */}
       <div className="d-flex align-items-center gap-3 mb-4">
         <h4 className="mb-0">登録ユーザー一覧</h4>
@@ -212,10 +249,24 @@ export default function AdminUsersPage() {
                 <tr key={user.id}>
                   <td>{user.name}</td>
                   <td>{user.email}</td>
-                  {/* 記事一覧ページは別PRで実装予定のため、当面は件数のみ表示 */}
-                  <td>{user.articlesCount}</td>
-                  {/* 動画一覧ページは別PRで実装予定のため、当面は件数のみ表示 */}
-                  <td>{user.postsCount}</td>
+                  <td>
+                    {/* 記事数クリックでユーザー別記事一覧へ遷移する（つぶやき数と同一パターン） */}
+                    <button
+                      className="btn btn-link p-0 text-decoration-none"
+                      onClick={() => navigate(`/admin/users/${user.id}/articles`)}
+                    >
+                      {user.articlesCount}
+                    </button>
+                  </td>
+                  <td>
+                    {/* 動画数クリックでユーザー別動画投稿一覧へ遷移する（つぶやき数と同一パターン） */}
+                    <button
+                      className="btn btn-link p-0 text-decoration-none"
+                      onClick={() => navigate(`/admin/users/${user.id}/posts`)}
+                    >
+                      {user.postsCount}
+                    </button>
+                  </td>
                   <td>
                     {/* つぶやき数クリックでユーザー別つぶやき一覧へ遷移する */}
                     <button
@@ -244,7 +295,13 @@ export default function AdminUsersPage() {
                         style={{ position: "absolute", right: 0, top: "100%", zIndex: 1000, minWidth: "100px" }}
                         onClick={(clickEvent) => clickEvent.stopPropagation()}
                       >
-                        {/* 詳細ページは別PRで実装予定のため削除ボタンのみ表示 */}
+                        {/* 詳細：クリックで受講生詳細ページへ遷移する。削除項目の上に配置する */}
+                        <button
+                          className="dropdown-item"
+                          onClick={() => navigate(`/admin/users/${user.id}`)}
+                        >
+                          詳細
+                        </button>
                         {/* 削除：確認ダイアログ後に削除APIを呼び出す。処理中は無効化して連打による多重DELETEを防ぐ */}
                         <button
                           className="dropdown-item text-danger"
