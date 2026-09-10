@@ -4,9 +4,11 @@ import UserLayout, { dashboardMenu } from "../../../components/user/UserLayout";
 import ArticleEditor from "../../../components/user/ArticleEditor";
 import { createArticle } from "../../../lib/articleApi";
 import { getApiErrorMessage } from "../../../lib/api";
+import { useTenantPath } from "../../../lib/useTenantPath";
 
 export default function ArticlePostPage() {
   const navigate = useNavigate();
+  const path = useTenantPath();
   const [title, setTitle] = useState("");
   const [subTitle, setSubTitle] = useState("");
   const [content, setContent] = useState("");
@@ -17,7 +19,7 @@ export default function ArticlePostPage() {
     if (!content.trim()) { setError("本文を入力してください。"); return; }
     try {
       await createArticle({ title, subTitle, content });
-      navigate("/articles");
+      navigate(path("/articles"));
     } catch (err) {
       setError(getApiErrorMessage(err, "記事の保存に失敗しました。"));
     }
@@ -35,7 +37,7 @@ export default function ArticlePostPage() {
             body={content} onBodyChange={setContent}
             submitLabel="投稿"
             onSubmit={handleSubmit}
-            onCancel={() => navigate("/articles")}
+            onCancel={() => navigate(path("/articles"))}
           />
         </>
       )}

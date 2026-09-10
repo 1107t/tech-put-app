@@ -34,20 +34,27 @@ api.interceptors.request.use((config) => {
 })
 
 // 401 レスポンス時に全トークンを削除してログインページへリダイレクト
+// ただしログイン／サインアップ自体への401（資格情報間違い）は呼び出し元の
+// catch節でエラー表示させるため、ここでは強制遷移させない。
 api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
       const url = err.config?.url ?? ''
-      const isAdmin = url.includes('/admin/')
-      const isManager = url.includes('/manager/')
-      tokenStorage.clearAll()
-      if (isAdmin) {
-        window.location.href = '/admin/login'
-      } else if (isManager) {
-        window.location.href = '/manager/login'
-      } else {
-        window.location.href = '/login'
+      const isAuthAttempt = url.includes('/login') || url.includes('/signup')
+      if (!isAuthAttempt) {
+        const isAdmin = url.includes('/admin/')
+        const isManager = url.includes('/manager/')
+        tokenStorage.clearAll()
+        if (isAdmin) {
+          window.location.href = '/admin/login'
+        } else if (isManager) {
+          window.location.href = '/manager/login'
+        } else {
+          // ユーザーはテナント配下のログインページへ（現在のURLからtenantIdを引き継ぐ）
+          const match = window.location.pathname.match(/^\/tenant\/([^/]+)\/users/)
+          window.location.href = match ? `/tenant/${match[1]}/users/login` : '/'
+        }
       }
     }
     return Promise.reject(err)
