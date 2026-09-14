@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import UserLayout, { dashboardMenu } from "../../../components/user/UserLayout";
 import { getAllArticles, deleteArticle, type Article } from "../../../lib/articleApi";
 import { getApiErrorMessage } from "../../../lib/api";
+import { useTenantPath } from "../../../lib/useTenantPath";
 import "../../../styles/pages/articleList.css";
 
 function formatDate(isoString: string): string {
@@ -17,6 +18,7 @@ function formatDate(isoString: string): string {
 
 export default function ArticleIndexPage() {
   const navigate = useNavigate();
+  const path = useTenantPath();
   const [articles, setArticles] = useState<Article[]>([]);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -56,7 +58,7 @@ export default function ArticleIndexPage() {
     <UserLayout
       menu={dashboardMenu}
       headerTitle="投稿した記事一覧"
-      headerAction={<Link to="/articles/new" className="header-action-link">記事投稿</Link>}
+      headerAction={<Link to={path("/articles/new")} className="header-action-link">記事投稿</Link>}
     >
       {(me) => (
         <>
@@ -79,7 +81,7 @@ export default function ArticleIndexPage() {
                   <tr
                     key={article.id}
                     className="article-row"
-                    onClick={() => navigate(`/articles/${article.id}`)}
+                    onClick={() => navigate(path(`/articles/${article.id}`))}
                   >
                     <td className="link-td">{article.title}</td>
                     <td className="link-td">{article.subTitle}</td>
@@ -101,7 +103,7 @@ export default function ArticleIndexPage() {
                               <li>
                                 <Link
                                   className="nav-link"
-                                  to={`/articles/${article.id}/edit`}
+                                  to={path(`/articles/${article.id}/edit`)}
                                 >
                                   編集
                                 </Link>

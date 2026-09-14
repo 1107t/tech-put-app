@@ -39,3 +39,19 @@ export async function getCurrentManager(): Promise<Manager | null> {
     throw err
   }
 }
+
+export interface Tenant {
+  id: string
+  name: string
+  createdAt: string
+}
+
+export async function createTenant(name: string): Promise<Tenant> {
+  const res = await api.post<{ tenant: Tenant }>('/manager/tenants', { name })
+  return res.data.tenant
+}
+
+export async function getTenant(id: string): Promise<Tenant> {
+  const res = await api.get<{ tenant: Tenant }>(`/manager/tenants/${id}`)
+  return res.data.tenant
+}

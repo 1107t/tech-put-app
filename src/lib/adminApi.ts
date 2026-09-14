@@ -92,13 +92,23 @@ export async function getAdminPost(id: string): Promise<AdminPost> {
   return res.data.post
 }
 
-export async function createAdminPost(params: {
+export type AdminPostInput = {
   title: string
   body: string
-  youtube_url: string
-}): Promise<AdminPost> {
-  const res = await api.post<{ post: AdminPost }>('/admin/posts', params)
+  youtubeUrl: string
+}
+
+export async function createAdminPost(data: AdminPostInput): Promise<AdminPost> {
+  const res = await api.post<{ post: AdminPost }>('/admin/posts', {
+    title: data.title, body: data.body, youtube_url: data.youtubeUrl,
+  })
   return res.data.post
+}
+
+export async function updateAdminPost(id: string, data: AdminPostInput): Promise<void> {
+  await api.patch(`/admin/posts/${id}`, {
+    title: data.title, body: data.body, youtube_url: data.youtubeUrl,
+  })
 }
 
 export async function deleteAdminPost(id: string): Promise<void> {

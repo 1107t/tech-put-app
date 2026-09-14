@@ -4,6 +4,7 @@
 import { NavLink } from "react-router-dom";
 import type { User } from "../../lib/userTypes";
 import UserSidebarItem from "./UserSidebarItem";
+import { useTenantPath } from "../../lib/useTenantPath";
 import "../../styles/components/userAvatar.css";
 
 // サイドバーメニュー項目の型定義
@@ -20,6 +21,7 @@ type Props = {
 };
 
 export default function UserSidebar({ me, menu, onLogout }: Props) {
+  const path = useTenantPath();
   return (
     <aside className="user-sidebar">
       {/* ロゴエリア: アバターアイコンとサービス名 */}
@@ -30,7 +32,7 @@ export default function UserSidebar({ me, menu, onLogout }: Props) {
 
       {/* ユーザー名: プロフィールページへのリンク */}
       <div className="mb-3">
-        <NavLink to={`/users/${me.id}`} className="text-white text-decoration-none">
+        <NavLink to={path(`/users/${me.id}`)} className="text-white text-decoration-none">
           {me.name}
         </NavLink>
         <hr className="border-secondary mt-2 mb-0" />

@@ -26,6 +26,7 @@ import AdminUsersPage from './pages/admins/AdminUsersPage';
 import AdminUserDetailPage from './pages/admins/AdminUserDetailPage';
 import AdminVideosPage from './pages/admins/AdminVideosPage';
 import AdminVideoPostPage from './pages/admins/AdminVideoPostPage';
+import AdminVideoEditPage from './pages/admins/AdminVideoEditPage';
 import VideoDetail from './pages/admins/VideoDetail';
 // ユーザー別つぶやき一覧ページ（PR #21 で追加）
 import AdminUserTweetsPage from './pages/admins/AdminUserTweetsPage';
@@ -35,25 +36,31 @@ import AdminArticleNewPage from './pages/admins/article/New';
 import AdminArticleEditPage from './pages/admins/article/Edit';
 import AdminArticleShowPage from './pages/admins/article/Show';
 
+// マネージャー用ページ
+import ManagerLoginPage from './pages/managers/ManagerLoginPage';
+import ManagerDashboardPage from './pages/managers/ManagerDashboardPage';
+import TenantNewPage from './pages/managers/TenantNewPage';
+import TenantDetailPage from './pages/managers/TenantDetailPage';
+
 // アプリのルーティングを管理するコンポーネント。全ページのURL設定をここで一元管理する。
 function AppRoutes() {
   return (
     <Router>
       <Routes>
-        {/* ルートパスから /login へリダイレクト */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        {/* ルートパスからデフォルトテナントのログインへリダイレクト */}
+        <Route path="/" element={<Navigate to="/tenant/1/users/login" replace />} />
 
-        {/* 一般ユーザー用ルート */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<UserSignUpPage />} />
-        <Route path="/message/:type" element={<UserMessagePage />} />
-        <Route path="/reset" element={<UserPassreset />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/tweets" element={<TweetIndex />} />
-        <Route path="/articles" element={<ArticleIndexPage />} />
-        <Route path="/articles/new" element={<ArticlePostPage />} />
-        <Route path="/articles/:id/edit" element={<ArticleEditPage />} />
-        <Route path="/articles/:id" element={<ArticleShowPage />} />
+        {/* 一般ユーザー用ルート（テナントごとに /tenant/:tenantId/users 配下にスコープ） */}
+        <Route path="/tenant/:tenantId/users/login" element={<LoginPage />} />
+        <Route path="/tenant/:tenantId/users/signup" element={<UserSignUpPage />} />
+        <Route path="/tenant/:tenantId/users/message/:type" element={<UserMessagePage />} />
+        <Route path="/tenant/:tenantId/users/reset" element={<UserPassreset />} />
+        <Route path="/tenant/:tenantId/users/dashboard" element={<DashboardPage />} />
+        <Route path="/tenant/:tenantId/users/tweets" element={<TweetIndex />} />
+        <Route path="/tenant/:tenantId/users/articles" element={<ArticleIndexPage />} />
+        <Route path="/tenant/:tenantId/users/articles/new" element={<ArticlePostPage />} />
+        <Route path="/tenant/:tenantId/users/articles/:id/edit" element={<ArticleEditPage />} />
+        <Route path="/tenant/:tenantId/users/articles/:id" element={<ArticleShowPage />} />
 
         {/* 管理者用ルート（固定パスを先に定義） */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -67,6 +74,7 @@ function AppRoutes() {
         <Route path="/admin/articles/:id" element={<AdminArticleShowPage />} />
         <Route path="/admin/videos" element={<AdminVideosPage />} />
         <Route path="/admin/videos/new" element={<AdminVideoPostPage />} />
+        <Route path="/admin/videos/:id/edit" element={<AdminVideoEditPage />} />
         <Route path="/admin/videos/:id" element={<VideoDetail />} />
         <Route path="/admin/users" element={<AdminUsersPage />} />
         {/* ユーザー別つぶやき一覧。react-router v6 は specificity でマッチするため定義順は問わない */}
@@ -79,8 +87,15 @@ function AppRoutes() {
 
         <Route path="/adminpage" element={<AdminPage />} />
 
-        {/* TODO(manager): マネージャー用ルートを追加する
-            /manager/login, /manager/dashboard など admin セクションに倣って実装 */}
+        {/* マネージャー用ルート */}
+        <Route path="/manager/login" element={<ManagerLoginPage />} />
+        <Route path="/manager/dashboard" element={<ManagerDashboardPage />} />
+        <Route path="/manager/tenants/new" element={<TenantNewPage />} />
+        <Route path="/manager/tenants/:id" element={<TenantDetailPage />} />
+        <Route path="/manager/articles" element={<div>記事一覧ページ（未実装）</div>} />
+        <Route path="/manager/videos" element={<div>動画投稿一覧ページ（未実装）</div>} />
+        <Route path="/manager/users" element={<div>登録ユーザー一覧ページ（未実装）</div>} />
+        <Route path="/manager/inquiries" element={<div>問い合わせ一覧ページ（未実装）</div>} />
 
         {/* 404ページ */}
         <Route path="*" element={<div>404 - ページが見つかりません</div>} />

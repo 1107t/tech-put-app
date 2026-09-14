@@ -1,13 +1,14 @@
-// src/pages/admins/AdminVideoPostPage.tsx
+// src/pages/admins/video/New.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createAdminPost } from "../../lib/adminApi";
-import { getApiErrorMessage } from "../../lib/api";
-import AdminLayout from "../../components/admin/AdminLayout";
-import PageSpinner from "../../components/admin/PageSpinner";
-import PageError from "../../components/admin/PageError";
-import { useRequireAdmin } from "../../lib/useRequireAdmin";
-import { getYouTubeVideoId } from "../../lib/youtube";
+import { createAdminPost } from "../../../lib/adminApi";
+import { getApiErrorMessage } from "../../../lib/api";
+import AdminLayout from "../../../components/admin/AdminLayout";
+import PageSpinner from "../../../components/admin/PageSpinner";
+import PageError from "../../../components/admin/PageError";
+import { useRequireAdmin } from "../../../lib/useRequireAdmin";
+import { getYouTubeVideoId } from "../../../lib/youtube";
+import "../../../styles/pages/videoForm.css";
 
 const TITLE_MAX = 30;
 const BODY_MAX = 240;
@@ -31,7 +32,7 @@ export default function AdminVideoPostPage() {
     if (!getYouTubeVideoId(youtubeUrl)) { setError("有効なYouTubeのURLを入力してください。"); return; }
     setIsSubmitting(true);
     try {
-      await createAdminPost({ title, body, youtube_url: youtubeUrl });
+      await createAdminPost({ title, body, youtubeUrl });
       navigate("/admin/videos");
     } catch (err) {
       setError(getApiErrorMessage(err, "動画の投稿に失敗しました。"));
@@ -53,7 +54,7 @@ export default function AdminVideoPostPage() {
         <div className="col-md-7 col-lg-6">
           <div className="card shadow-sm">
             <div className="card-body">
-              <div className="text-center pb-3 mb-4" style={{ borderBottom: "1px solid #e9ecef" }}>
+              <div className="text-center pb-3 mb-4 video-form-header">
                 <h5 className="mb-0">動画投稿</h5>
               </div>
 
@@ -61,48 +62,51 @@ export default function AdminVideoPostPage() {
 
               <form onSubmit={handleSubmit}>
                 <div className="mb-1">
-                  <label className="form-label" style={{ fontSize: "14px" }}>
+                  <label className="form-label video-form-label" htmlFor="video-title">
                     タイトル
                   </label>
                   <input
+                    id="video-title"
                     type="text"
                     className="form-control"
                     value={title}
                     maxLength={TITLE_MAX}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="タイトル (必須 30文字まで)"
+                    placeholder={`タイトル (必須 ${TITLE_MAX}文字まで)`}
                   />
                 </div>
                 <div className="mb-3 text-end">
-                  <span className="text-muted" style={{ fontSize: "12px" }}>
+                  <span className="text-muted video-form-count">
                     {title.length}文字
                   </span>
                 </div>
 
                 <div className="mb-1">
-                  <label className="form-label" style={{ fontSize: "14px" }}>
+                  <label className="form-label video-form-label" htmlFor="video-body">
                     内容
                   </label>
                   <textarea
+                    id="video-body"
                     className="form-control"
                     rows={6}
                     value={body}
                     maxLength={BODY_MAX}
                     onChange={(e) => setBody(e.target.value)}
-                    placeholder="内容 (必須 240文字まで)"
+                    placeholder={`内容 (必須 ${BODY_MAX}文字まで)`}
                   />
                 </div>
                 <div className="mb-3 text-end">
-                  <span className="text-muted" style={{ fontSize: "12px" }}>
+                  <span className="text-muted video-form-count">
                     {body.length}文字
                   </span>
                 </div>
 
                 <div className="mb-4">
-                  <label className="form-label" style={{ fontSize: "14px" }}>
+                  <label className="form-label video-form-label" htmlFor="video-youtube-url">
                     Youtube URL
                   </label>
                   <input
+                    id="video-youtube-url"
                     type="url"
                     className="form-control"
                     value={youtubeUrl}

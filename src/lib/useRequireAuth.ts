@@ -6,11 +6,13 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCurrentUser, logout } from "./userApi";
 import type { User } from "./userTypes";
+import { useTenantPath } from "./useTenantPath";
 
 export function useRequireAuth(): { me: User | null; handleLogout: () => Promise<void> } {
   // ログイン中のユーザー情報（取得完了まで null）
   const [me, setMe] = useState<User | null>(null);
   const navigate = useNavigate();
+  const path = useTenantPath();
 
   useEffect(() => {
     (async () => {
@@ -18,17 +20,17 @@ export function useRequireAuth(): { me: User | null; handleLogout: () => Promise
       const currentUser = await getCurrentUser();
       // 未ログインなら /login にリダイレクト
       if (!currentUser) {
-        navigate("/login", { replace: true });
+        navigate(path("/login"), { replace: true });
         return;
       }
       setMe(currentUser);
     })();
-  }, [navigate]);
+  }, [navigate, path]);
 
   // ログアウト処理: ストアをクリアして /login にリダイレクト
   const handleLogout = async () => {
     await logout();
-    navigate("/login", { replace: true });
+    navigate(path("/login"), { replace: true });
   };
 
   return { me, handleLogout };
