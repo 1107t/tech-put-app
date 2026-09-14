@@ -5,11 +5,8 @@
 import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import {
-  getCurrentAdmin,
-  adminLogout,
   getUser,
   getAdminUserPosts,
-  type Admin,
   type AdminUserPost,
 } from "../../lib/adminApi"
 import AdminLayout from "../../components/admin/AdminLayout"
@@ -17,6 +14,9 @@ import AdminLayout from "../../components/admin/AdminLayout"
 // このページは閲覧専用で操作を持たないため、通知はこれだけでよく、フラッシュメッセージは使わない
 import PageError from "../../components/admin/PageError"
 import type { LoadStatus } from "../../lib/loadStatus"
+// 認証・ログアウトと全画面スピナーは管理画面の共通部品を使う。
+import { useRequireAdmin } from "../../lib/useRequireAdmin"
+import PageSpinner from "../../components/admin/PageSpinner"
 // サムネイル形式のカード1枚分の描画
 import PostThumbnailCard from "../../components/admin/PostThumbnailCard"
 // 日付整形はページ内の重複実装を廃止し、共通ユーティリティを使う（DRY原則）
@@ -66,7 +66,7 @@ export default function AdminUserPostsPage() {
   // URLパラメータからユーザーIDを取得する
   const { userId } = useParams<{ userId: string }>()
 
-  const [admin, setAdmin] = useState<Admin | null>(null)
+  const { admin, loading: authenticationLoading, error: authenticationError, handleLogout } = useRequireAdmin()
   // 画面見出しに表示するユーザー名
   const [userName, setUserName] = useState<string>("")
   // 対象ユーザーの動画投稿一覧
@@ -82,21 +82,13 @@ export default function AdminUserPostsPage() {
   // useState の初期値に関数を渡すと初回レンダー時だけ実行されるため、毎回 localStorage を読みに行かずに済む
   const [viewMode, setViewMode] = useState<PostsViewMode>(loadStoredViewMode)
 
+  // 認証成功後だけ取得し、対象ユーザーが変わったときも読み込み状態から始める。
   useEffect(() => {
+    if (!admin) return
     let cancelled = false
+    setLoadStatus("loading")
     ;(async () => {
       try {
-        // 管理者ログイン確認。未ログインならログインページへリダイレクトする。
-        // getCurrentAdmin は 401 のときだけ null を返し、500・タイムアウト・通信断では throw する。
-        // try の外に置くと throw が finally に届かず、スピナーが回り続けるため必ず try の中で呼ぶ
-        const currentAdmin = await getCurrentAdmin()
-        if (cancelled) return
-        if (!currentAdmin) {
-          navigate("/admin/login", { replace: true })
-          return
-        }
-        setAdmin(currentAdmin)
-
         // URLにユーザーIDが無ければ取得しようがないので、失敗として扱う（読み込み中のまま止めない）
         if (!userId) {
           if (!cancelled) setLoadStatus("failed")
@@ -113,7 +105,7 @@ export default function AdminUserPostsPage() {
         setPosts(userPosts)
         setLoadStatus("loaded")
       } catch {
-        // ログイン確認・ユーザー情報・動画投稿のいずれの失敗もここに来る。
+        // ユーザー情報・動画投稿のいずれの取得失敗もここに来る。
         // 失敗の表示は PageError が担うので、ここでは状態を立てるだけでよい
         if (!cancelled) setLoadStatus("failed")
       }
@@ -121,12 +113,7 @@ export default function AdminUserPostsPage() {
     return () => {
       cancelled = true
     }
-  }, [navigate, userId])
-
-  const handleLogout = async () => {
-    await adminLogout()
-    navigate("/admin/login", { replace: true })
-  }
+  }, [admin, userId])
 
   // 表示形式を切り替える。次回この画面を開いたときに同じ見方で始められるよう localStorage にも保存する
   const handleChangeViewMode = (nextViewMode: PostsViewMode) => {
@@ -134,22 +121,15 @@ export default function AdminUserPostsPage() {
     saveViewMode(nextViewMode)
   }
 
-  // データ取得中はスピナーを表示する
-  if (loadStatus === "loading") {
-    return (
-      <div className="d-flex justify-content-center align-items-center min-vh-100">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">読み込み中...</span>
-        </div>
-      </div>
-    )
-  }
-
   // 取得に失敗したときは、本文の代わりにエラー画面を出す。
   // フラッシュは3秒で消えるため、失敗した状態を伝え続ける役割はこちらが担う
-  if (loadStatus === "failed") {
+  // 認証失敗を読み込み中より先に判定し、スピナーが残り続けることを防ぐ。
+  if (authenticationError || loadStatus === "failed") {
     return <PageError message="データを取得できませんでした。" />
   }
+
+  // 認証確認中・動画取得中は既存と同じ全画面スピナーを表示する。
+  if (authenticationLoading || loadStatus === "loading") return <PageSpinner />
 
   return (
     <AdminLayout admin={admin} onLogout={handleLogout}>
