@@ -1,7 +1,4 @@
-// src/pages/admins/AdminUserArticlesPage.tsx【修正】
-// 管理者側のユーザー別記事一覧ページ。
-// 指定ユーザーが投稿した記事を一覧表示し、タイトルから記事詳細ページへ遷移できる。
-
+// 受講生別の記事一覧と記事詳細への導線を表示する。
 import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import {
@@ -10,19 +7,13 @@ import {
   type AdminUserArticle,
 } from "../../lib/adminApi"
 import AdminLayout from "../../components/admin/AdminLayout"
-// ページ全体の読み込みに失敗したときの、本文に代わる恒久的なエラー表示。
-// このページは閲覧専用で操作を持たないため、通知はこれだけでよく、フラッシュメッセージは使わない
 import PageError from "../../components/admin/PageError"
 import type { LoadStatus } from "../../lib/loadStatus"
-// 認証・ログアウトと全画面スピナーは管理画面の共通部品を使う。
 import { useRequireAdmin } from "../../lib/useRequireAdmin"
 import PageSpinner from "../../components/admin/PageSpinner"
-// 日付整形はページ内の重複実装を廃止し、共通ユーティリティを使う（DRY原則）
 import { formatDate } from "../../lib/formatDate"
-// 見出し文言の組み立ても、兄弟の一覧ページと共通のユーティリティに寄せる
 import { buildUserPageHeading } from "../../lib/pageHeading"
 
-// 本文テキストを指定文字数で省略して表示するユーティリティ
 function truncateText(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text
   return text.slice(0, maxLength) + "..."
@@ -30,35 +21,27 @@ function truncateText(text: string, maxLength: number): string {
 
 export default function AdminUserArticlesPage() {
   const navigate = useNavigate()
-  // URLパラメータからユーザーIDを取得する
   const { userId } = useParams<{ userId: string }>()
 
   const { admin, loading: authenticationLoading, error: authenticationError, handleLogout } = useRequireAdmin()
-  // 画面見出しに表示するユーザー名
   const [userName, setUserName] = useState<string>("")
-  // 対象ユーザーの記事一覧
   const [articles, setArticles] = useState<AdminUserArticle[]>([])
 
-  // ページ全体の読み込み状態。
-  // 「読み込み中」と「失敗」を別々の boolean で持つと、失敗を表示しないまま
-  // 空状態のメッセージ（＝0件と断定する文言）を出してしまう事故が起きる。
-  // 1つの状態にまとめ、描画側で failed の分岐を必ず書くようにしている
+  // 取得失敗を「投稿0件」と表示しないよう、読み込み状態を区別する。
   const [loadStatus, setLoadStatus] = useState<LoadStatus>("loading")
 
-  // 認証成功後だけ取得し、対象ユーザーが変わったときも読み込み状態から始める。
   useEffect(() => {
     if (!admin) return
+    // ユーザー切り替え後や離脱後に古い取得結果を反映しない。
     let cancelled = false
     setLoadStatus("loading")
     ;(async () => {
       try {
-        // URLにユーザーIDが無ければ取得しようがないので、失敗として扱う（読み込み中のまま止めない）
         if (!userId) {
           if (!cancelled) setLoadStatus("failed")
           return
         }
 
-        // ユーザー情報と記事一覧を並列取得する
         const [userInfo, userArticles] = await Promise.all([
           getUser(userId),
           getAdminUserArticles(userId),
@@ -68,8 +51,6 @@ export default function AdminUserArticlesPage() {
         setArticles(userArticles)
         setLoadStatus("loaded")
       } catch {
-        // ユーザー情報・記事のいずれの取得失敗もここに来る。
-        // 失敗の表示は PageError が担うので、ここでは状態を立てるだけでよい
         if (!cancelled) setLoadStatus("failed")
       }
     })()
@@ -78,19 +59,16 @@ export default function AdminUserArticlesPage() {
     }
   }, [admin, userId])
 
-  // 取得に失敗したときは、本文の代わりにエラー画面を出す。
-  // フラッシュは3秒で消えるため、失敗した状態を伝え続ける役割はこちらが担う
-  // 認証失敗を読み込み中より先に判定し、スピナーが残り続けることを防ぐ。
+  // 認証失敗時にスピナーが残らないよう、読み込み中より先に判定する。
   if (authenticationError || loadStatus === "failed") {
     return <PageError message="データを取得できませんでした。" />
   }
 
-  // 認証確認中・記事取得中は既存と同じ全画面スピナーを表示する。
   if (authenticationLoading || loadStatus === "loading") return <PageSpinner />
 
   return (
     <AdminLayout admin={admin} onLogout={handleLogout}>
-      {/* ページヘッダー: 戻るボタン・ユーザー名 */}
+      {/* 見出し・戻る導線 */}
       <div className="d-flex align-items-center gap-3 mb-4">
         <button
           className="btn btn-outline-secondary btn-sm"
@@ -99,13 +77,10 @@ export default function AdminUserArticlesPage() {
         >
           ← 戻る
         </button>
-        {/* 仕様書準拠でユーザー名に「さん」を付けて見出しを表示する。
-            名前が取得できなかった場合の文言は buildUserPageHeading が判断する */}
         <h4 className="mb-0">{buildUserPageHeading(userName, "記事一覧")}</h4>
       </div>
 
-      {/* 記事一覧: 投稿がなければ空メッセージ、あれば表形式で表示。
-          取得失敗はこの手前で PageError に分岐済みなので、ここは成功時だけを考えればよい */}
+      {/* 記事一覧 */}
       {articles.length === 0 ? (
         <p className="text-muted text-center py-5">記事の投稿はまだありません</p>
       ) : (
@@ -121,9 +96,7 @@ export default function AdminUserArticlesPage() {
             <tbody>
               {articles.map((article) => (
                 <tr key={article.id}>
-                  {/* 記事タイトル。クリックで記事詳細ページへ遷移する。
-                      行全体ではなくタイトルだけをクリック対象にして、誤操作での遷移を避ける。
-                      見た目は登録ユーザー一覧の件数リンクと同じ btn btn-link に揃える */}
+                  {/* 誤操作を避けるため、行全体ではなくタイトルだけを遷移対象にする。 */}
                   <td className="fw-semibold">
                     <button
                       type="button"
@@ -133,11 +106,9 @@ export default function AdminUserArticlesPage() {
                       {article.title}
                     </button>
                   </td>
-                  {/* 本文の先頭80文字をプレビュー表示する */}
                   <td className="text-muted">
                     {truncateText(article.content, 80)}
                   </td>
-                  {/* 投稿日時 */}
                   <td className="text-nowrap text-muted">
                     {formatDate(article.createdAt)}
                   </td>

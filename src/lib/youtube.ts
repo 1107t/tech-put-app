@@ -1,8 +1,4 @@
-// src/lib/youtube.ts【修正】
-// YouTubeの動画URLから動画IDを取り出す共通処理。
-// 全体の動画一覧と受講生別の動画一覧で、同じURL解析を使う。
-
-// 短縮URL・watch・embed・shortsに対応し、動画IDを取得できない場合はnullを返す。
+// YouTubeの短縮URL・watch・embed・shortsから動画IDを取り出す。
 export function getYouTubeVideoId(url: string): string | null {
   let parsedUrl: URL;
   try {
