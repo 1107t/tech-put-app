@@ -55,3 +55,8 @@ export async function getTenant(id: string): Promise<Tenant> {
   const res = await api.get<{ tenant: Tenant }>(`/manager/tenants/${id}`)
   return res.data.tenant
 }
+
+export async function getTenants(): Promise<Tenant[]> {
+  const res = await api.get<{ tenants: Tenant[] }>('/manager/tenants')
+  return res.data.tenants
+}

@@ -6,10 +6,6 @@ import "../../styles/components/adminLayout.css";
 
 const menuItems = [
   { id: 1, label: "e-learning", to: "/manager/dashboard", icon: "fa-solid fa-book-open" },
-  { id: 2, label: "記事一覧", to: "/manager/articles", icon: "fa-solid fa-table-cells" },
-  { id: 3, label: "動画投稿一覧", to: "/manager/videos", icon: "fa-brands fa-youtube" },
-  { id: 4, label: "登録ユーザー一覧", to: "/manager/users", icon: "fa-solid fa-list" },
-  { id: 5, label: "問い合わせ一覧", to: "/manager/inquiries", icon: "fa-solid fa-list" },
 ];
 
 type Props = {

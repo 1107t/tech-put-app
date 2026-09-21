@@ -22,7 +22,6 @@ export default function TenantNewPage() {
     e.preventDefault();
     if (isSubmitting) return;
     if (!name.trim()) { setError("テナント名を入力してください。"); return; }
-    if (name.trim().length > NAME_MAX) { setError(`テナント名は${NAME_MAX}文字以内で入力してください。`); return; }
     setIsSubmitting(true);
     try {
       const tenant = await createTenant(name.trim());

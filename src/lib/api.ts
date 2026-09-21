@@ -9,6 +9,11 @@ export const TOKEN_KEYS = {
   manager: 'manager_token',
 } as const
 
+// ユーザーが最後にログインしたテナントID。
+// ログイン後のユーザールートはテナントIDをURLに含めないため、
+// セッション切れ・ログアウト時にどのテナントのログインへ戻すか判断するのに使う。
+const USER_TENANT_ID_KEY = 'user_tenant_id'
+
 // TODO: httpOnly Cookie 移行時に withCredentials: true を追加する。
 //   これにより Cookie がクロスオリジンリクエストでも自動付与される。
 //   Rails 側: cookies.signed[:token] を設定し SameSite: :strict + Secure を必ず付ける。
@@ -39,7 +44,7 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401) {
+    if (axios.isAxiosError(err) && err.response?.status === 401) {
       const url = err.config?.url ?? ''
       const isAuthAttempt = url.includes('/login') || url.includes('/signup')
       if (!isAuthAttempt) {
@@ -51,9 +56,11 @@ api.interceptors.response.use(
         } else if (isManager) {
           window.location.href = '/manager/login'
         } else {
-          // ユーザーはテナント配下のログインページへ（現在のURLからtenantIdを引き継ぐ）
-          const match = window.location.pathname.match(/^\/tenant\/([^/]+)\/users/)
-          window.location.href = match ? `/tenant/${match[1]}/users/login` : '/'
+          // ユーザーはテナント配下のログインページへ。
+          // ログイン後の画面はURLにtenantIdを含まないため、ログイン時に保存した
+          // tenantIdから復元する（未保存ならデフォルトテナントへ）。
+          const tenantId = tokenStorage.getUserTenantId()
+          window.location.href = tenantId ? `/tenant/${tenantId}/users/login` : '/'
         }
       }
     }
@@ -87,6 +94,9 @@ export const tokenStorage = {
   getUser:    ()          => localStorage.getItem(TOKEN_KEYS.user),
   setUser:    (t: string) => localStorage.setItem(TOKEN_KEYS.user, t),
   removeUser: ()          => localStorage.removeItem(TOKEN_KEYS.user),
+
+  getUserTenantId: ()          => localStorage.getItem(USER_TENANT_ID_KEY),
+  setUserTenantId: (id: string) => localStorage.setItem(USER_TENANT_ID_KEY, id),
 
   getAdmin:    ()          => localStorage.getItem(TOKEN_KEYS.admin),
   setAdmin:    (t: string) => localStorage.setItem(TOKEN_KEYS.admin, t),

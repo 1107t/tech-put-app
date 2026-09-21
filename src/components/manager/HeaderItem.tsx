@@ -1,5 +1,4 @@
 // src/components/manager/HeaderItem.tsx
-import { useNavigate } from "react-router-dom";
 import { type Manager } from "../../lib/managerApi";
 
 type Props = {
@@ -13,8 +12,6 @@ type Props = {
 };
 
 export default function HeaderItem({ manager, dropdownOpen, setDropdownOpen, onLogout, onToggleSidebar, title, action }: Props) {
-  const navigate = useNavigate();
-
   return (
     <div
       className="d-flex justify-content-between align-items-center px-4"
@@ -46,16 +43,6 @@ export default function HeaderItem({ manager, dropdownOpen, setDropdownOpen, onL
       {/* 右側：アクション＋アカウントアイコン＋ドロップダウン */}
       <div className="d-flex align-items-center gap-3">
         {action && <div>{action}</div>}
-        <button
-          type="button"
-          className="btn btn-success btn-sm d-flex align-items-center gap-1"
-          onClick={() => navigate("/manager/tenants/new")}
-        >
-          <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
-          </svg>
-          テナント追加
-        </button>
         <div className="position-relative">
           <button
             className="btn p-0 border-0"

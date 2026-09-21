@@ -4,23 +4,21 @@ import UserLayout, { dashboardMenu } from "../../../components/user/UserLayout";
 import MarkdownView from "../../../components/user/MarkdownView";
 import { getArticle, deleteArticle, type Article } from "../../../lib/articleApi";
 import { getApiErrorMessage } from "../../../lib/api";
-import { useTenantPath } from "../../../lib/useTenantPath";
 import "../../../styles/pages/articleShow.css";
 
 export default function ArticleShowPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const path = useTenantPath();
   const [article, setArticle] = useState<Article | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
     const load = async () => {
-      if (!id) { navigate(path("/articles")); return; }
+      if (!id) { navigate("/articles"); return; }
       try {
         const data = await getArticle(id);
         if (!data) {
-          navigate(path("/articles"));
+          navigate("/articles");
           return;
         }
         setArticle(data);
@@ -33,10 +31,10 @@ export default function ArticleShowPage() {
 
   const handleDelete = async () => {
     if (!window.confirm("この記事を削除しますか？")) return;
-    if (!id) { navigate(path("/articles")); return; }
+    if (!id) { navigate("/articles"); return; }
     try {
       await deleteArticle(id);
-      navigate(path("/articles"));
+      navigate("/articles");
     } catch (err) {
       setError(getApiErrorMessage(err, "記事の削除に失敗しました。"));
     }
@@ -66,7 +64,7 @@ export default function ArticleShowPage() {
                   </div>
                   {article.userId === me.id && (
                     <div className="d-flex gap-2 ms-3 flex-shrink-0">
-                      <Link to={path(`/articles/${id}/edit`)} className="btn btn-success btn-sm">
+                      <Link to={`/articles/${id}/edit`} className="btn btn-success btn-sm">
                         編集
                       </Link>
                       <button className="btn btn-danger btn-sm" onClick={handleDelete}>

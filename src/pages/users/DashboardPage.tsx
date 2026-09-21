@@ -4,7 +4,6 @@
 import { Link } from "react-router-dom";
 import UserLayout from "../../components/user/UserLayout";
 import { dashboardMenu } from "../../components/user/UserLayout";
-import { useTenantPath } from "../../lib/useTenantPath";
 import "../../styles/pages/dashboard.css";
 
 // レッスン情報の型定義
@@ -24,7 +23,6 @@ const lessons: Lesson[] = [
 ];
 
 export default function DashboardPage() {
-  const path = useTenantPath();
   return (
     <UserLayout menu={dashboardMenu} headerTitle="e-learning一覧">
       {(_me) => (
@@ -48,7 +46,7 @@ export default function DashboardPage() {
 
                   {/* 記事を見るボタン */}
                   <div className="mt-3">
-                    <Link className="btn btn-primary btn-sm" to={path(`/lessons/${lesson.id}`)}>
+                    <Link className="btn btn-primary btn-sm" to={`/lessons/${lesson.id}`}>
                       記事を見る
                     </Link>
                   </div>

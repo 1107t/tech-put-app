@@ -47,7 +47,7 @@ export default function TenantDetailPage() {
                 <h5 className="mb-0">テナント詳細</h5>
               </div>
 
-              {tenantError && <PageError message={tenantError} onRetry={() => window.location.reload()} />}
+              {tenantError && <p className="text-danger">{tenantError}</p>}
 
               {!tenantError && tenantLoading && (
                 <div className="d-flex justify-content-center py-4">
@@ -66,9 +66,21 @@ export default function TenantDetailPage() {
                     <dd className="col-8">{tenant.id}</dd>
                     <dt className="col-4 text-muted" style={{ fontSize: "14px" }}>登録日</dt>
                     <dd className="col-8">{new Date(tenant.createdAt).toLocaleDateString("ja-JP")}</dd>
+                    <dt className="col-4 text-muted" style={{ fontSize: "14px" }}>受講生ログインURL</dt>
+                    <dd className="col-8 text-break">
+                      {`${window.location.origin}/tenant/${tenant.id}/users/login`}
+                    </dd>
                   </dl>
 
-                  <div className="d-flex justify-content-center">
+                  <div className="d-flex justify-content-center gap-2">
+                    <a
+                      href={`/tenant/${tenant.id}/users/login`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn btn-primary btn-sm"
+                    >
+                      テナントログイン
+                    </a>
                     <button
                       type="button"
                       className="btn btn-secondary btn-sm"
