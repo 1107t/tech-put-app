@@ -1,46 +1,39 @@
-// src/pages/admins/AdminUserTweetsPage.tsx【修正】
-// 管理者側のユーザー別つぶやき一覧ページ。
-// IndexedDB から Rails API に移行したことで、管理者が他ユーザーのつぶやきを閲覧できるようになった。
-// 管理者は user_id を持たないため、いいね・コメント投稿は提供せず閲覧専用とする。
+// 受講生別のつぶやきを表示する。管理者はuser_idを持たないため閲覧専用とする。
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { getCurrentAdmin, adminLogout, getAdminUserTweets, getUser, type Admin } from "../../lib/adminApi";
+import { useParams } from "react-router-dom";
+import { getAdminUserTweets, getUser } from "../../lib/adminApi";
 import type { Tweet } from "../../lib/tweets";
 import AdminLayout from "../../components/admin/AdminLayout";
-// 日付整形はページ内の重複実装を廃止し、共通ユーティリティ formatDate を使う（DRY原則）
 import { formatDate } from "../../lib/formatDate";
+import PageError from "../../components/admin/PageError";
+import type { LoadStatus } from "../../lib/loadStatus";
+import { useRequireAdmin } from "../../lib/useRequireAdmin";
+import PageSpinner from "../../components/admin/PageSpinner";
 import "../../styles/pages/tweets.css";
 
 export default function AdminUserTweetsPage() {
-  const navigate = useNavigate();
-  // URLパラメータからユーザーIDを取得する
   const { userId } = useParams<{ userId: string }>();
 
-  const [admin, setAdmin] = useState<Admin | null>(null);
-  // 画面見出しに使うユーザー名（getUser で取得。つぶやき0件でも表示できる）
+  const { admin, loading: authenticationLoading, error: authenticationError, handleLogout } = useRequireAdmin();
   const [userName, setUserName] = useState<string>("");
-  // 対象ユーザーのつぶやき一覧（Rails DB から取得）
   const [tweets, setTweets] = useState<Tweet[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  // 取得失敗を「投稿0件」と表示しないよう、読み込み状態を区別する。
+  const [loadStatus, setLoadStatus] = useState<LoadStatus>("loading");
 
   useEffect(() => {
+    if (!admin) return;
+    // ユーザー切り替え後や離脱後に古い取得結果を反映しない。
     let cancelled = false;
+    setLoadStatus("loading");
     (async () => {
-      // 管理者ログイン確認。未ログインならログインページへリダイレクトする
-      const currentAdmin = await getCurrentAdmin();
-      if (cancelled) return;
-      if (!currentAdmin) {
-        navigate("/admin/login", { replace: true });
-        return;
-      }
-      setAdmin(currentAdmin);
-
-      if (!userId) return;
-
       try {
-        // ユーザー情報とつぶやき一覧を並列取得する
-        // ユーザー名はつぶやき0件でも表示できるようユーザー情報から取得する
+        if (!userId) {
+          if (!cancelled) setLoadStatus("failed");
+          return;
+        }
+
+        // 投稿0件でも氏名を表示できるよう、ユーザー情報を別途取得する。
         const [userInfo, userTweets] = await Promise.all([
           getUser(userId),
           getAdminUserTweets(userId),
@@ -48,55 +41,37 @@ export default function AdminUserTweetsPage() {
         if (cancelled) return;
         setUserName(userInfo.name);
         setTweets(userTweets);
+        setLoadStatus("loaded");
       } catch {
-        // ユーザー情報・つぶやきの両方を取得するため、文言も「データ」に一般化する
-        if (!cancelled) setError("データの取得に失敗しました");
-      } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) setLoadStatus("failed");
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [navigate, userId]);
+  }, [admin, userId]);
 
-  const handleLogout = async () => {
-    await adminLogout();
-    navigate("/admin/login", { replace: true });
-  };
-
-  if (loading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center min-vh-100">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">読み込み中...</span>
-        </div>
-      </div>
-    );
+  // 認証失敗時にスピナーが残らないよう、読み込み中より先に判定する。
+  if (authenticationError || loadStatus === "failed") {
+    return <PageError message="データを取得できませんでした。" />;
   }
+
+  if (authenticationLoading || loadStatus === "loading") return <PageSpinner />;
 
   return (
     <AdminLayout admin={admin} onLogout={handleLogout}>
-      {/* ページヘッダー: ユーザー名 + 並べ替え・絞り込みボタン */}
+      {/* 提出済みの遷移図に合わせ、つぶやき一覧の見出しには敬称を付けない。 */}
       <div className="d-flex align-items-center gap-3 mb-4">
         <h4 className="mb-0">
-          {userName ? `${userName}のつぶやき一覧` : "つぶやき一覧"}
+          {userName ? `${userName}のつぶやき一覧` : "受講生のつぶやき一覧"}
         </h4>
         <button className="btn btn-success btn-sm">並べ替え</button>
         <button className="btn btn-success btn-sm">絞り込み検索</button>
       </div>
 
-      {/* エラーメッセージ */}
-      {error && (
-        <div className="alert alert-danger" role="alert">
-          {error}
-        </div>
-      )}
-
-      {/* つぶやき一覧: 投稿がなければ空メッセージ、あればカード形式で表示 */}
-      {/* エラー時は空メッセージを出さない（エラーアラートと二重表示を防ぐ） */}
+      {/* つぶやき一覧 */}
       {tweets.length === 0 ? (
-        !error && <p className="text-muted text-center py-5">つぶやきはまだありません</p>
+        <p className="text-muted text-center py-5">つぶやきはまだありません</p>
       ) : (
         <div className="d-grid gap-3">
           {tweets.map((tweet) => {
@@ -106,15 +81,12 @@ export default function AdminUserTweetsPage() {
             return (
               <div key={tweet.id} className="card shadow-sm tweets-page__tweet-card">
                 <div className="card-body">
-                  {/* カードヘッダー: アバター・ユーザー名・投稿日時 */}
+                  {/* 投稿者と投稿日時 */}
                   <div className="d-flex align-items-start mb-2">
                     <div className="d-flex gap-2 align-items-center">
-                      {/* アバター（画像未実装のため背景色で代替） */}
                       <div className="tweets-page__avatar" />
                       <div>
-                        {/* ユーザー名 */}
                         <div className="fw-bold tweets-page__user-name">{tweet.userName}</div>
-                        {/* 投稿日時 */}
                         <div className="text-muted tweets-page__date">
                           {formatDate(tweet.createdAt)}
                         </div>
@@ -122,10 +94,9 @@ export default function AdminUserTweetsPage() {
                     </div>
                   </div>
 
-                  {/* つぶやき本文 */}
+                  {/* 本文・添付画像 */}
                   <p className="mb-2 tweets-page__body">{tweet.content}</p>
 
-                  {/* 添付画像の表示: Active Storage の URL を img 要素で直接表示する */}
                   {tweet.imageUrls && tweet.imageUrls.length > 0 && (
                     <div className="tweets-page__image-grid mb-2">
                       {tweet.imageUrls.map((imageUrl, index) => (
@@ -139,13 +110,12 @@ export default function AdminUserTweetsPage() {
                     </div>
                   )}
 
-                  {/* いいね数・コメント数の表示（管理者は閲覧のみ。投稿ボタンは提供しない） */}
+                  {/* 管理者には件数とコメントの閲覧のみ提供する。 */}
                   <div className="d-flex gap-3 text-muted" style={{ fontSize: "0.875rem" }}>
                     <span>💬 {commentCount}</span>
                     <span>🤍 {likeCount}</span>
                   </div>
 
-                  {/* コメント一覧の表示 */}
                   {tweet.comments && tweet.comments.length > 0 && (
                     <div className="tweets-page__comment-section">
                       {tweet.comments.map((comment) => (
