@@ -124,6 +124,15 @@ export async function createAdminPost(params: {
   return response.data.post
 }
 
+export async function updateAdminPost(id: string, params: {
+  title: string
+  body: string
+  youtube_url: string
+}): Promise<AdminPost> {
+  const res = await api.patch<{ post: AdminPost }>(`/admin/posts/${id}`, params)
+  return res.data.post
+}
+
 export async function deleteAdminPost(id: string): Promise<void> {
   await api.delete(`/admin/posts/${id}`)
 }
