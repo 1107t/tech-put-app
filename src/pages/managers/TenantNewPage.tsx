@@ -9,12 +9,18 @@ import PageSpinner from "../../components/admin/PageSpinner";
 import PageError from "../../components/admin/PageError";
 
 const NAME_MAX = 20;
+// Devise の validatable と同じ最小文字数
+const PASSWORD_MIN = 6;
 
 export default function TenantNewPage() {
   const navigate = useNavigate();
   const { manager, loading, error: networkError, handleLogout } = useRequireManager();
 
   const [name, setName] = useState("");
+  const [adminName, setAdminName] = useState("");
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [adminPasswordConfirmation, setAdminPasswordConfirmation] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -22,9 +28,27 @@ export default function TenantNewPage() {
     e.preventDefault();
     if (isSubmitting) return;
     if (!name.trim()) { setError("テナント名を入力してください。"); return; }
+    if (!adminName.trim() || !adminEmail.trim() || !adminPassword) {
+      setError("管理者の名前・メールアドレス・パスワードを入力してください。");
+      return;
+    }
+    if (adminPassword.length < PASSWORD_MIN) {
+      setError(`パスワードは${PASSWORD_MIN}文字以上で入力してください。`);
+      return;
+    }
+    if (adminPassword !== adminPasswordConfirmation) {
+      setError("パスワード確認が一致しません。");
+      return;
+    }
     setIsSubmitting(true);
     try {
-      const tenant = await createTenant(name.trim());
+      const tenant = await createTenant({
+        name: name.trim(),
+        adminName: adminName.trim(),
+        adminEmail: adminEmail.trim(),
+        adminPassword,
+        adminPasswordConfirmation,
+      });
       navigate(`/manager/tenants/${tenant.id}`);
     } catch (err) {
       setError(getApiErrorMessage(err, "テナントの登録に失敗しました。"));
@@ -70,6 +94,59 @@ export default function TenantNewPage() {
                   <span className="text-muted" style={{ fontSize: "12px" }}>
                     {name.length}文字
                   </span>
+                </div>
+
+                <h6 className="mb-3">テナント管理者アカウント</h6>
+                <div className="mb-3">
+                  <label className="form-label" style={{ fontSize: "14px" }}>
+                    管理者名
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={adminName}
+                    onChange={(e) => setAdminName(e.target.value)}
+                    placeholder="管理者名 (必須)"
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label" style={{ fontSize: "14px" }}>
+                    メールアドレス
+                  </label>
+                  <input
+                    type="email"
+                    className="form-control"
+                    value={adminEmail}
+                    onChange={(e) => setAdminEmail(e.target.value)}
+                    placeholder="メールアドレス (必須)"
+                    autoComplete="off"
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label" style={{ fontSize: "14px" }}>
+                    パスワード
+                  </label>
+                  <input
+                    type="password"
+                    className="form-control"
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    placeholder={`パスワード (必須 ${PASSWORD_MIN}文字以上)`}
+                    autoComplete="new-password"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="form-label" style={{ fontSize: "14px" }}>
+                    パスワード（確認）
+                  </label>
+                  <input
+                    type="password"
+                    className="form-control"
+                    value={adminPasswordConfirmation}
+                    onChange={(e) => setAdminPasswordConfirmation(e.target.value)}
+                    placeholder="パスワード（確認）"
+                    autoComplete="new-password"
+                  />
                 </div>
 
                 <div className="d-flex gap-2 justify-content-center">

@@ -46,8 +46,23 @@ export interface Tenant {
   createdAt: string
 }
 
-export async function createTenant(name: string): Promise<Tenant> {
-  const res = await api.post<{ tenant: Tenant }>('/manager/tenants', { name })
+// テナントと同時に、そのテナントの最初の管理者アカウントを作成する
+export interface TenantInput {
+  name: string
+  adminName: string
+  adminEmail: string
+  adminPassword: string
+  adminPasswordConfirmation: string
+}
+
+export async function createTenant(data: TenantInput): Promise<Tenant> {
+  const res = await api.post<{ tenant: Tenant }>('/manager/tenants', {
+    name: data.name,
+    admin_name: data.adminName,
+    admin_email: data.adminEmail,
+    admin_password: data.adminPassword,
+    admin_password_confirmation: data.adminPasswordConfirmation,
+  })
   return res.data.tenant
 }
 

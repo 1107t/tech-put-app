@@ -70,6 +70,10 @@ export default function TenantDetailPage() {
                     <dd className="col-8 text-break">
                       {`${window.location.origin}/tenant/${tenant.id}/users/login`}
                     </dd>
+                    <dt className="col-4 text-muted" style={{ fontSize: "14px" }}>管理者ログインURL</dt>
+                    <dd className="col-8 text-break">
+                      {`${window.location.origin}/admin/login`}
+                    </dd>
                   </dl>
 
                   <div className="d-flex justify-content-center gap-2">
