@@ -1,6 +1,7 @@
+// 読み込み失敗中はエラーと再試行ボタンを表示し続ける。
 type PageErrorProps = {
-  message: string;
-  onRetry?: () => void;
+  message: string;        // 画面に表示するエラー文言
+  onRetry?: () => void;   // 再試行ボタンの動作。省略時はページ全体を再読み込みする
 };
 
 export default function PageError({ message, onRetry = () => window.location.reload() }: PageErrorProps) {
