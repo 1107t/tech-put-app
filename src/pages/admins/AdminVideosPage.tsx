@@ -223,6 +223,14 @@ export default function AdminVideosPage() {
                               >
                                 <button
                                   type="button"
+                                  className="btn btn-link btn-sm w-100 text-start px-3 py-2"
+                                  style={{ fontSize: "13px", textDecoration: "none" }}
+                                  onClick={(e) => { e.stopPropagation(); navigate(`/admin/videos/${video.id}/edit`); }}
+                                >
+                                  編集
+                                </button>
+                                <button
+                                  type="button"
                                   className="btn btn-link btn-sm text-danger w-100 text-start px-3 py-2"
                                   style={{ fontSize: "13px", textDecoration: "none" }}
                                   onClick={(e) => { e.stopPropagation(); handleDelete(video.id); }}

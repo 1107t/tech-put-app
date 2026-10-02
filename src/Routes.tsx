@@ -25,6 +25,7 @@ import AdminUsersPage from './pages/admins/AdminUsersPage';
 import AdminUserDetailPage from './pages/admins/AdminUserDetailPage';
 import AdminVideosPage from './pages/admins/AdminVideosPage';
 import AdminVideoPostPage from './pages/admins/AdminVideoPostPage';
+import AdminVideoEditPage from './pages/admins/AdminVideoEditPage';
 import VideoDetail from './pages/admins/VideoDetail';
 import AdminUserTweetsPage from './pages/admins/AdminUserTweetsPage';
 import AdminUserArticlesPage from './pages/admins/AdminUserArticlesPage';
@@ -64,6 +65,7 @@ function AppRoutes() {
         <Route path="/admin/articles/:id" element={<AdminArticleShowPage />} />
         <Route path="/admin/videos" element={<AdminVideosPage />} />
         <Route path="/admin/videos/new" element={<AdminVideoPostPage />} />
+        <Route path="/admin/videos/:id/edit" element={<AdminVideoEditPage />} />
         <Route path="/admin/videos/:id" element={<VideoDetail />} />
         <Route path="/admin/users" element={<AdminUsersPage />} />
         {/* 受講生別の投稿一覧・詳細 */}
