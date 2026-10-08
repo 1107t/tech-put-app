@@ -1,7 +1,8 @@
 // src/pages/users/UserDetailPage.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCurrentUser, logout } from "../../lib/usersStore";
+import { getCurrentUser } from "../../lib/usersStore";
+import { dashboardMenu } from "../../lib/userMenus";
 import type { User } from "../../lib/users";
 import UserLayout from "../../components/user/UserLayout";
 import { AvatarIcon, UserIcon } from "../../components/Icons";
@@ -18,30 +19,10 @@ export default function UserDetailPage() {
     })();
   }, [nav]);
 
-  const goDashboard = () => {
-    nav("/dashboard");
-  };
-
-  const goMyPage = () => {
-    nav(`/users/${me?.id}`);
-  };
-
-  const handleLogout = async () => {
-    await logout();
-    nav("/login", { replace: true });
-  };
-
   if (!me) return null;
 
   return (
-    <UserLayout
-      me={me}
-      variant="user"
-      onMyPage={goMyPage}
-      onDashboard={goDashboard}
-      onLogout={handleLogout}
-      title="ユーザー詳細"
-    >
+    <UserLayout menu={dashboardMenu} headerTitle="ユーザー詳細">
       <div className="d-flex justify-content-center mt-5">
         <div className="card shadow-sm" style={{ width: "420px" }}>
           <div className="card-body text-center">
