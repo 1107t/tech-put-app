@@ -28,3 +28,7 @@ export type User = {
   createdAt: string;
   goal?: string;
 };
+
+// Rails APIのセッション経由で取得するログイン中ユーザー。
+// passwordはサーバーから返らないため含めない。
+export type AuthUser = Omit<User, "password">;

@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
 import { v4 as uuid } from "uuid";
 import { UserIcon, MailIcon, LockIcon } from "../../components/Icons";
-import { createUser, login } from "../../lib/usersStore";
+import { createUser } from "../../lib/usersStore";
 import { Gender, type GenderValue } from "../../lib/users";
 
 
@@ -45,9 +45,7 @@ export default function SignUpPage() {
         createdAt: new Date().toISOString(),
       });
 
-      // 登録後にログイン扱いにしたいなら（任意）
-      await login(email, password);
-
+      // ログインはRails側セッションで行うため、登録後はログイン画面へ誘導する
       navigate("/message/signup", { replace: true });
     } catch (err) {
       setMsg(err instanceof Error ? err.message : "登録に失敗しました。");

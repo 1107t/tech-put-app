@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCurrentUser } from "../../lib/usersStore";
-import type { User } from "../../lib/users";
+import type { AuthUser } from "../../lib/users";
 import { AvatarIcon } from "../../components/Icons";
 
 export default function MyPage() {
   const nav = useNavigate();
-  const [me, setMe] = useState<User | null>(null);
+  const [me, setMe] = useState<AuthUser | null>(null);
 
   useEffect(() => {
     (async () => {

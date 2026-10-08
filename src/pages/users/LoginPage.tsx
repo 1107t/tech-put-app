@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
 import { MailIcon, LockIcon } from "../../components/Icons";
-import { getCurrentUserId, login } from "../../lib/usersStore";
+import { getCurrentUser, login } from "../../lib/usersStore";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -22,8 +22,8 @@ export default function LoginPage() {
       const saved = localStorage.getItem("remember_email");
       if (saved) setEmail(saved);
 
-      const id = await getCurrentUserId();
-      if (id) navigate("/dashboard", { replace: true });
+      const me = await getCurrentUser();
+      if (me) navigate("/dashboard", { replace: true });
     })();
   }, [navigate]);
 
@@ -40,7 +40,7 @@ export default function LoginPage() {
       if (remember) localStorage.setItem("remember_email", email);
       else localStorage.removeItem("remember_email");
 
-      //  登録済みユーザーだけ通す（localforage照合）
+      // Rails APIにemail/passwordを送信し、セッションCookieを発行してもらう
       await login(email, password);
 
       navigate("/dashboard", { replace: true });

@@ -1,6 +1,7 @@
 // src/lib/usersStore.ts
 import localforage from "localforage";
-import type { User } from "./users";
+import type { User, AuthUser } from "./users";
+import { apiFetch, ApiError } from "./api";
 
 const userStorage = localforage.createInstance({
   name: "tech-put-app",
@@ -8,7 +9,6 @@ const userStorage = localforage.createInstance({
 });
 
 const USERS_KEY = "users";
-const CURRENT_USER_ID_KEY = "currentUserId";
 
 export async function getUsers(): Promise<User[]> {
   return (await userStorage.getItem<User[]>(USERS_KEY)) ?? [];
@@ -42,24 +42,26 @@ export async function findUserById(id: string) {
   return users.find((u) => u.id === id) ?? null;
 }
 
-export async function login(email: string, password: string) {
-  const user = await findUserByEmail(email);
-  if (!user || user.password !== password) {
-    throw new Error("メールアドレスまたはパスワードが違います。");
-  }
-  await userStorage.setItem(CURRENT_USER_ID_KEY, user.id);
-  return user;
+// ログイン・ログアウト・現在ユーザー取得はRailsのセッションCookieに一本化する。
+// クライアント側では何も保存せず、Cookieの送受信はブラウザに任せる。
+export async function login(email: string, password: string): Promise<AuthUser> {
+  const data = await apiFetch<{ user: AuthUser }>("/login", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
+  return data.user;
 }
+
 export async function logout() {
-  await userStorage.removeItem(CURRENT_USER_ID_KEY);
+  await apiFetch<void>("/logout", { method: "DELETE" });
 }
 
-export async function getCurrentUserId(): Promise<string | null> {
-  return (await userStorage.getItem<string>(CURRENT_USER_ID_KEY)) ?? null;
-}
-
-export async function getCurrentUser() {
-  const id = await getCurrentUserId();
-  if (!id) return null;
-  return await findUserById(id);
+export async function getCurrentUser(): Promise<AuthUser | null> {
+  try {
+    const data = await apiFetch<{ user: AuthUser }>("/me");
+    return data.user;
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 401) return null;
+    throw err;
+  }
 }

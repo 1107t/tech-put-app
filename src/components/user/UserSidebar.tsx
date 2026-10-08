@@ -1,11 +1,11 @@
 import { NavLink } from "react-router-dom";
-import type { User } from "../../lib/users";
+import type { AuthUser } from "../../lib/users";
 import type { MenuItem } from "../../lib/userMenus";
 import "../../styles/components/userLayout.css";
 import "../../styles/components/userAvatar.css";
 
 type Props = {
-  me?: User;
+  me?: AuthUser;
   items: MenuItem[];
   onLogout: () => void;
 };
