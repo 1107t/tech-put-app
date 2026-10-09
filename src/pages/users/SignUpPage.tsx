@@ -1,16 +1,19 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
 import { UserIcon, MailIcon, LockIcon } from "../../components/Icons";
 import { signup } from "../../lib/userApi";
 import { Gender, type GenderValue } from "../../lib/userTypes";
 import { getApiErrorMessage } from "../../lib/api";
+import { useTenantPath } from "../../lib/useTenantPath";
 
 type GenderSelectValue = GenderValue | "";
 
 
 export default function SignUpPage() {
   const navigate = useNavigate();
+  const path = useTenantPath();
+  const { tenantId } = useParams<{ tenantId: string }>();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -33,13 +36,14 @@ export default function SignUpPage() {
       return setMsg("未入力の項目があります。");
     }
     if (password !== password2) return setMsg("パスワード確認が一致しません。");
+    if (!tenantId) return setMsg("テナントIDが不正です。");
 
     try {
       setSaving(true);
 
-      await signup({ name, email, password, birthday, gender: gender || undefined });
+      await signup({ name, email, password, birthday, gender: gender || undefined, tenantId });
 
-      navigate("/message/signup", { replace: true });
+      navigate(path("/message/signup"), { replace: true });
     } catch (err) {
       setMsg(getApiErrorMessage(err, "登録に失敗しました。"));
     } finally {
@@ -50,10 +54,10 @@ export default function SignUpPage() {
   return (
     <AuthLayout
       subtitle="アカウント登録を行いましょう！"
-      brandHref="/signup"
+      brandHref={path("/signup")}
       footer={
         <div className="text-center">
-          <Link className="link-primary text-decoration-none" to="/login">
+          <Link className="link-primary text-decoration-none" to={path("/login")}>
             ログインへ戻る
           </Link>
         </div>
