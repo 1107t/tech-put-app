@@ -1,23 +1,23 @@
-// src/pages/admins/AdminVideoEditPage.tsx
+// src/pages/admins/video/Edit.tsx
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import { getAdminPost, updateAdminPost } from "../../lib/adminApi";
-import { getApiErrorMessage } from "../../lib/api";
-import AdminLayout from "../../components/admin/AdminLayout";
-import PageSpinner from "../../components/admin/PageSpinner";
-import PageError from "../../components/admin/PageError";
-import VideoForm, { validateVideoForm, type VideoFormValues } from "../../components/admin/VideoForm";
-import { useRequireAdmin } from "../../lib/useRequireAdmin";
+import { getAdminPost, updateAdminPost } from "../../../lib/adminApi";
+import { getApiErrorMessage } from "../../../lib/api";
+import AdminLayout from "../../../components/admin/AdminLayout";
+import PageSpinner from "../../../components/admin/PageSpinner";
+import PageError from "../../../components/admin/PageError";
+import VideoForm, { EMPTY_VIDEO_FORM, validateVideoForm } from "../../../components/admin/VideoForm";
+import { useRequireAdmin } from "../../../lib/useRequireAdmin";
 
 export default function AdminVideoEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { admin, loading, error: networkError, handleLogout } = useRequireAdmin();
 
-  const [values, setValues] = useState<VideoFormValues>({ title: "", body: "", youtubeUrl: "" });
+  const [values, setValues] = useState(EMPTY_VIDEO_FORM);
   const [isLoadFinished, setIsLoadFinished] = useState(false);
-  const [loadError, setLoadError] = useState("");
+  const [loadErrorMessage, setLoadErrorMessage] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -32,9 +32,7 @@ export default function AdminVideoEditPage() {
       .catch((err) => {
         if (cancelled) return;
         const isNotFound = axios.isAxiosError(err) && err.response?.status === 404;
-        setLoadError(
-          isNotFound ? "動画が見つかりません。" : getApiErrorMessage(err, "動画の読み込みに失敗しました。")
-        );
+        setLoadErrorMessage(isNotFound ? "動画が見つかりません。" : getApiErrorMessage(err, "動画の読み込みに失敗しました。"));
       })
       .finally(() => {
         if (!cancelled) setIsLoadFinished(true);
@@ -50,7 +48,7 @@ export default function AdminVideoEditPage() {
 
     setIsSubmitting(true);
     try {
-      await updateAdminPost(id, { title: values.title, body: values.body, youtube_url: values.youtubeUrl });
+      await updateAdminPost(id, values);
       navigate("/admin/videos");
     } catch (err) {
       setSubmitError(getApiErrorMessage(err, "動画の更新に失敗しました。"));
@@ -66,10 +64,10 @@ export default function AdminVideoEditPage() {
     return <PageSpinner />;
   }
 
-  if (loadError) {
+  if (loadErrorMessage) {
     return (
       <AdminLayout admin={admin} onLogout={handleLogout}>
-        <p className="text-danger">{loadError}</p>
+        <p className="text-danger">{loadErrorMessage}</p>
       </AdminLayout>
     );
   }

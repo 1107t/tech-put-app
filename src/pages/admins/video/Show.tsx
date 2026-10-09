@@ -1,12 +1,12 @@
-// src/pages/admins/VideoDetail.tsx
+// src/pages/admins/video/Show.tsx
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getAdminPost, type AdminPost } from "../../lib/adminApi";
-import AdminLayout from "../../components/admin/AdminLayout";
-import PageSpinner from "../../components/admin/PageSpinner";
-import PageError from "../../components/admin/PageError";
-import { getYouTubeVideoId } from "../../lib/youtube";
-import { useRequireAdmin } from "../../lib/useRequireAdmin";
+import { getAdminPost, type AdminPost } from "../../../lib/adminApi";
+import AdminLayout from "../../../components/admin/AdminLayout";
+import PageSpinner from "../../../components/admin/PageSpinner";
+import PageError from "../../../components/admin/PageError";
+import { getYouTubeVideoId } from "../../../lib/youtube";
+import { useRequireAdmin } from "../../../lib/useRequireAdmin";
 
 export default function VideoDetail() {
   const navigate = useNavigate();

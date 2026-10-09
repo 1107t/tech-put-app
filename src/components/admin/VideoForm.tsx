@@ -1,4 +1,4 @@
-// src/components/admin/VideoForm.tsx
+// 管理者の動画投稿・編集ページで共通のフォーム。
 import { getYouTubeVideoId } from "../../lib/youtube";
 import "../../styles/pages/videoForm.css";
 
@@ -6,6 +6,8 @@ export const VIDEO_TITLE_MAX = 30;
 export const VIDEO_BODY_MAX = 240;
 
 export type VideoFormValues = { title: string; body: string; youtubeUrl: string };
+
+export const EMPTY_VIDEO_FORM: VideoFormValues = { title: "", body: "", youtubeUrl: "" };
 
 // 入力に問題があればメッセージを、なければ null を返す
 export function validateVideoForm({ title, body, youtubeUrl }: VideoFormValues): string | null {
@@ -17,11 +19,11 @@ export function validateVideoForm({ title, body, youtubeUrl }: VideoFormValues):
 }
 
 type Props = {
-  heading: string;
+  heading: string; // "動画投稿" / "動画編集"
   values: VideoFormValues;
   onChange: (values: VideoFormValues) => void;
-  submitLabel: string;
-  submittingLabel: string;
+  submitLabel: string; // "投稿する" / "更新する"
+  submittingLabel: string; // "投稿中..." / "更新中..."
   isSubmitting: boolean;
   errorMessage: string;
   onSubmit: () => void;
@@ -33,8 +35,6 @@ export default function VideoForm({
   submitLabel, submittingLabel, isSubmitting,
   errorMessage, onSubmit, onCancel,
 }: Props) {
-  const { title, body, youtubeUrl } = values;
-
   return (
     <div className="row justify-content-center">
       <div className="col-md-7 col-lg-6">
@@ -55,7 +55,7 @@ export default function VideoForm({
                   id="video-title"
                   type="text"
                   className="form-control"
-                  value={title}
+                  value={values.title}
                   maxLength={VIDEO_TITLE_MAX}
                   onChange={(e) => onChange({ ...values, title: e.target.value })}
                   placeholder={`タイトル (必須 ${VIDEO_TITLE_MAX}文字まで)`}
@@ -63,7 +63,7 @@ export default function VideoForm({
               </div>
               <div className="mb-3 text-end">
                 <span className="text-muted video-form-count">
-                  {title.length}文字
+                  {values.title.length}文字
                 </span>
               </div>
 
@@ -75,7 +75,7 @@ export default function VideoForm({
                   id="video-body"
                   className="form-control"
                   rows={6}
-                  value={body}
+                  value={values.body}
                   maxLength={VIDEO_BODY_MAX}
                   onChange={(e) => onChange({ ...values, body: e.target.value })}
                   placeholder={`内容 (必須 ${VIDEO_BODY_MAX}文字まで)`}
@@ -83,7 +83,7 @@ export default function VideoForm({
               </div>
               <div className="mb-3 text-end">
                 <span className="text-muted video-form-count">
-                  {body.length}文字
+                  {values.body.length}文字
                 </span>
               </div>
 
@@ -95,7 +95,7 @@ export default function VideoForm({
                   id="video-youtube-url"
                   type="url"
                   className="form-control"
-                  value={youtubeUrl}
+                  value={values.youtubeUrl}
                   onChange={(e) => onChange({ ...values, youtubeUrl: e.target.value })}
                   placeholder="YoutubeのURLを添付（必須)"
                 />

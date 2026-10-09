@@ -1,19 +1,19 @@
-// src/pages/admins/AdminVideoPostPage.tsx
+// src/pages/admins/video/New.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createAdminPost } from "../../lib/adminApi";
-import { getApiErrorMessage } from "../../lib/api";
-import AdminLayout from "../../components/admin/AdminLayout";
-import PageSpinner from "../../components/admin/PageSpinner";
-import PageError from "../../components/admin/PageError";
-import VideoForm, { validateVideoForm, type VideoFormValues } from "../../components/admin/VideoForm";
-import { useRequireAdmin } from "../../lib/useRequireAdmin";
+import { createAdminPost } from "../../../lib/adminApi";
+import { getApiErrorMessage } from "../../../lib/api";
+import AdminLayout from "../../../components/admin/AdminLayout";
+import PageSpinner from "../../../components/admin/PageSpinner";
+import PageError from "../../../components/admin/PageError";
+import VideoForm, { EMPTY_VIDEO_FORM, validateVideoForm } from "../../../components/admin/VideoForm";
+import { useRequireAdmin } from "../../../lib/useRequireAdmin";
 
 export default function AdminVideoPostPage() {
   const navigate = useNavigate();
   const { admin, loading, error: networkError, handleLogout } = useRequireAdmin();
 
-  const [values, setValues] = useState<VideoFormValues>({ title: "", body: "", youtubeUrl: "" });
+  const [values, setValues] = useState(EMPTY_VIDEO_FORM);
   const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -25,7 +25,7 @@ export default function AdminVideoPostPage() {
 
     setIsSubmitting(true);
     try {
-      await createAdminPost({ title: values.title, body: values.body, youtube_url: values.youtubeUrl });
+      await createAdminPost(values);
       navigate("/admin/videos");
     } catch (err) {
       setSubmitError(getApiErrorMessage(err, "動画の投稿に失敗しました。"));

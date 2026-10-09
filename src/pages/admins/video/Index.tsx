@@ -1,12 +1,13 @@
-// src/pages/admins/AdminVideosPage.tsx
+// src/pages/admins/video/Index.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAdminPosts, deleteAdminPost, type AdminPost } from "../../lib/adminApi";
-import AdminLayout from "../../components/admin/AdminLayout";
-import PageSpinner from "../../components/admin/PageSpinner";
-import PageError from "../../components/admin/PageError";
-import { getYouTubeVideoId } from "../../lib/youtube";
-import { useRequireAdmin } from "../../lib/useRequireAdmin";
+import { getAdminPosts, deleteAdminPost, type AdminPost } from "../../../lib/adminApi";
+import AdminLayout from "../../../components/admin/AdminLayout";
+import PageSpinner from "../../../components/admin/PageSpinner";
+import PageError from "../../../components/admin/PageError";
+import { getYouTubeVideoId } from "../../../lib/youtube";
+import { useRequireAdmin } from "../../../lib/useRequireAdmin";
+import "../../../styles/pages/adminVideos.css";
 
 type FilterState = {
   posterName: string;
@@ -223,16 +224,14 @@ export default function AdminVideosPage() {
                               >
                                 <button
                                   type="button"
-                                  className="btn btn-link btn-sm w-100 text-start px-3 py-2"
-                                  style={{ fontSize: "13px", textDecoration: "none" }}
+                                  className="btn btn-link btn-sm w-100 text-start px-3 py-2 video-menu-item"
                                   onClick={(e) => { e.stopPropagation(); navigate(`/admin/videos/${video.id}/edit`); }}
                                 >
                                   編集
                                 </button>
                                 <button
                                   type="button"
-                                  className="btn btn-link btn-sm text-danger w-100 text-start px-3 py-2"
-                                  style={{ fontSize: "13px", textDecoration: "none" }}
+                                  className="btn btn-link btn-sm text-danger w-100 text-start px-3 py-2 video-menu-item"
                                   onClick={(e) => { e.stopPropagation(); handleDelete(video.id); }}
                                 >
                                   削除
