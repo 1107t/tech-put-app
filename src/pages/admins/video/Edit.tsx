@@ -22,10 +22,9 @@ export default function AdminVideoEditPage() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
-  const [notFound, setNotFound] = useState(false);
-  const [fetchDone, setFetchDone] = useState(false);
-  const [loadError, setLoadError] = useState("");
-  const [error, setError] = useState("");
+  const [isLoadFinished, setIsLoadFinished] = useState(false);
+  const [loadErrorMessage, setLoadErrorMessage] = useState("");
+  const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -37,16 +36,14 @@ export default function AdminVideoEditPage() {
         setTitle(post.title);
         setBody(post.body);
         setYoutubeUrl(post.youtubeUrl);
-        setFetchDone(true);
       })
       .catch((err) => {
         if (cancelled) return;
-        if (axios.isAxiosError(err) && err.response?.status === 404) {
-          setNotFound(true);
-        } else {
-          setLoadError(getApiErrorMessage(err, "動画の読み込みに失敗しました。"));
-        }
-        setFetchDone(true);
+        const isNotFound = axios.isAxiosError(err) && err.response?.status === 404;
+        setLoadErrorMessage(isNotFound ? "動画が見つかりません。" : getApiErrorMessage(err, "動画の読み込みに失敗しました。"));
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadFinished(true);
       });
     return () => { cancelled = true; };
   }, [admin, id]);
@@ -54,16 +51,16 @@ export default function AdminVideoEditPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting || !id) return;
-    if (!title.trim()) { setError("タイトルを入力してください。"); return; }
-    if (!body.trim()) { setError("内容を入力してください。"); return; }
-    if (!youtubeUrl.trim()) { setError("YoutubeのURLを入力してください。"); return; }
-    if (!getYouTubeVideoId(youtubeUrl)) { setError("有効なYouTubeのURLを入力してください。"); return; }
+    if (!title.trim()) { setSubmitError("タイトルを入力してください。"); return; }
+    if (!body.trim()) { setSubmitError("内容を入力してください。"); return; }
+    if (!youtubeUrl.trim()) { setSubmitError("YoutubeのURLを入力してください。"); return; }
+    if (!getYouTubeVideoId(youtubeUrl)) { setSubmitError("有効なYouTubeのURLを入力してください。"); return; }
     setIsSubmitting(true);
     try {
       await updateAdminPost(id, { title, body, youtubeUrl });
       navigate("/admin/videos");
     } catch (err) {
-      setError(getApiErrorMessage(err, "動画の更新に失敗しました。"));
+      setSubmitError(getApiErrorMessage(err, "動画の更新に失敗しました。"));
       setIsSubmitting(false);
     }
   };
@@ -72,22 +69,14 @@ export default function AdminVideoEditPage() {
     return <PageError message={networkError} />;
   }
 
-  if (loading || !fetchDone) {
+  if (loading || !isLoadFinished) {
     return <PageSpinner />;
   }
 
-  if (notFound) {
+  if (loadErrorMessage) {
     return (
       <AdminLayout admin={admin} onLogout={handleLogout}>
-        <p className="text-muted">動画が見つかりません。</p>
-      </AdminLayout>
-    );
-  }
-
-  if (loadError) {
-    return (
-      <AdminLayout admin={admin} onLogout={handleLogout}>
-        <p className="text-danger">{loadError}</p>
+        <p className="text-danger">{loadErrorMessage}</p>
       </AdminLayout>
     );
   }
@@ -102,7 +91,7 @@ export default function AdminVideoEditPage() {
                 <h5 className="mb-0">動画編集</h5>
               </div>
 
-              {error && <p className="text-danger">{error}</p>}
+              {submitError && <p className="text-danger">{submitError}</p>}
 
               <form onSubmit={handleSubmit}>
                 <div className="mb-1">

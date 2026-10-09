@@ -20,22 +20,22 @@ export default function AdminVideoPostPage() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
-  const [error, setError] = useState("");
+  const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
-    if (!title.trim()) { setError("タイトルを入力してください。"); return; }
-    if (!body.trim()) { setError("内容を入力してください。"); return; }
-    if (!youtubeUrl.trim()) { setError("YoutubeのURLを入力してください。"); return; }
-    if (!getYouTubeVideoId(youtubeUrl)) { setError("有効なYouTubeのURLを入力してください。"); return; }
+    if (!title.trim()) { setSubmitError("タイトルを入力してください。"); return; }
+    if (!body.trim()) { setSubmitError("内容を入力してください。"); return; }
+    if (!youtubeUrl.trim()) { setSubmitError("YoutubeのURLを入力してください。"); return; }
+    if (!getYouTubeVideoId(youtubeUrl)) { setSubmitError("有効なYouTubeのURLを入力してください。"); return; }
     setIsSubmitting(true);
     try {
       await createAdminPost({ title, body, youtubeUrl });
       navigate("/admin/videos");
     } catch (err) {
-      setError(getApiErrorMessage(err, "動画の投稿に失敗しました。"));
+      setSubmitError(getApiErrorMessage(err, "動画の投稿に失敗しました。"));
       setIsSubmitting(false);
     }
   };
@@ -58,7 +58,7 @@ export default function AdminVideoPostPage() {
                 <h5 className="mb-0">動画投稿</h5>
               </div>
 
-              {error && <p className="text-danger">{error}</p>}
+              {submitError && <p className="text-danger">{submitError}</p>}
 
               <form onSubmit={handleSubmit}>
                 <div className="mb-1">
