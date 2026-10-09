@@ -8,7 +8,7 @@ import PageError from "../../../components/admin/PageError";
 import { getYouTubeVideoId } from "../../../lib/youtube";
 import { useRequireAdmin } from "../../../lib/useRequireAdmin";
 
-export default function VideoDetail() {
+export default function AdminVideoShowPage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const { admin, loading, error, handleLogout } = useRequireAdmin();

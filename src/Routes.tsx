@@ -23,10 +23,10 @@ import AdminPage from './pages/adminpage';
 import AdminDetail from './pages/admins/AdminDetail';
 import AdminUsersPage from './pages/admins/AdminUsersPage';
 import AdminUserDetailPage from './pages/admins/AdminUserDetailPage';
-import AdminVideosPage from './pages/admins/video/Index';
-import AdminVideoPostPage from './pages/admins/video/New';
+import AdminVideoIndexPage from './pages/admins/video/Index';
+import AdminVideoNewPage from './pages/admins/video/New';
 import AdminVideoEditPage from './pages/admins/video/Edit';
-import VideoDetail from './pages/admins/video/Show';
+import AdminVideoShowPage from './pages/admins/video/Show';
 // ユーザー別つぶやき一覧ページ（PR #21 で追加）
 import AdminUserTweetsPage from './pages/admins/AdminUserTweetsPage';
 import AdminUserArticlesPage from './pages/admins/AdminUserArticlesPage';
@@ -74,10 +74,10 @@ function AppRoutes() {
         <Route path="/admin/articles/new" element={<AdminArticleNewPage />} />
         <Route path="/admin/articles/:id/edit" element={<AdminArticleEditPage />} />
         <Route path="/admin/articles/:id" element={<AdminArticleShowPage />} />
-        <Route path="/admin/videos" element={<AdminVideosPage />} />
-        <Route path="/admin/videos/new" element={<AdminVideoPostPage />} />
+        <Route path="/admin/videos" element={<AdminVideoIndexPage />} />
+        <Route path="/admin/videos/new" element={<AdminVideoNewPage />} />
         <Route path="/admin/videos/:id/edit" element={<AdminVideoEditPage />} />
-        <Route path="/admin/videos/:id" element={<VideoDetail />} />
+        <Route path="/admin/videos/:id" element={<AdminVideoShowPage />} />
         <Route path="/admin/users" element={<AdminUsersPage />} />
         {/* 受講生別の投稿一覧・詳細 */}
         <Route path="/admin/users/:userId/tweets" element={<AdminUserTweetsPage />} />

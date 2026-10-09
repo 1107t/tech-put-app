@@ -19,7 +19,7 @@ type FilterState = {
 
 const emptyFilter: FilterState = { posterName: "", title: "", body: "", createdAtFrom: "", createdAtTo: "" };
 
-export default function AdminVideosPage() {
+export default function AdminVideoIndexPage() {
   const navigate = useNavigate();
   const { admin, loading, error, handleLogout } = useRequireAdmin();
   const [videos, setVideos] = useState<AdminPost[]>([]);
