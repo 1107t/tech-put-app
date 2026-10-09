@@ -9,7 +9,7 @@ import PageError from "../../../components/admin/PageError";
 import VideoForm, { EMPTY_VIDEO_FORM, validateVideoForm } from "../../../components/admin/VideoForm";
 import { useRequireAdmin } from "../../../lib/useRequireAdmin";
 
-export default function AdminVideoPostPage() {
+export default function AdminVideoNewPage() {
   const navigate = useNavigate();
   const { admin, loading, error: networkError, handleLogout } = useRequireAdmin();
 
