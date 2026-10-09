@@ -7,21 +7,15 @@ import { getApiErrorMessage } from "../../../lib/api";
 import AdminLayout from "../../../components/admin/AdminLayout";
 import PageSpinner from "../../../components/admin/PageSpinner";
 import PageError from "../../../components/admin/PageError";
+import VideoForm, { EMPTY_VIDEO_FORM, validateVideoForm } from "../../../components/admin/VideoForm";
 import { useRequireAdmin } from "../../../lib/useRequireAdmin";
-import { getYouTubeVideoId } from "../../../lib/youtube";
-import "../../../styles/pages/videoForm.css";
-
-const TITLE_MAX = 30;
-const BODY_MAX = 240;
 
 export default function AdminVideoEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { admin, loading, error: networkError, handleLogout } = useRequireAdmin();
 
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-  const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [values, setValues] = useState(EMPTY_VIDEO_FORM);
   const [isLoadFinished, setIsLoadFinished] = useState(false);
   const [loadErrorMessage, setLoadErrorMessage] = useState("");
   const [submitError, setSubmitError] = useState("");
@@ -33,9 +27,7 @@ export default function AdminVideoEditPage() {
     getAdminPost(id)
       .then((post) => {
         if (cancelled) return;
-        setTitle(post.title);
-        setBody(post.body);
-        setYoutubeUrl(post.youtubeUrl);
+        setValues({ title: post.title, body: post.body, youtubeUrl: post.youtubeUrl });
       })
       .catch((err) => {
         if (cancelled) return;
@@ -48,16 +40,15 @@ export default function AdminVideoEditPage() {
     return () => { cancelled = true; };
   }, [admin, id]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (isSubmitting || !id) return;
-    if (!title.trim()) { setSubmitError("タイトルを入力してください。"); return; }
-    if (!body.trim()) { setSubmitError("内容を入力してください。"); return; }
-    if (!youtubeUrl.trim()) { setSubmitError("YoutubeのURLを入力してください。"); return; }
-    if (!getYouTubeVideoId(youtubeUrl)) { setSubmitError("有効なYouTubeのURLを入力してください。"); return; }
+
+    const validationMessage = validateVideoForm(values);
+    if (validationMessage) { setSubmitError(validationMessage); return; }
+
     setIsSubmitting(true);
     try {
-      await updateAdminPost(id, { title, body, youtubeUrl });
+      await updateAdminPost(id, values);
       navigate("/admin/videos");
     } catch (err) {
       setSubmitError(getApiErrorMessage(err, "動画の更新に失敗しました。"));
@@ -83,89 +74,17 @@ export default function AdminVideoEditPage() {
 
   return (
     <AdminLayout admin={admin} onLogout={handleLogout}>
-      <div className="row justify-content-center">
-        <div className="col-md-7 col-lg-6">
-          <div className="card shadow-sm">
-            <div className="card-body">
-              <div className="text-center pb-3 mb-4 video-form-header">
-                <h5 className="mb-0">動画編集</h5>
-              </div>
-
-              {submitError && <p className="text-danger">{submitError}</p>}
-
-              <form onSubmit={handleSubmit}>
-                <div className="mb-1">
-                  <label className="form-label video-form-label" htmlFor="video-title">
-                    タイトル
-                  </label>
-                  <input
-                    id="video-title"
-                    type="text"
-                    className="form-control"
-                    value={title}
-                    maxLength={TITLE_MAX}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder={`タイトル (必須 ${TITLE_MAX}文字まで)`}
-                  />
-                </div>
-                <div className="mb-3 text-end">
-                  <span className="text-muted video-form-count">
-                    {title.length}文字
-                  </span>
-                </div>
-
-                <div className="mb-1">
-                  <label className="form-label video-form-label" htmlFor="video-body">
-                    内容
-                  </label>
-                  <textarea
-                    id="video-body"
-                    className="form-control"
-                    rows={6}
-                    value={body}
-                    maxLength={BODY_MAX}
-                    onChange={(e) => setBody(e.target.value)}
-                    placeholder={`内容 (必須 ${BODY_MAX}文字まで)`}
-                  />
-                </div>
-                <div className="mb-3 text-end">
-                  <span className="text-muted video-form-count">
-                    {body.length}文字
-                  </span>
-                </div>
-
-                <div className="mb-4">
-                  <label className="form-label video-form-label" htmlFor="video-youtube-url">
-                    Youtube URL
-                  </label>
-                  <input
-                    id="video-youtube-url"
-                    type="url"
-                    className="form-control"
-                    value={youtubeUrl}
-                    onChange={(e) => setYoutubeUrl(e.target.value)}
-                    placeholder="YoutubeのURLを添付（必須)"
-                  />
-                </div>
-
-                <div className="d-flex gap-2 justify-content-end">
-                  <button
-                    type="button"
-                    className="btn btn-secondary btn-sm"
-                    onClick={() => navigate("/admin/videos")}
-                    disabled={isSubmitting}
-                  >
-                    キャンセル
-                  </button>
-                  <button type="submit" className="btn btn-primary btn-sm" disabled={isSubmitting}>
-                    {isSubmitting ? "更新中..." : "更新する"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
+      <VideoForm
+        heading="動画編集"
+        values={values}
+        onChange={setValues}
+        submitLabel="更新する"
+        submittingLabel="更新中..."
+        isSubmitting={isSubmitting}
+        errorMessage={submitError}
+        onSubmit={handleSubmit}
+        onCancel={() => navigate("/admin/videos")}
+      />
     </AdminLayout>
   );
 }
