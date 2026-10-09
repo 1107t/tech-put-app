@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
 import { MailIcon, LockIcon } from "../../components/Icons";
-import { getCurrentUser, login } from "../../lib/userApi";
+import { getCurrentUser, login, logout } from "../../lib/userApi";
 import { getApiErrorMessage } from "../../lib/api";
 import { useTenantPath } from "../../lib/useTenantPath";
 
@@ -27,9 +27,12 @@ export default function LoginPage() {
       if (saved) setEmail(saved);
 
       const user = await getCurrentUser();
-      if (user) navigate("/articles", { replace: true });
+      if (!user) return;
+      // 別テナントでログイン中ならログアウトし、このテナントのログイン画面を表示する
+      if (user.tenantId === tenantId) navigate("/articles", { replace: true });
+      else await logout();
     })();
-  }, [navigate, path]);
+  }, [navigate, tenantId]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
