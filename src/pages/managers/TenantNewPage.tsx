@@ -7,6 +7,7 @@ import { useRequireManager } from "../../lib/useRequireManager";
 import ManagerLayout from "../../components/manager/ManagerLayout";
 import PageSpinner from "../../components/admin/PageSpinner";
 import PageError from "../../components/admin/PageError";
+import "../../styles/components/form.css";
 
 const NAME_MAX = 20;
 // Devise の validatable と同じ最小文字数
@@ -70,7 +71,7 @@ export default function TenantNewPage() {
         <div className="col-md-7 col-lg-6">
           <div className="card shadow-sm">
             <div className="card-body">
-              <div className="text-center pb-3 mb-4" style={{ borderBottom: "1px solid #e9ecef" }}>
+              <div className="text-center pb-3 mb-4 form-header">
                 <h5 className="mb-0">テナント追加</h5>
               </div>
 
@@ -78,10 +79,11 @@ export default function TenantNewPage() {
 
               <form onSubmit={handleSubmit}>
                 <div className="mb-1">
-                  <label className="form-label" style={{ fontSize: "14px" }}>
+                  <label className="form-label form-label-sm" htmlFor="tenant-name">
                     テナント名
                   </label>
                   <input
+                    id="tenant-name"
                     type="text"
                     className="form-control"
                     value={name}
@@ -91,17 +93,18 @@ export default function TenantNewPage() {
                   />
                 </div>
                 <div className="mb-4 text-end">
-                  <span className="text-muted" style={{ fontSize: "12px" }}>
+                  <span className="text-muted form-count">
                     {name.length}文字
                   </span>
                 </div>
 
                 <h6 className="mb-3">テナント管理者アカウント</h6>
                 <div className="mb-3">
-                  <label className="form-label" style={{ fontSize: "14px" }}>
+                  <label className="form-label form-label-sm" htmlFor="tenant-admin-name">
                     管理者名
                   </label>
                   <input
+                    id="tenant-admin-name"
                     type="text"
                     className="form-control"
                     value={adminName}
@@ -110,10 +113,11 @@ export default function TenantNewPage() {
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label" style={{ fontSize: "14px" }}>
+                  <label className="form-label form-label-sm" htmlFor="tenant-admin-email">
                     メールアドレス
                   </label>
                   <input
+                    id="tenant-admin-email"
                     type="email"
                     className="form-control"
                     value={adminEmail}
@@ -123,10 +127,11 @@ export default function TenantNewPage() {
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label" style={{ fontSize: "14px" }}>
+                  <label className="form-label form-label-sm" htmlFor="tenant-admin-password">
                     パスワード
                   </label>
                   <input
+                    id="tenant-admin-password"
                     type="password"
                     className="form-control"
                     value={adminPassword}
@@ -136,10 +141,11 @@ export default function TenantNewPage() {
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="form-label" style={{ fontSize: "14px" }}>
+                  <label className="form-label form-label-sm" htmlFor="tenant-admin-password-confirmation">
                     パスワード（確認）
                   </label>
                   <input
+                    id="tenant-admin-password-confirmation"
                     type="password"
                     className="form-control"
                     value={adminPasswordConfirmation}
