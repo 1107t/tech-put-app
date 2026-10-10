@@ -18,7 +18,7 @@ export default function AdminDashboardPage() {
   return (
     <AdminLayout admin={admin} onLogout={handleLogout}>
       <h4>ダッシュボード</h4>
-      <p>ログイン成功！ダッシュボードです。</p>
+      <p>ようこそ、{admin?.name} さん</p>
     </AdminLayout>
   );
 }
