@@ -1,11 +1,11 @@
 // src/components/manager/ManagerSidebar.tsx
-// マネージャー画面の左サイドバー。AdminSidebar と同じ見た目・項目構成にし、リンク先のみ /manager 配下にする。
+// マネージャー画面の左サイドバー。見た目は AdminSidebar と同じにし、項目はマネージャー向けのものにする。
 import { useState } from "react";
 import SidebarItem from "./SidebarItem";
 import "../../styles/components/adminLayout.css";
 
 const menuItems = [
-  { id: 1, label: "e-learning", to: "/manager/dashboard", icon: "fa-solid fa-book-open" },
+  { id: 1, label: "テナント一覧", to: "/manager/dashboard", icon: "fa-solid fa-building" },
 ];
 
 type Props = {
