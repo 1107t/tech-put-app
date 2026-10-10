@@ -58,7 +58,7 @@ api.interceptors.response.use(
         } else {
           // ユーザーはテナント配下のログインページへ。
           // ログイン後の画面はURLにtenantIdを含まないため、ログイン時に保存した
-          // tenantIdから復元する（未保存ならデフォルトテナントへ）。
+          // tenantIdから復元する（未保存ならトップ（/）へ）。
           const tenantId = tokenStorage.getUserTenantId()
           window.location.href = tenantId ? `/tenant/${tenantId}/users/login` : '/'
         }
