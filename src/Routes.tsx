@@ -47,8 +47,8 @@ function AppRoutes() {
   return (
     <Router>
       <Routes>
-        {/* ルートパスからデフォルトテナントのログインへリダイレクト */}
-        <Route path="/" element={<Navigate to="/tenant/1/users/login" replace />} />
+        {/* テナントを特定できないため、特定のテナントへは振り分けずマネージャーのログインへ送る（暫定） */}
+        <Route path="/" element={<Navigate to="/manager/login" replace />} />
 
         {/* 一般ユーザー用ルート。
             未ログイン時の認証系のみ /tenant/:tenantId/users 配下にスコープする

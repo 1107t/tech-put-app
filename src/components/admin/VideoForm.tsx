@@ -1,6 +1,6 @@
 // 管理者の動画投稿・編集ページで共通のフォーム。
 import { getYouTubeVideoId } from "../../lib/youtube";
-import "../../styles/pages/videoForm.css";
+import "../../styles/components/form.css";
 
 export const VIDEO_TITLE_MAX = 30;
 export const VIDEO_BODY_MAX = 240;
@@ -40,7 +40,7 @@ export default function VideoForm({
       <div className="col-md-7 col-lg-6">
         <div className="card shadow-sm">
           <div className="card-body">
-            <div className="text-center pb-3 mb-4 video-form-header">
+            <div className="text-center pb-3 mb-4 form-header">
               <h5 className="mb-0">{heading}</h5>
             </div>
 
@@ -48,7 +48,7 @@ export default function VideoForm({
 
             <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }}>
               <div className="mb-1">
-                <label className="form-label video-form-label" htmlFor="video-title">
+                <label className="form-label form-label-sm" htmlFor="video-title">
                   タイトル
                 </label>
                 <input
@@ -62,13 +62,13 @@ export default function VideoForm({
                 />
               </div>
               <div className="mb-3 text-end">
-                <span className="text-muted video-form-count">
+                <span className="text-muted form-count">
                   {values.title.length}文字
                 </span>
               </div>
 
               <div className="mb-1">
-                <label className="form-label video-form-label" htmlFor="video-body">
+                <label className="form-label form-label-sm" htmlFor="video-body">
                   内容
                 </label>
                 <textarea
@@ -82,13 +82,13 @@ export default function VideoForm({
                 />
               </div>
               <div className="mb-3 text-end">
-                <span className="text-muted video-form-count">
+                <span className="text-muted form-count">
                   {values.body.length}文字
                 </span>
               </div>
 
               <div className="mb-4">
-                <label className="form-label video-form-label" htmlFor="video-youtube-url">
+                <label className="form-label form-label-sm" htmlFor="video-youtube-url">
                   Youtube URL
                 </label>
                 <input

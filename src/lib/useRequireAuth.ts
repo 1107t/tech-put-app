@@ -9,7 +9,7 @@ import { getCurrentUser, logout } from "./userApi";
 import type { User } from "./userTypes";
 
 // ログイン後の画面はURLにtenantIdを含まないため、ログイン時に保存した
-// tenantIdからログイン画面のパスを復元する（未保存ならデフォルトテナントへ）。
+// tenantIdからログイン画面のパスを復元する（未保存ならトップ（/）へ）。
 function loginPath(): string {
   const tenantId = tokenStorage.getUserTenantId();
   return tenantId ? `/tenant/${tenantId}/users/login` : "/";
