@@ -12,4 +12,7 @@
 .course-index__actions .course-index__delete { color: #df3545; }
 .course-index button:disabled { cursor: not-allowed; opacity: .55; }
 .course-index__error { color: #b42318; }
+.course-form-error { position: relative; width: fit-content; max-width: 100%; margin: 10px 0 0; padding: 9px 12px; border: 1px solid #cfd6e1; border-radius: 5px; background: #fff; color: #292e34; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; box-shadow: 0 3px 10px #0000001a; }
+.course-form-error::before { content: ''; position: absolute; top: -6px; left: 18px; width: 10px; height: 10px; background: #fff; border-top: 1px solid #cfd6e1; border-left: 1px solid #cfd6e1; transform: rotate(45deg); }
+.course-form-error span { color: #9a5800; margin-right: 4px; }
 @media (max-width: 640px) { .course-index__heading { flex-direction: column; } }

@@ -26,14 +26,11 @@ export default function CourseIndexPage() {
   const [deleteError, setDeleteError] = useState('')
   const deleteInProgress = useRef(false)
 
-  function openEditModal(course: Course) {
+  function startEditing(course: Course) {
+    if (editSaving) return
     setEditingCourse(course)
     setEditName(course.name)
     setEditError('')
-  }
-
-  function closeEditModal() {
-    if (!editSaving) setEditingCourse(null)
   }
 
   async function handleUpdateCourse() {
@@ -45,9 +42,14 @@ export default function CourseIndexPage() {
     setEditSaving(true)
     setEditError('')
     try {
-      await updateCourse(editingCourse.id, editName)
+       const data = await updateCourse(editingCourse.id, editName)
       setEditingCourse(null)
-      setReload(previous => previous + 1)
+      //setReload(previous => previous + 1)
+      setCourses(previous =>
+        previous.map(course =>
+          course.id === data.id ? data : course
+        )
+      )
     } catch (err) {
       setEditError(getApiErrorMessage(err, 'コース名の更新に失敗しました。'))
     } finally {
@@ -64,7 +66,9 @@ export default function CourseIndexPage() {
     setDeleteError('')
     try {
       await DeletCourse(id)
-      setReload(previous => previous + 1)
+      setCourses(previous =>
+        previous.filter(course => course.id !== id)
+      )
     } catch (err) {
       setDeleteError(getApiErrorMessage(err, 'コースの削除に失敗しました。'))
     } finally {
@@ -93,11 +97,12 @@ export default function CourseIndexPage() {
     setSaving(true)
     setCreateError('')
     try {
-      await NewCourse(courseName)
+     const data = await NewCourse(courseName)
+      console.log("新規作成データ", data)
       setShowCreateModal(false)
       setCourseName('')
-      // reloadの変更で、既存のuseEffectが一覧を再取得する。
-      setReload(previous => previous + 1)
+      // 手元の一覧に新規コースを追加する
+      setCourses(previous => [...previous, data])
     } catch (err) {
       setCreateError(getApiErrorMessage(err, 'コースの作成に失敗しました。'))
     } finally {
@@ -166,10 +171,46 @@ export default function CourseIndexPage() {
           <ul className="course-index__list">
             {courses.map(course => (
               <li key={course.id} className="course-index__card">
-                <h2>{course.name}</h2>
+                {editingCourse?.id === course.id ? (
+                  <form
+                    noValidate
+                    onSubmit={event => {
+                      event.preventDefault()
+                      void handleUpdateCourse()
+                    }}
+                  >
+                    <input
+                      aria-label="コース名"
+                      className={`form-control${editError ? ' is-invalid' : ''}`}
+                      value={editName}
+                      onChange={event => setEditName(event.target.value)}
+                      autoFocus
+                      required
+                      maxLength={255}
+                      disabled={editSaving}
+                      aria-invalid={!!editError}
+                      aria-describedby={editError ? 'course-inline-error' : undefined}
+                    />
+                    {editError && (
+                      <p id="course-inline-error" className="course-form-error" role="alert">
+                        <span aria-hidden="true">⚠</span> {editError}
+                      </p>
+                    )}
+                    <div className="course-index__actions mt-2 mb-3">
+                      <button type="submit" disabled={editSaving}>
+                        {editSaving ? '保存中…' : '保存'}
+                      </button>
+                      <button type="button" disabled={editSaving} onClick={() => setEditingCourse(null)}>
+                        キャンセル
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <h2>{course.name}</h2>
+                )}
                 <div className="course-index__actions">
-                  <button type="button" className="text-info-emphasis fw-bold" onClick={() => openEditModal(course)}>コース名を編集</button>
-                  <button type="button" className="course-index__delete fw-bold" disabled={deletingId !== null} onClick={()=>deleteCourse(course.id)}>
+                  <button type="button" className="text-info-emphasis fw-bold" disabled={editSaving || editingCourse?.id === course.id} onClick={() => startEditing(course)}>コース名を編集</button>
+                  <button type="button" className="course-index__delete fw-bold" disabled={deletingId !== null || editSaving} onClick={()=>deleteCourse(course.id)}>
                     {deletingId === course.id ? '削除中…' : 'コースを削除'}
                   </button>
                 </div>
@@ -188,21 +229,19 @@ export default function CourseIndexPage() {
             <button type="button" className="btn btn-outline-secondary" onClick={closeCreateModal} disabled={saving}>
               キャンセル
             </button>
-            <button type="button" className="btn btn-primary" disabled={saving}
-            onClick={handleCreateCourse}
-            >
+            <button type="submit" form="course-create-form" className="btn btn-primary" disabled={saving}>
               {saving ? '作成中…' : '作成する'}
             </button>
           </>
         }
       >
-        <div>
+        <form id="course-create-form" noValidate onSubmit={event => { event.preventDefault(); void handleCreateCourse() }}>
           <label htmlFor="course-name" className="form-label fw-semibold">
             コース名 <span className="text-danger">必須</span>
           </label>
           <input
             id="course-name"
-            className="form-control"
+            className={`form-control${createError ? ' is-invalid' : ''}`}
             type="text"
             value={courseName}
             onChange={event => setCourseName(event.target.value)}
@@ -211,43 +250,12 @@ export default function CourseIndexPage() {
             maxLength={255}
             disabled={saving}
             aria-invalid={!!createError}
-            aria-describedby="course-create-help"
+            aria-describedby={createError ? 'course-create-help course-create-error' : 'course-create-help'}
           />
+          {createError && <p id="course-create-error" className="course-form-error" role="alert"><span aria-hidden="true">⚠</span> {createError}</p>}
           <p id="course-create-help" className="text-muted small mt-2 mb-0">
             コース名を入力して「作成する」を押してください。
           </p>
-          {createError && <p className="text-danger mt-2 mb-0" role="alert">{createError}</p>}
-        </div>
-      </Modal>
-      <Modal
-        isOpen={editingCourse !== null}
-        onClose={closeEditModal}
-        title="コース名を編集"
-        titleId="course-edit-title"
-        footer={
-          <>
-            <button type="button" className="btn btn-outline-secondary" onClick={closeEditModal} disabled={editSaving}>キャンセル</button>
-            <button type="submit" form="course-edit-form" className="btn btn-primary" disabled={editSaving}>
-              {editSaving ? '保存中…' : '保存する'}
-            </button>
-          </>
-        }
-      >
-        <form id="course-edit-form" onSubmit={event => { event.preventDefault(); void handleUpdateCourse() }}>
-          <label htmlFor="course-edit-name" className="form-label fw-semibold">コース名 <span className="text-danger">必須</span></label>
-          <input
-            id="course-edit-name"
-            className="form-control"
-            value={editName}
-            onChange={event => setEditName(event.currentTarget.value)}
-            onFocus={event => event.currentTarget.select()}
-            required
-            maxLength={255}
-            disabled={editSaving}
-            aria-invalid={!!editError}
-            aria-describedby={editError ? 'course-edit-error' : undefined}
-          />
-          {editError && <p id="course-edit-error" className="text-danger mt-2 mb-0" role="alert">{editError}</p>}
         </form>
       </Modal>
     </AdminLayout>
