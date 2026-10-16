@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import AdminLayout from '../../components/admin/AdminLayout'
-import Modal from '../../components/admin/Modal'
-import { adminLogout, getCurrentAdmin, type Admin } from '../../lib/adminApi'
-import { getApiErrorMessage } from '../../lib/api'
-import { getCourses, type Course, NewCourse, updateCourse, DeletCourse } from '../../lib/courseApi'
-import '../../styles/pages/courses.css'
+import AdminLayout from '../../../components/admin/AdminLayout'
+import Modal from '../../../components/admin/Modal'
+import { adminLogout, getCurrentAdmin, type Admin } from '../../../lib/adminApi'
+import { getApiErrorMessage } from '../../../lib/api'
+import { getCourses, type Course, createCourse, updateCourse, deleteCourse } from '../../../lib/courseApi'
+import '../../../styles/pages/courses.css'
 
-export default function CourseIndexPage() {
+export default function AdminCourseIndexPage() {
   const navigate = useNavigate()
   const [admin, setAdmin] = useState<Admin | null>(null)
   const [courses, setCourses] = useState<Course[]>([])
@@ -42,7 +42,7 @@ export default function CourseIndexPage() {
     setEditSaving(true)
     setEditError('')
     try {
-       const data = await updateCourse(editingCourse.id, editName)
+       const data = await updateCourse(editingCourse.id, editName.trim())
       setEditingCourse(null)
       //setReload(previous => previous + 1)
       setCourses(previous =>
@@ -57,7 +57,7 @@ export default function CourseIndexPage() {
     }
   }
 
-  const deleteCourse = async(id: string) => {
+  const handleDeleteCourse = async(id: string) => {
     if (deleteInProgress.current) return
     const course = courses.find(item => item.id === id)
     if (!window.confirm(`「${course?.name ?? 'このコース'}」を本当に削除してよいですか？`)) return
@@ -65,7 +65,7 @@ export default function CourseIndexPage() {
     setDeletingId(id)
     setDeleteError('')
     try {
-      await DeletCourse(id)
+      await deleteCourse(id)
       setCourses(previous =>
         previous.filter(course => course.id !== id)
       )
@@ -97,7 +97,7 @@ export default function CourseIndexPage() {
     setSaving(true)
     setCreateError('')
     try {
-     const data = await NewCourse(courseName)
+     const data = await createCourse(courseName.trim())
       console.log("新規作成データ", data)
       setShowCreateModal(false)
       setCourseName('')
@@ -210,7 +210,7 @@ export default function CourseIndexPage() {
                 )}
                 <div className="course-index__actions">
                   <button type="button" className="text-info-emphasis fw-bold" disabled={editSaving || editingCourse?.id === course.id} onClick={() => startEditing(course)}>コース名を編集</button>
-                  <button type="button" className="course-index__delete fw-bold" disabled={deletingId !== null || editSaving} onClick={()=>deleteCourse(course.id)}>
+                  <button type="button" className="course-index__delete fw-bold" disabled={deletingId !== null || editSaving} onClick={()=>handleDeleteCourse(course.id)}>
                     {deletingId === course.id ? '削除中…' : 'コースを削除'}
                   </button>
                 </div>
