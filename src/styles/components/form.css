@@ -1,0 +1,12 @@
+/* 管理画面・マネージャー画面のカード型フォームで共通のスタイル */
+.form-header {
+  border-bottom: 1px solid #e9ecef;
+}
+
+.form-label-sm {
+  font-size: 14px;
+}
+
+.form-count {
+  font-size: 12px;
+}

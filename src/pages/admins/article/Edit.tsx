@@ -20,7 +20,7 @@ export default function AdminArticleEditPage() {
   const [content, setContent] = useState("");
   const [articleType, setArticleType] = useState("e-learning");
   const [notFound, setNotFound] = useState(false);
-  const [loaded, setLoaded] = useState(false);
+  const [fetchDone, setFetchDone] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [error, setError] = useState("");
@@ -48,11 +48,11 @@ export default function AdminArticleEditPage() {
         setSubTitle(article.subTitle);
         setContent(article.content);
         setArticleType(article.articleType ?? "e-learning");
-        setLoaded(true);
+        setFetchDone(true);
       } catch {
         if (!cancelled) {
           setLoadError("記事の読み込みに失敗しました。");
-          setLoaded(true);
+          setFetchDone(true);
         }
       }
     })();
@@ -81,7 +81,7 @@ export default function AdminArticleEditPage() {
     }
   };
 
-  if (!loaded && !notFound) {
+  if (!fetchDone && !notFound) {
     return (
       <div className="d-flex justify-content-center align-items-center min-vh-100">
         <div className="spinner-border text-primary" role="status">

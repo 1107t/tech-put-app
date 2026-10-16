@@ -39,3 +39,39 @@ export async function getCurrentManager(): Promise<Manager | null> {
     throw err
   }
 }
+
+export interface Tenant {
+  id: string
+  name: string
+  createdAt: string
+}
+
+// テナントと同時に、そのテナントの最初の管理者アカウントを作成する
+export interface TenantInput {
+  name: string
+  adminName: string
+  adminEmail: string
+  adminPassword: string
+  adminPasswordConfirmation: string
+}
+
+export async function createTenant(data: TenantInput): Promise<Tenant> {
+  const res = await api.post<{ tenant: Tenant }>('/manager/tenants', {
+    name: data.name,
+    admin_name: data.adminName,
+    admin_email: data.adminEmail,
+    admin_password: data.adminPassword,
+    admin_password_confirmation: data.adminPasswordConfirmation,
+  })
+  return res.data.tenant
+}
+
+export async function getTenant(id: string): Promise<Tenant> {
+  const res = await api.get<{ tenant: Tenant }>(`/manager/tenants/${id}`)
+  return res.data.tenant
+}
+
+export async function getTenants(): Promise<Tenant[]> {
+  const res = await api.get<{ tenants: Tenant[] }>('/manager/tenants')
+  return res.data.tenants
+}

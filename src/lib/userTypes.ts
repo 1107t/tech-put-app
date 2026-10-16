@@ -21,6 +21,7 @@ export type User = {
   email: string
   birthday: string | null
   gender: GenderValue | null
+  tenantId: string // 所属テナントのID
   createdAt: string
 }
 

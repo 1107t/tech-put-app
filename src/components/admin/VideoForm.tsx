@@ -1,0 +1,123 @@
+// 管理者の動画投稿・編集ページで共通のフォーム。
+import { getYouTubeVideoId } from "../../lib/youtube";
+import "../../styles/components/form.css";
+
+export const VIDEO_TITLE_MAX = 30;
+export const VIDEO_BODY_MAX = 240;
+
+export type VideoFormValues = { title: string; body: string; youtubeUrl: string };
+
+export const EMPTY_VIDEO_FORM: VideoFormValues = { title: "", body: "", youtubeUrl: "" };
+
+// 入力に問題があればメッセージを、なければ null を返す
+export function validateVideoForm({ title, body, youtubeUrl }: VideoFormValues): string | null {
+  if (!title.trim()) return "タイトルを入力してください。";
+  if (!body.trim()) return "内容を入力してください。";
+  if (!youtubeUrl.trim()) return "YoutubeのURLを入力してください。";
+  if (!getYouTubeVideoId(youtubeUrl)) return "有効なYouTubeのURLを入力してください。";
+  return null;
+}
+
+type Props = {
+  heading: string; // "動画投稿" / "動画編集"
+  values: VideoFormValues;
+  onChange: (values: VideoFormValues) => void;
+  submitLabel: string; // "投稿する" / "更新する"
+  submittingLabel: string; // "投稿中..." / "更新中..."
+  isSubmitting: boolean;
+  errorMessage: string;
+  onSubmit: () => void;
+  onCancel: () => void;
+};
+
+export default function VideoForm({
+  heading, values, onChange,
+  submitLabel, submittingLabel, isSubmitting,
+  errorMessage, onSubmit, onCancel,
+}: Props) {
+  return (
+    <div className="row justify-content-center">
+      <div className="col-md-7 col-lg-6">
+        <div className="card shadow-sm">
+          <div className="card-body">
+            <div className="text-center pb-3 mb-4 form-header">
+              <h5 className="mb-0">{heading}</h5>
+            </div>
+
+            {errorMessage && <p className="text-danger">{errorMessage}</p>}
+
+            <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }}>
+              <div className="mb-1">
+                <label className="form-label form-label-sm" htmlFor="video-title">
+                  タイトル
+                </label>
+                <input
+                  id="video-title"
+                  type="text"
+                  className="form-control"
+                  value={values.title}
+                  maxLength={VIDEO_TITLE_MAX}
+                  onChange={(e) => onChange({ ...values, title: e.target.value })}
+                  placeholder={`タイトル (必須 ${VIDEO_TITLE_MAX}文字まで)`}
+                />
+              </div>
+              <div className="mb-3 text-end">
+                <span className="text-muted form-count">
+                  {values.title.length}文字
+                </span>
+              </div>
+
+              <div className="mb-1">
+                <label className="form-label form-label-sm" htmlFor="video-body">
+                  内容
+                </label>
+                <textarea
+                  id="video-body"
+                  className="form-control"
+                  rows={6}
+                  value={values.body}
+                  maxLength={VIDEO_BODY_MAX}
+                  onChange={(e) => onChange({ ...values, body: e.target.value })}
+                  placeholder={`内容 (必須 ${VIDEO_BODY_MAX}文字まで)`}
+                />
+              </div>
+              <div className="mb-3 text-end">
+                <span className="text-muted form-count">
+                  {values.body.length}文字
+                </span>
+              </div>
+
+              <div className="mb-4">
+                <label className="form-label form-label-sm" htmlFor="video-youtube-url">
+                  Youtube URL
+                </label>
+                <input
+                  id="video-youtube-url"
+                  type="url"
+                  className="form-control"
+                  value={values.youtubeUrl}
+                  onChange={(e) => onChange({ ...values, youtubeUrl: e.target.value })}
+                  placeholder="YoutubeのURLを添付（必須)"
+                />
+              </div>
+
+              <div className="d-flex gap-2 justify-content-end">
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={onCancel}
+                  disabled={isSubmitting}
+                >
+                  キャンセル
+                </button>
+                <button type="submit" className="btn btn-primary btn-sm" disabled={isSubmitting}>
+                  {isSubmitting ? submittingLabel : submitLabel}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

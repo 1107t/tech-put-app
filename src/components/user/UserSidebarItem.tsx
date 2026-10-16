@@ -4,7 +4,7 @@ import { NavLink } from "react-router-dom";
 
 type Props = {
   label: string;
-  to: string;
+  to: string; // 絶対パス（例: "/dashboard"）
   icon: string; // Font Awesome のアイコンクラス
 };
 
