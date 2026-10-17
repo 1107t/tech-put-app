@@ -15,6 +15,7 @@ import ArticleShowPage from './pages/users/article/Show';
 
 // 管理者用ページ
 import AdminLoginPage from './pages/admins/AdminLoginPage';
+import CourseIndexPage from './pages/admins/CourseIndexPage';
 import AdminSignUpPage from './pages/admins/SignUpPage';
 import AdminMessagePage from './pages/admins/MessagePage';
 import AdminPassreset from './pages/admins/Passreset';
@@ -70,6 +71,7 @@ function AppRoutes() {
         <Route path="/admin/message/:type" element={<AdminMessagePage />} />
         <Route path="/admin/reset" element={<AdminPassreset />} />
         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+        <Route path="/admin/courses" element={<CourseIndexPage />} />
         <Route path="/admin/articles" element={<AdminArticleIndexPage />} />
         <Route path="/admin/articles/new" element={<AdminArticleNewPage />} />
         <Route path="/admin/articles/:id/edit" element={<AdminArticleEditPage />} />

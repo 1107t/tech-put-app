@@ -1,0 +1,15 @@
+.course-index { max-width: 1260px; color: #292e34; }
+.course-index__heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin: 10px 0 20px; }
+.course-index h1 { font-size: 25px; font-weight: 700; margin: 0 0 12px; }
+.course-index__heading p, .course-index__notice { color: #6b7280; font-size: 14px; }
+.course-index__create { background: #2f78ff; color: white; border: 0; border-radius: 5px; padding: 13px 18px; font-weight: 600; }
+.course-index__notice { margin-bottom: 24px; }
+.course-index__list { display: grid; grid-template-columns: 1fr; gap: 32px; max-width: 660px; list-style: none; padding: 0; margin: 0; }
+.course-index__card, .course-index__empty { background: white; border: 1px solid #d0d0d0; border-radius: 5px; padding: 16px; box-shadow: 0 2px 4px #0000000d; }
+.course-index__card h2 { font-size: 17px; font-weight: 700; line-height: 1.5; margin: 0 0 24px; overflow-wrap: anywhere; }
+.course-index__actions { display: flex; flex-wrap: wrap; gap: 5px; }
+.course-index__actions button, .course-index__error button { background: white; border: 1px solid #cfd6e1; border-radius: 4px; padding: 7px 10px; font-size: 13px; }
+.course-index__actions .course-index__delete { color: #df3545; }
+.course-index button:disabled { cursor: not-allowed; opacity: .55; }
+.course-index__error { color: #b42318; }
+@media (max-width: 640px) { .course-index__heading { flex-direction: column; } }
