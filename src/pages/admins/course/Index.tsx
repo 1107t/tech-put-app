@@ -42,9 +42,8 @@ export default function AdminCourseIndexPage() {
     setEditSaving(true)
     setEditError('')
     try {
-       const data = await updateCourse(editingCourse.id, editName.trim())
+      const data = await updateCourse(editingCourse.id, editName.trim())
       setEditingCourse(null)
-      //setReload(previous => previous + 1)
       setCourses(previous =>
         previous.map(course =>
           course.id === data.id ? data : course
@@ -97,8 +96,7 @@ export default function AdminCourseIndexPage() {
     setSaving(true)
     setCreateError('')
     try {
-     const data = await createCourse(courseName.trim())
-      console.log("新規作成データ", data)
+      const data = await createCourse(courseName.trim())
       setShowCreateModal(false)
       setCourseName('')
       // 手元の一覧に新規コースを追加する

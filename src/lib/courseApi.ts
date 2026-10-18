@@ -24,7 +24,7 @@ export const createCourse = async (value: string): Promise<Course> => {
 }
 
 export async function updateCourse(id: string, name: string): Promise<Course> {
-  const response = await api.patch(`/admin/courses/${id}`, { name })
+  const response = await api.patch<{ course: Course }>(`/admin/courses/${id}`, { name })
   return response.data.course
 
 }
