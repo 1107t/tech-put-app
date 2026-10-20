@@ -8,6 +8,7 @@ import "../../styles/components/adminLayout.css";
 // アイコンは Rails 版 admin サイドバーに合わせる
 const menuItems = [
   { id: 1, label: "e-learning", to: "/admin/dashboard", icon: "fa-solid fa-book-open" },
+  { id: 6, label: "コース一覧", to: "/admin/courses", icon: "fa-solid fa-list" },
   { id: 2, label: "記事一覧", to: "/admin/articles", icon: "fa-solid fa-table-cells" },
   { id: 3, label: "動画投稿一覧", to: "/admin/videos", icon: "fa-brands fa-youtube" },
   { id: 4, label: "登録ユーザー一覧", to: "/admin/users", icon: "fa-solid fa-list" },
