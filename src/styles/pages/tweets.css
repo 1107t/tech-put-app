@@ -38,6 +38,15 @@
   color: #374151;
 }
 
+/* いいね済みのアクションボタン: ハートを赤く表示する */
+.tweets-page__action-btn--liked {
+  color: #ef4444;
+}
+
+.tweets-page__action-btn--liked:hover {
+  color: #dc2626;
+}
+
 /* ユーザー名のフォントサイズ */
 .tweets-page__user-name {
   font-size: 0.9rem;
@@ -161,4 +170,38 @@
 
 .tweets-page__preview-remove:hover {
   background: #dc2626;
+}
+
+/* ==================
+   コメントセクション
+   ================== */
+
+/* コメント入力セクション: つぶやきカード内の区切り線の下に表示 */
+.tweets-page__comment-section {
+  border-top: 1px solid #e5e7eb;
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
+/* コメント1件の表示スタイル: テキストと日時を横並びで表示 */
+.tweets-page__comment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 6px 0;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 0.875rem;
+  gap: 8px;
+}
+
+.tweets-page__comment-item:last-child {
+  border-bottom: none;
+}
+
+/* コメントの投稿日時: グレーで小さく表示 */
+.tweets-page__comment-date {
+  color: #9ca3af;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  flex-shrink: 0;
 }

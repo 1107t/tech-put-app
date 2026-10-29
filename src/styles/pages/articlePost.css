@@ -1,15 +1,170 @@
-.article-editor-pane,
-.article-preview-pane {
-  flex: 1 1 0;
-  min-width: 0;
+/* カードの青い上部ライン */
+.card.card-outline.card-info {
+  border-top: 3px solid rgb(13, 202, 240);
 }
 
-textarea.form-control.article-editor-textarea {
+/* エディター・プレビューのカードタイトル */
+.card.card-outline.card-info .card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* タイトル・サブタイトルのinput（下線のみ） */
+.title-form,
+.subtitle-form {
+  border: none;
+  border-bottom: 2px solid rgb(13, 202, 240);
+  border-radius: 0;
+  box-shadow: none;
+  font-size: 1rem;
+  padding: 6px 12px;
+}
+
+.title-form:focus,
+.subtitle-form:focus {
+  border-bottom-color: #0d6efd;
+  box-shadow: none;
+}
+
+/* エディターtextarea */
+.markdown-editor {
+  width: 100%;
+  height: 630px;
   resize: vertical;
-  min-height: 500px;
+  font-family: monospace;
+  font-size: 14px;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  padding: 12px;
 }
 
+/* プレビューエリア（エディターと同じ高さ・スクロール） */
 .article-preview-box {
-  height: var(--preview-height, 500px);
-  overflow: auto;
+  height: 630px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-width: 100%;
+  font-size: 16px;
+  line-height: 1.7;
+  padding: 12px;
+}
+
+/* プレビュー内見出し */
+.article-preview-box h1,
+.article-preview-box h2,
+.article-preview-box h3,
+.article-preview-box h4,
+.article-preview-box h5 {
+  margin: 2rem 0 1rem;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #d0cece;
+}
+
+/* プレビュー内テーブル */
+.article-preview-box table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.article-preview-box th,
+.article-preview-box td {
+  border: 1px solid #dee2e6;
+  padding: 8px 12px;
+}
+
+.article-preview-box th {
+  background-color: #f6f8fa;
+  font-weight: 600;
+  text-align: left;
+}
+
+.article-preview-box tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* プレビュー内コードブロック */
+.article-preview-box pre {
+  background-color: #f6f8fa;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  padding: 12px 16px;
+  overflow-x: auto;
+  max-width: 100%;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.article-preview-box code {
+  font-family: monospace;
+  font-size: 0.95em;
+  background-color: #f6f8fa;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.article-preview-box pre code {
+  background: none;
+  padding: 0;
+}
+
+/* コードブロック全体（VSCode風ダーク・コピーボタンの位置基準） */
+.article-preview-box .code-block {
+  position: relative;
+  margin-bottom: 1rem;
+  background-color: #1e1e1e;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* ファイル名ラベル（左上・VSCodeのタブ風） */
+.article-preview-box .code-filename {
+  display: inline-block;
+  background-color: #2d2d2d;
+  color: #cccccc;
+  padding: 6px 14px;
+  font-size: 0.9em;
+  font-family: monospace;
+}
+
+/* コードブロック本体（黒背景・白文字） */
+.article-preview-box .code-block pre {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  margin: 0;
+  padding: 12px 16px;
+  color: #d4d4d4;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.article-preview-box .code-block pre code {
+  color: #d4d4d4;
+  background: none;
+  padding: 0;
+}
+
+/* コピーボタン（右上） */
+.article-preview-box .code-copy-btn {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: #cccccc;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+
+.article-preview-box .code-copy-btn:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
 }

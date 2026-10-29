@@ -11,15 +11,19 @@ export async function signup(params: {
   password: string
   birthday?: string
   gender?: GenderValue
+  tenantId: string
 }): Promise<User> {
-  const res = await api.post<{ token: string; user: User }>('/auth/signup', params)
+  const { tenantId, ...rest } = params
+  const res = await api.post<{ token: string; user: User }>('/auth/signup', { ...rest, tenant_id: tenantId })
   tokenStorage.setUser(res.data.token)
+  tokenStorage.setUserTenantId(tenantId)
   return res.data.user
 }
 
-export async function login(email: string, password: string): Promise<User> {
-  const res = await api.post<{ token: string; user: User }>('/auth/login', { email, password })
+export async function login(email: string, password: string, tenantId: string): Promise<User> {
+  const res = await api.post<{ token: string; user: User }>('/auth/login', { email, password, tenant_id: tenantId })
   tokenStorage.setUser(res.data.token)
+  tokenStorage.setUserTenantId(tenantId)
   return res.data.user
 }
 
@@ -27,6 +31,7 @@ export async function logout(): Promise<void> {
   await api.delete('/auth/logout').catch(() => {})
   tokenStorage.removeUser()
 }
+
 
 export async function getCurrentUser(): Promise<User | null> {
   const token = tokenStorage.getUser()

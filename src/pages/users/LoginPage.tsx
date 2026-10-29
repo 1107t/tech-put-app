@@ -1,12 +1,15 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import AuthLayout from "../../components/AuthLayout";
 import { MailIcon, LockIcon } from "../../components/Icons";
-import { getCurrentUser, login } from "../../lib/userApi";
+import { getCurrentUser, login, logout } from "../../lib/userApi";
 import { getApiErrorMessage } from "../../lib/api";
+import { useTenantPath } from "../../lib/useTenantPath";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const path = useTenantPath();
+  const { tenantId } = useParams<{ tenantId: string }>();
 
 
   // 入力値
@@ -24,9 +27,12 @@ export default function LoginPage() {
       if (saved) setEmail(saved);
 
       const user = await getCurrentUser();
-      if (user) navigate("/dashboard", { replace: true });
+      if (!user) return;
+      // 別テナントでログイン中ならログアウトし、このテナントのログイン画面を表示する
+      if (user.tenantId === tenantId) navigate("/articles", { replace: true });
+      else await logout();
     })();
-  }, [navigate]);
+  }, [navigate, tenantId]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -37,13 +43,16 @@ export default function LoginPage() {
       if (!email || !password) {
         throw new Error("メールアドレスとパスワードを入力してください。");
       }
+      if (!tenantId) {
+        throw new Error("テナントIDが不正です。");
+      }
 
       if (remember) localStorage.setItem("remember_email", email);
       else localStorage.removeItem("remember_email");
 
-      await login(email, password);
+      await login(email, password, tenantId);
 
-      navigate("/dashboard", { replace: true });
+      navigate("/articles", { replace: true });
     } catch (err) {
       setErrorMsg(getApiErrorMessage(err, "ログインに失敗しました。"));
     } finally {
@@ -54,39 +63,39 @@ export default function LoginPage() {
   return (
     <AuthLayout
       subtitle="tech out put!"
-      brandHref="/login"
+      brandHref={path("/login")}
       footer={
         <ul className="list-unstyled mb-0 d-grid gap-1">
           <li>
-            <Link className="link-primary text-decoration-none" to="/signup">
+            <Link className="link-primary text-decoration-none" to={path("/signup")}>
               アカウント登録
             </Link>
           </li>
           <li>
-            <Link className="link-primary text-decoration-none" to="/reset">
+            <Link className="link-primary text-decoration-none" to={path("/reset")}>
               パスワードを忘れましたか？
             </Link>
           </li>
           <li>
             <Link
               className="link-primary text-decoration-none"
-              to="/message/resend"
+              to={path("/message/resend")}
             >
               認証メールの再送信
             </Link>
           </li>
           <li>
-            <Link className="link-primary text-decoration-none" to="/message/google">
+            <Link className="link-primary text-decoration-none" to={path("/message/google")}>
               Googleでのログイン
             </Link>
           </li>
           <li>
-            <Link className="link-primary text-decoration-none" to="/message/line">
+            <Link className="link-primary text-decoration-none" to={path("/message/line")}>
               LINEでのログイン
             </Link>
           </li>
           <li>
-            <Link className="link-primary text-decoration-none" to="/message/facebook">
+            <Link className="link-primary text-decoration-none" to={path("/message/facebook")}>
               Facebookでのログイン
             </Link>
           </li>
