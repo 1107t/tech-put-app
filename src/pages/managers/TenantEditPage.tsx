@@ -5,18 +5,17 @@ import { getTenant, updateTenant } from "../../lib/managerApi";
 import { getApiErrorMessage } from "../../lib/api";
 import { useRequireManager } from "../../lib/useRequireManager";
 import ManagerLayout from "../../components/manager/ManagerLayout";
+import TenantForm, { type TenantFormValues } from "../../components/manager/TenantForm";
 import PageSpinner from "../../components/admin/PageSpinner";
 import PageError from "../../components/admin/PageError";
 import "../../styles/components/form.css";
-
-const NAME_MAX = 20;
 
 export default function TenantEditPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { manager, loading, error: networkError, handleLogout } = useRequireManager();
 
-  const [name, setName] = useState("");
+  const [currentName, setCurrentName] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tenantLoading, setTenantLoading] = useState(true);
@@ -28,14 +27,13 @@ export default function TenantEditPage() {
     setTenantLoading(true);
     setTenantError(null);
     getTenant(id)
-      .then((tenant) => { if (!cancelled) setName(tenant.name); })
+      .then((tenant) => { if (!cancelled) setCurrentName(tenant.name); })
       .catch((err) => { if (!cancelled) setTenantError(getApiErrorMessage(err, "テナント情報の取得に失敗しました。")); })
       .finally(() => { if (!cancelled) setTenantLoading(false); });
     return () => { cancelled = true; };
   }, [manager, id]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async ({ name }: TenantFormValues) => {
     if (isSubmitting || !id) return;
     if (!name.trim()) { setError("テナント名を入力してください。"); return; }
     setIsSubmitting(true);
@@ -77,45 +75,14 @@ export default function TenantEditPage() {
               )}
 
               {!tenantError && !tenantLoading && (
-                <>
-                  {error && <p className="text-danger">{error}</p>}
-
-                  <form onSubmit={handleSubmit}>
-                    <div className="mb-1">
-                      <label className="form-label form-label-sm" htmlFor="tenant-name">
-                        テナント名
-                      </label>
-                      <input
-                        id="tenant-name"
-                        type="text"
-                        className="form-control"
-                        value={name}
-                        maxLength={NAME_MAX}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder={`テナント名 (必須 ${NAME_MAX}文字まで)`}
-                      />
-                    </div>
-                    <div className="mb-4 text-end">
-                      <span className="text-muted form-count">
-                        {name.length}文字
-                      </span>
-                    </div>
-
-                    <div className="d-flex gap-2 justify-content-center">
-                      <button type="submit" className="btn btn-primary btn-sm" disabled={isSubmitting}>
-                        {isSubmitting ? "保存中..." : "保存"}
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-secondary btn-sm"
-                        onClick={() => navigate(`/manager/tenants/${id}`)}
-                        disabled={isSubmitting}
-                      >
-                        キャンセル
-                      </button>
-                    </div>
-                  </form>
-                </>
+                <TenantForm
+                  mode="edit"
+                  initialName={currentName}
+                  error={error}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleSubmit}
+                  onCancel={() => navigate(`/manager/tenants/${id}`)}
+                />
               )}
             </div>
           </div>
