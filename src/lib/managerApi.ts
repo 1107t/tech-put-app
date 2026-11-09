@@ -75,3 +75,8 @@ export async function getTenants(): Promise<Tenant[]> {
   const res = await api.get<{ tenants: Tenant[] }>('/manager/tenants')
   return res.data.tenants
 }
+
+export async function updateTenant(id: string, name: string): Promise<Tenant> {
+  const res = await api.patch<{ tenant: Tenant }>(`/manager/tenants/${id}`, { name })
+  return res.data.tenant
+}

@@ -87,6 +87,13 @@ export default function TenantDetailPage() {
                     </a>
                     <button
                       type="button"
+                      className="btn btn-outline-primary btn-sm"
+                      onClick={() => navigate(`/manager/tenants/${tenant.id}/edit`)}
+                    >
+                      編集
+                    </button>
+                    <button
+                      type="button"
                       className="btn btn-secondary btn-sm"
                       onClick={() => navigate("/manager/dashboard")}
                     >
