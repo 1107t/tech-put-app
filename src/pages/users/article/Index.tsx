@@ -70,6 +70,7 @@ export default function ArticleIndexPage() {
                   <th>タイトル</th>
                   <th>サブタイトル</th>
                   <th>投稿者</th>
+                  <th>いいね</th>
                   <th>投稿日時</th>
                   <th></th>
                 </tr>
@@ -84,6 +85,7 @@ export default function ArticleIndexPage() {
                     <td className="link-td">{article.title}</td>
                     <td className="link-td">{article.subTitle}</td>
                     <td className="link-td"></td>
+                    <td className="link-td">{article.likesCount}</td>
                     <td className="link-td">{formatDate(article.createdAt)}</td>
                     <td className="menu-td" onClick={(e) => e.stopPropagation()}>
                       {article.userId === me.id && (

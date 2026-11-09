@@ -14,6 +14,8 @@ export type Article = {
   content: string
   userId: string | null   // 受講生が投稿した場合にセット。管理者投稿の場合はnull
   adminId: string | null  // 管理者が投稿した場合にセット。受講生投稿の場合はnull
+  likesCount: number
+  likedByCurrentUser: boolean
   createdAt: string
   updatedAt: string
 }
@@ -53,4 +55,12 @@ export async function updateArticle(id: string, data: ArticleInput): Promise<voi
 
 export async function deleteArticle(id: string): Promise<void> {
   await api.delete(`/articles/${id}`)
+}
+
+export async function likeArticle(id: string): Promise<void> {
+  await api.post(`/articles/${id}/likes`)
+}
+
+export async function unlikeArticle(id: string): Promise<void> {
+  await api.delete(`/articles/${id}/likes`)
 }
