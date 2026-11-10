@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import UserLayout, { dashboardMenu } from "../../../components/user/UserLayout";
 import MarkdownView from "../../../components/user/MarkdownView";
+import ArticleLikeButton from "../../../components/user/ArticleLikeButton";
 import { getArticle, deleteArticle, type Article } from "../../../lib/articleApi";
 import { getApiErrorMessage } from "../../../lib/api";
 import "../../../styles/pages/articleShow.css";
@@ -61,6 +62,7 @@ export default function ArticleShowPage() {
                   <div>
                     <h1 className="article-show-title">{article.title}</h1>
                     <p className="article-show-subtitle">{article.subTitle}</p>
+                    <ArticleLikeButton article={article} onChange={setArticle} />
                   </div>
                   {article.userId === me.id && (
                     <div className="d-flex gap-2 ms-3 flex-shrink-0">
