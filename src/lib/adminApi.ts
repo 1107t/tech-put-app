@@ -71,8 +71,14 @@ export async function getUser(userId: string): Promise<AdminUser> {
   return getAdminUser(userId)
 }
 
-export async function deleteUser(userId: string): Promise<void> {
-  await api.delete(`/admin/users/${userId}`)
+export async function cancelUser(userId: string): Promise<AdminUser> {
+  const response = await api.patch<{ user: AdminUser }>(`/admin/users/${userId}/cancel`)
+  return response.data.user
+}
+
+export async function resumeUser(userId: string): Promise<AdminUser> {
+  const response = await api.patch<{ user: AdminUser }>(`/admin/users/${userId}/resume`)
+  return response.data.user
 }
 
 // 管理者はuser_idを持たないため、受講生向けではなく管理者専用APIを使う。
