@@ -1,7 +1,7 @@
-// 登録ユーザーの検索・並べ替え・個別画面への遷移と削除を提供する。
+// 登録ユーザーの検索・並べ替え・個別画面への遷移と解約・再開を提供する。
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { getUsers, deleteUser } from "../../lib/adminApi";
+import { getUsers, cancelUser, resumeUser } from "../../lib/adminApi";
 import type { AdminUser } from "../../lib/userTypes";
 import AdminLayout from "../../components/admin/AdminLayout";
 import PageSpinner from "../../components/admin/PageSpinner";
@@ -19,6 +19,7 @@ import {
 import FlashMessage from "../../components/admin/FlashMessage"
 import { useFlash } from "../../lib/useFlash"
 import type { LoadStatus } from "../../lib/loadStatus"
+import { formatSlashDate } from "../../lib/formatDate"
 
 // 型と実行時の検証で、許可する並べ替え基準を共有する。
 const SORT_CRITERIA = ["createdAt", "name"] as const
@@ -30,14 +31,22 @@ function isSortCriterion(value: string): value is SortCriterion {
 
 const DEFAULT_SORT_CRITERION: SortCriterion = "createdAt"
 
+const USER_STATUS_FILTERS = ["all", "active", "cancelled"] as const
+type UserStatusFilter = (typeof USER_STATUS_FILTERS)[number]
+
+function isUserStatusFilter(value: string): value is UserStatusFilter {
+  return USER_STATUS_FILTERS.some((userStatusFilter) => userStatusFilter === value)
+}
+
 interface FilterCondition {
   name: string       // 名前（部分一致）
   email: string      // メールアドレス（部分一致）
   fromDate: string   // 登録日（から）YYYY-MM-DD形式
   toDate: string     // 登録日（まで）YYYY-MM-DD形式
+  status: UserStatusFilter
 }
 
-const EMPTY_FILTER: FilterCondition = { name: "", email: "", fromDate: "", toDate: "" }
+const EMPTY_FILTER: FilterCondition = { name: "", email: "", fromDate: "", toDate: "", status: "all" }
 
 export default function AdminUsersPage() {
   const navigate = useNavigate()
@@ -46,12 +55,12 @@ export default function AdminUsersPage() {
 
   const [loadStatus, setLoadStatus] = useState<LoadStatus>("loading")
 
-  // 取得失敗はPageError、削除結果は一時通知に分ける。
+  // 取得失敗はPageError、解約・再開の結果は一時通知に分ける。
   const { flash, showSuccessFlash, showErrorFlash, clearFlash } = useFlash()
 
   const [openMenuUserId, setOpenMenuUserId] = useState<string | null>(null)
 
-  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [statusChangingId, setStatusChangingId] = useState<string | null>(null)
 
   // キャンセル時に一覧を変えないよう、入力中と適用済みの条件を分ける。
   const [showSortModal, setShowSortModal] = useState(false)
@@ -95,6 +104,8 @@ export default function AdminUsersPage() {
       // ISO 8601の先頭10文字を日付入力と同じYYYY-MM-DDで比較する。
       if (appliedFilter.fromDate && user.createdAt.slice(0, 10) < appliedFilter.fromDate) return false
       if (appliedFilter.toDate && user.createdAt.slice(0, 10) > appliedFilter.toDate) return false
+      if (appliedFilter.status === "active" && user.cancelledAt) return false
+      if (appliedFilter.status === "cancelled" && !user.cancelledAt) return false
       return true
     })
 
@@ -107,19 +118,38 @@ export default function AdminUsersPage() {
     return filteredUsers.sort(compareUsers)
   }, [users, appliedFilter, appliedSortCriterion, appliedSortOrder])
 
-  const handleDelete = async (userId: string) => {
-    // 削除中の再操作による重複リクエストを防ぐ。
-    if (deletingId || !window.confirm("本当に削除しますか？")) return
-    setDeletingId(userId)
+  const replaceUser = (updatedUser: AdminUser) => {
+    setUsers((previousUsers) =>
+      previousUsers.map((user) => (user.id === updatedUser.id ? updatedUser : user))
+    )
+  }
+
+  const handleCancel = async (userId: string) => {
+    // 処理中の再操作による重複リクエストを防ぐ。
+    if (statusChangingId || !window.confirm("解約すると、この受講生はログインできなくなります。データは残り、あとで再開できます。")) return
+    setStatusChangingId(userId)
     try {
-      await deleteUser(userId)
-      setUsers((previousUsers) => previousUsers.filter((user) => user.id !== userId))
-      showSuccessFlash("受講生を削除しました。")
+      replaceUser(await cancelUser(userId))
+      showSuccessFlash("受講生を解約しました。")
     } catch {
-      showErrorFlash("削除に失敗しました。もう一度お試しください。")
+      showErrorFlash("解約に失敗しました。もう一度お試しください。")
     } finally {
-      setDeletingId(null)
+      setStatusChangingId(null)
       // 失敗時もメニューを閉じ、結果の通知を隠さない。
+      setOpenMenuUserId(null)
+    }
+  }
+
+  const handleResume = async (userId: string) => {
+    if (statusChangingId) return
+    setStatusChangingId(userId)
+    try {
+      replaceUser(await resumeUser(userId))
+      showSuccessFlash("受講生を再開しました。")
+    } catch {
+      showErrorFlash("再開に失敗しました。もう一度お試しください。")
+    } finally {
+      setStatusChangingId(null)
       setOpenMenuUserId(null)
     }
   }
@@ -169,7 +199,7 @@ export default function AdminUsersPage() {
 
   return (
     <AdminLayout admin={admin} onLogout={handleLogout}>
-      {/* 削除結果の通知 */}
+      {/* 解約・再開の結果の通知 */}
       <FlashMessage flash={flash} onClose={clearFlash} />
 
       {/* 見出し・検索条件 */}
@@ -206,7 +236,14 @@ export default function AdminUsersPage() {
             ) : (
               displayedUsers.map((user) => (
                 <tr key={user.id}>
-                  <td>{user.name}</td>
+                  <td>
+                    {user.name}
+                    {user.cancelledAt && (
+                      <span className="badge bg-secondary ms-2">
+                        解約済み {formatSlashDate(user.cancelledAt)}
+                      </span>
+                    )}
+                  </td>
                   <td>{user.email}</td>
                   <td>
                     <button
@@ -255,13 +292,23 @@ export default function AdminUsersPage() {
                         >
                           詳細
                         </button>
-                        <button
-                          className="dropdown-item text-danger"
-                          onClick={() => handleDelete(user.id)}
-                          disabled={deletingId === user.id}
-                        >
-                          {deletingId === user.id ? "削除中..." : "削除"}
-                        </button>
+                        {user.cancelledAt ? (
+                          <button
+                            className="dropdown-item"
+                            onClick={() => handleResume(user.id)}
+                            disabled={statusChangingId === user.id}
+                          >
+                            {statusChangingId === user.id ? "再開中..." : "再開"}
+                          </button>
+                        ) : (
+                          <button
+                            className="dropdown-item text-danger"
+                            onClick={() => handleCancel(user.id)}
+                            disabled={statusChangingId === user.id}
+                          >
+                            {statusChangingId === user.id ? "解約中..." : "解約"}
+                          </button>
+                        )}
                       </div>
                     )}
                   </td>
@@ -403,6 +450,25 @@ export default function AdminUsersPage() {
               setFilterInput({ ...filterInput, toDate: changeEvent.target.value })
             }
           />
+        </div>
+
+        <div>
+          <label htmlFor="user-filter-status" className="form-label fw-semibold">
+            状態
+          </label>
+          <select
+            id="user-filter-status"
+            className="form-select"
+            value={filterInput.status}
+            onChange={(changeEvent) => {
+              const selectedValue = changeEvent.target.value
+              if (isUserStatusFilter(selectedValue)) setFilterInput({ ...filterInput, status: selectedValue })
+            }}
+          >
+            <option value="all">すべて</option>
+            <option value="active">利用中</option>
+            <option value="cancelled">解約済み</option>
+          </select>
         </div>
       </Modal>
     </AdminLayout>

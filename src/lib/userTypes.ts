@@ -29,4 +29,5 @@ export type AdminUser = User & {
   articlesCount: number
   tweetsCount: number
   postsCount: number
+  cancelledAt: string | null
 }
