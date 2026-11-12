@@ -1,4 +1,4 @@
-// 管理画面の操作結果を表示する。状態と表示時間はuseFlashが管理する。
+// 操作結果を表示する。状態と表示時間はuseFlashが管理する。
 import type { FlashMessageData, FlashType } from "../../lib/useFlash"
 
 // 種別追加時の配色漏れを型で検出する。

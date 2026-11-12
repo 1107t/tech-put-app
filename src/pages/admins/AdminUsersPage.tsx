@@ -6,7 +6,7 @@ import type { AdminUser } from "../../lib/userTypes";
 import AdminLayout from "../../components/admin/AdminLayout";
 import PageSpinner from "../../components/admin/PageSpinner";
 import PageError from "../../components/admin/PageError";
-import Modal from "../../components/admin/Modal";
+import Modal from "../../components/shared/Modal";
 import { useRequireAdmin } from "../../lib/useRequireAdmin";
 import {
   createCreatedAtComparator,
@@ -16,7 +16,7 @@ import {
   DATE_SORT_ORDER_OPTIONS,
   type SortOrder,
 } from "../../lib/sort";
-import FlashMessage from "../../components/admin/FlashMessage"
+import FlashMessage from "../../components/shared/FlashMessage"
 import { useFlash } from "../../lib/useFlash"
 import type { LoadStatus } from "../../lib/loadStatus"
 import { formatSlashDate } from "../../lib/formatDate"
