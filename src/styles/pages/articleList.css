@@ -3,9 +3,27 @@
   font-size: 1.5rem;
 }
 
+/* フォルダ一覧と記事の表を横に並べる（スマホは表だけ） */
+.article-list-layout {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.article-folder-sidebar {
+  width: 230px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 5rem; /* 下までスクロールしても、ヘッダー（約 69px）の下にフォルダ一覧を残してドラッグ先にする */
+}
+
 /* テーブルラッパー（中央寄せ・左右余白均等） */
 .articles-table-wrapper {
   width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto; /* 狭い画面では表を枠の中で横にスクロールさせる */
+  padding-bottom: 8rem; /* 一番下の行の ︙ メニューが枠で切れないようにする */
 }
 
 /* テーブル */
@@ -19,6 +37,7 @@
   font-weight: 700;
   text-align: left;
   border-bottom: 3px solid rgb(222, 226, 230);
+  white-space: nowrap; /* フォルダ一覧の分だけ表が狭くなっても、見出しを 2 行にしない */
 }
 
 .articles-table tbody .link-td {
@@ -84,6 +103,7 @@
 }
 
 .articles-table .dropdown-menu li a,
+.articles-table .dropdown-menu li .move-folder-btn,
 .articles-table .dropdown-menu li .delete-btn {
   display: block;
   padding: 8px 16px;
@@ -98,6 +118,113 @@
 }
 
 .articles-table .dropdown-menu li a:hover,
+.articles-table .dropdown-menu li .move-folder-btn:hover,
 .articles-table .dropdown-menu li .delete-btn:hover {
   background-color: #f8f9fa;
+}
+
+/* フォルダ一覧（左） */
+.article-folder-list-heading {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+/* Bootstrap の .list-group-item（display: block）が後から読み込まれるため、2 つのクラスで指定する */
+.list-group-item.folder-row {
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+.folder-select-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.5rem 0.75rem;
+  background: none;
+  border: none;
+  color: inherit;
+  text-align: left;
+}
+
+/* 30 文字の名前でも幅を押し広げず、末尾を … にする */
+.folder-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.folder-row .badge {
+  font-size: 10px;
+}
+
+.folder-count {
+  font-size: 0.875rem;
+}
+
+.folder-row:not(.active) .folder-count {
+  color: #6c757d;
+}
+
+.folder-menu-button {
+  color: inherit;
+  padding: 0 0.5rem;
+}
+
+.folder-dropdown {
+  top: 100%;
+  right: 0;
+  z-index: 20;
+  min-width: 140px;
+}
+
+/* 自分の記事は長い一覧の下のほうにもあるため、通知はスクロール位置に関係なく画面の右下に出す */
+.article-list-flash {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1030;
+  max-width: calc(100% - 2rem);
+}
+
+/* 1200px 未満: 表の上にフォルダのプルダウンと「フォルダ管理」 */
+.article-folder-picker {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 480px;
+  margin-bottom: 1rem;
+}
+
+/* 長いフォルダ名でもボタンを押し出さない */
+.article-folder-picker .form-select {
+  min-width: 0;
+}
+
+/* ドラッグ（1200px 以上・自分の記事だけ）。つかめるのはタイトルの左の余白にある ⋮⋮ だけ */
+.articles-table tbody .title-td {
+  position: relative;
+}
+
+.drag-handle {
+  position: absolute;
+  left: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #adb5bd;
+  cursor: grab;
+  letter-spacing: -0.3em;
+  user-select: none;
+}
+
+.articles-table tbody tr.is-dragging {
+  opacity: 0.4;
+}
+
+.list-group-item.folder-row.is-drop-target {
+  background-color: #cfe2ff;
+  box-shadow: inset 0 0 0 2px #0d6efd;
 }
