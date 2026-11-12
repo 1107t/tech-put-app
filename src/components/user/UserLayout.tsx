@@ -2,6 +2,7 @@
 // サイドバー・ヘッダー・メインコンテンツを組み合わせたページ共通レイアウト。
 // サイドバーは UserSidebar コンポーネントに切り出し済み。
 // render-prop パターンで me を子に渡すため、子側で useRequireAuth を二重呼び出しする必要がない。
+import { useState } from "react";
 import type { User } from "../../lib/userTypes";
 import { useRequireAuth } from "../../lib/useRequireAuth";
 import UserHeader from "./UserHeader";
@@ -31,17 +32,26 @@ export default function UserLayout({ menu, headerTitle, headerAction, children }
   // 認証チェック: 未ログインなら /login へリダイレクト、ログアウト処理も提供
   const { me, handleLogout } = useRequireAuth();
 
+  // スマホ幅で ≡ から開く左メニュー（768px 以上では常に表示）
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   // ログイン状態が確定するまで何も描画しない
   if (!me) return null;
 
   return (
     <div className="user-shell">
       {/* 左サイドバー（専用コンポーネント） */}
-      <UserSidebar me={me} menu={menu} onLogout={handleLogout} />
+      <UserSidebar
+        me={me}
+        menu={menu}
+        onLogout={handleLogout}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+      />
 
       <main className="flex-grow-1 bg-light">
         {/* 上部ヘッダー: ページタイトルとアバター */}
-        <UserHeader title={headerTitle} action={headerAction} />
+        <UserHeader title={headerTitle} action={headerAction} onMenuOpen={() => setIsSidebarOpen(true)} />
         {/* render-prop で me を渡し、各ページのコンテンツを描画する */}
         <div className="p-4">{children(me)}</div>
       </main>

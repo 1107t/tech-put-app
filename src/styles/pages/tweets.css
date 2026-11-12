@@ -103,6 +103,13 @@
   z-index: 100;
 }
 
+/* スマホ幅では左メニューが画面の外に隠れるため、左端から広げる */
+@media (max-width: 767.98px) {
+  .tweets-page__fixed-form {
+    left: 0;
+  }
+}
+
 /* 固定フォームの内側: 画面幅いっぱいに広げ、左右に適切な余白を設ける */
 .tweets-page__fixed-form-inner {
   width: 100%;

@@ -1,6 +1,7 @@
 // src/components/user/UserSidebar.tsx
 // 受講生画面の左サイドバー（ロゴ・ユーザー名・メニュー・ログアウト）。
 // レイアウトから切り出した専用コンポーネント。
+import { useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import type { User } from "../../lib/userTypes";
 import UserSidebarItem from "./UserSidebarItem";
@@ -17,36 +18,59 @@ type Props = {
   me: User;
   menu: MenuItem[];
   onLogout: () => void;
+  isOpen: boolean;
+  onClose: () => void;
 };
 
-export default function UserSidebar({ me, menu, onLogout }: Props) {
+export default function UserSidebar({ me, menu, onLogout, isOpen, onClose }: Props) {
+  // スマホ幅で開いているときは Esc で閉じる
+  useEffect(() => {
+    if (!isOpen) return;
+    const closeOnEscape = (keyboardEvent: KeyboardEvent) => {
+      if (keyboardEvent.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [isOpen, onClose]);
+
   return (
-    <aside className="user-sidebar">
-      {/* ロゴエリア: アバターアイコンとサービス名 */}
-      <div className="d-flex align-items-center gap-2 mb-4">
-        <div className="user-avatar user-avatar--sm" />
-        <div className="fw-bold">TecPutt</div>
-      </div>
+    <>
+      {isOpen && (
+        <button
+          type="button"
+          className="user-sidebar-backdrop d-md-none"
+          aria-label="メニューを閉じる"
+          onClick={onClose}
+        />
+      )}
+      <aside className={`user-sidebar ${isOpen ? "is-open" : ""}`}>
+        {/* ロゴエリア: アバターアイコンとサービス名 */}
+        <div className="d-flex align-items-center gap-2 mb-4">
+          <div className="user-avatar user-avatar--sm" />
+          <div className="fw-bold">TecPutt</div>
+        </div>
 
-      {/* ユーザー名: プロフィールページへのリンク */}
-      <div className="mb-3">
-        <NavLink to={`/users/${me.id}`} className="text-white text-decoration-none">
-          {me.name}
-        </NavLink>
-        <hr className="border-secondary mt-2 mb-0" />
-      </div>
+        {/* ユーザー名: プロフィールページへのリンク */}
+        <div className="mb-3">
+          <NavLink to={`/users/${me.id}`} className="text-white text-decoration-none">
+            {me.name}
+          </NavLink>
+          <hr className="border-secondary mt-2 mb-0" />
+        </div>
 
-      {/* メニュー一覧: 現在ページを NavLink の isActive でハイライト */}
-      <nav className="sidebar-menu">
-        {menu.map((item) => (
-          <UserSidebarItem key={item.to} label={item.label} to={item.to} icon={item.icon} />
-        ))}
-      </nav>
+        {/* メニュー一覧: 現在ページを NavLink の isActive でハイライト。押したらスマホ幅のメニューを閉じる */}
+        <nav className="sidebar-menu" onClick={onClose}>
+          {menu.map((item) => (
+            <UserSidebarItem key={item.to} label={item.label} to={item.to} icon={item.icon} />
+          ))}
+        </nav>
 
-      {/* ログアウトボタン: サイドバー最下部に固定 */}
-      <button className="btn btn-light w-100 mt-auto" onClick={onLogout}>
-        ログアウト
-      </button>
-    </aside>
+        {/* ログアウトボタン: サイドバー最下部に固定 */}
+        <button className="btn btn-light w-100 mt-auto" onClick={onLogout}>
+          ログアウト
+        </button>
+      </aside>
+    </>
   );
 }
+

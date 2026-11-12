@@ -88,3 +88,37 @@
   color: #6c757d;
   text-decoration: none;
 }
+
+/* スマホ幅（768px 未満）では左メニューを画面の外に置き、≡ で引き出す */
+@media (max-width: 767.98px) {
+  .user-sidebar {
+    position: fixed;
+    left: 0;
+    z-index: 1040;
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform 0.2s ease, visibility 0.2s;
+  }
+
+  .user-sidebar.is-open {
+    transform: translateX(0);
+    visibility: visible;
+  }
+}
+
+.user-sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1035;
+  border: none;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.user-menu-button {
+  background: none;
+  border: none;
+  padding: 0 0.5rem 0 0;
+  font-size: 1.15rem;
+  color: inherit;
+}
