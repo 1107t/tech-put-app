@@ -27,7 +27,6 @@ type FolderRowProps = {
   onDragOver?: (dragEvent: DragEvent<HTMLLIElement>) => void;
   onDragLeave?: (dragEvent: DragEvent<HTMLLIElement>) => void;
   onDrop?: (dragEvent: DragEvent<HTMLLIElement>) => void;
-
 };
 
 function FolderRow({
@@ -50,7 +49,6 @@ function FolderRow({
       onDragLeave={onDragLeave}
       onDrop={onDrop}
     >
-
       <button type="button" className="folder-select-button" onClick={onSelect} aria-pressed={isSelected}>
         <i className={iconClassName} aria-hidden="true" />
         <span className="folder-name">{label}</span>

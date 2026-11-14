@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import type { Article } from "../../lib/articleApi";
+import { formatSlashDateTime } from "../../lib/formatDate";
 
 type ArticleTableRowProps = {
   article: Article;
@@ -12,16 +13,6 @@ type ArticleTableRowProps = {
   onDragStart: () => void;
   onDragEnd: () => void;
 };
-
-function formatDate(isoString: string): string {
-  const d = new Date(isoString);
-  const y = d.getFullYear();
-  const mo = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  const h = String(d.getHours()).padStart(2, "0");
-  const min = String(d.getMinutes()).padStart(2, "0");
-  return `${y}/${mo}/${day} ${h}:${min}`;
-}
 
 export default function ArticleTableRow({
   article,
@@ -67,7 +58,7 @@ export default function ArticleTableRow({
       <td className="link-td">{article.subTitle}</td>
       <td className="link-td"></td>
       <td className="link-td">{article.likesCount}</td>
-      <td className="link-td">{formatDate(article.createdAt)}</td>
+      <td className="link-td">{formatSlashDateTime(article.createdAt)}</td>
       <td className="menu-td" onClick={(clickEvent) => clickEvent.stopPropagation()}>
         {isOwnArticle && (
           <>

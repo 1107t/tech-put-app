@@ -1,5 +1,7 @@
 import { api } from './api'
 
+export const FOLDER_NAME_MAX_LENGTH = 30
+
 export type Folder = {
   id: string
   name: string

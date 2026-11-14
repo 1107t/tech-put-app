@@ -31,7 +31,9 @@ export default function ArticleIndexPage() {
 
   const load = async () => {
     try {
-      const [loadedArticles, loadedFolders] = await Promise.all([getAllArticles(), fetchFolders()]);
+      // フォルダ API が「未分類」を用意してから記事を取らないと、folderId が null で返る
+      const loadedFolders = await fetchFolders();
+      const loadedArticles = await getAllArticles();
       setArticles(loadedArticles);
       setFolders(loadedFolders);
     } catch {
@@ -95,9 +97,13 @@ export default function ArticleIndexPage() {
   // ︙ の「フォルダ移動」とドラッグの両方から呼ぶ
   const moveArticle = async (article: Article, destinationFolder: Folder) => {
     try {
-      await moveArticleToFolder(article.id, destinationFolder.id);
+      const movedArticle = await moveArticleToFolder(article.id, destinationFolder.id);
+      setArticles((currentArticles) =>
+        currentArticles.map((currentArticle) => (currentArticle.id === movedArticle.id ? movedArticle : currentArticle))
+      );
+      // 件数を更新するため、フォルダだけ取り直す
+      setFolders(await fetchFolders());
       showSuccessFlash(`「${destinationFolder.name}」に移動しました。`);
-      await load();
     } catch (moveError) {
       showErrorFlash(getApiErrorMessage(moveError, "フォルダの移動に失敗しました。"));
     }

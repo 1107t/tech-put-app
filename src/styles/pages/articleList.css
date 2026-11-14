@@ -106,6 +106,7 @@
 .articles-table .dropdown-menu li .move-folder-btn,
 .articles-table .dropdown-menu li .delete-btn {
   display: block;
+  white-space: nowrap;
   padding: 8px 16px;
   color: rgb(33, 37, 41);
   text-decoration: none;
@@ -218,6 +219,8 @@
   cursor: grab;
   letter-spacing: -0.3em;
   user-select: none;
+  width: 1.5rem;
+  text-align: center;
 }
 
 .articles-table tbody tr.is-dragging {

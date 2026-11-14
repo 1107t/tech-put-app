@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import Modal from "../shared/Modal";
 import { getApiErrorMessage } from "../../lib/api";
+import { FOLDER_NAME_MAX_LENGTH } from "../../lib/folderApi";
 
 type FolderNameModalProps = {
   mode: "create" | "rename";
@@ -59,6 +60,7 @@ export default function FolderNameModal({ mode, initialName, onClose, onSubmit }
         <input
           id={INPUT_ID}
           type="text"
+          maxLength={FOLDER_NAME_MAX_LENGTH}
           className={`form-control ${errorMessage ? "is-invalid" : ""}`}
           value={name}
           onChange={(changeEvent) => setName(changeEvent.target.value)}
