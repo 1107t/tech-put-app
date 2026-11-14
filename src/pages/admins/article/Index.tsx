@@ -18,7 +18,7 @@ import {
   DATE_SORT_ORDER_LABELS,
   type SortOrder,
 } from "../../../lib/sort";
-import Modal from "../../../components/admin/Modal";
+import Modal from "../../../components/shared/Modal";
 
 function formatDate(isoString: string): string {
   const d = new Date(isoString);

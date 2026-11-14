@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AdminLayout from '../../../components/admin/AdminLayout'
-import Modal from '../../../components/admin/Modal'
+import Modal from '../../../components/shared/Modal'
 import { adminLogout, getCurrentAdmin, type Admin } from '../../../lib/adminApi'
 import { getApiErrorMessage } from '../../../lib/api'
 import { getCourses, type Course, createCourse, updateCourse, deleteCourse } from '../../../lib/courseApi'

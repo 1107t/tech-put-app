@@ -8,12 +8,19 @@ import "../../styles/components/userLayout.css";
 type Props = {
   title?: string;
   action?: ReactNode;
+  onMenuOpen: () => void;
 };
 
-export default function UserHeader({ title, action }: Props) {
+export default function UserHeader({ title, action, onMenuOpen }: Props) {
   return (
     <div className="user-header">
-      <span className="header-title">≡ {title}</span>
+      <span className="header-title">
+        <button type="button" className="user-menu-button d-md-none" aria-label="メニューを開く" onClick={onMenuOpen}>
+          ≡
+        </button>
+        <span className="d-none d-md-inline">≡ </span>
+        {title}
+      </span>
       <div className="d-flex align-items-center gap-3">
         {action}
         <UserAvatar size="sm" />

@@ -16,6 +16,7 @@ export type Article = {
   adminId: string | null  // 管理者が投稿した場合にセット。受講生投稿の場合はnull
   likesCount: number
   likedByCurrentUser: boolean
+  folderId: string | null  // 自分の記事だけ。他人の記事は null
   createdAt: string
   updatedAt: string
 }
@@ -63,4 +64,9 @@ export async function likeArticle(id: string): Promise<void> {
 
 export async function unlikeArticle(id: string): Promise<void> {
   await api.delete(`/articles/${id}/likes`)
+}
+
+export async function moveArticleToFolder(articleId: string, folderId: string): Promise<Article> {
+  const response = await api.patch<{ article: Article }>(`/articles/${articleId}/folder`, { folder_id: folderId })
+  return response.data.article
 }

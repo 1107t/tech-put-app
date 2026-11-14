@@ -17,6 +17,17 @@ export function formatSlashDate(iso: string): string {
   return `${year}/${month}/${day}`
 }
 
+// 記事一覧の投稿日時。表で幅を揃えるため数字とスラッシュだけにする
+export function formatSlashDateTime(iso: string): string {
+  const date = new Date(iso)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+  const hour = String(date.getHours()).padStart(2, "0")
+  const minute = String(date.getMinutes()).padStart(2, "0")
+  return `${year}/${month}/${day} ${hour}:${minute}`
+}
+
 // 既存の動画一覧に合わせ、動画の投稿日は時刻を含まない日本語の日付表記にする。
 export function formatVideoDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString("ja-JP")
