@@ -96,16 +96,22 @@ export default function ArticleIndexPage() {
 
   // ︙ の「フォルダ移動」とドラッグの両方から呼ぶ
   const moveArticle = async (article: Article, destinationFolder: Folder) => {
+    let movedArticle: Article;
     try {
-      const movedArticle = await moveArticleToFolder(article.id, destinationFolder.id);
-      setArticles((currentArticles) =>
-        currentArticles.map((currentArticle) => (currentArticle.id === movedArticle.id ? movedArticle : currentArticle))
-      );
-      // 件数を更新するため、フォルダだけ取り直す
-      setFolders(await fetchFolders());
-      showSuccessFlash(`「${destinationFolder.name}」に移動しました。`);
+      movedArticle = await moveArticleToFolder(article.id, destinationFolder.id);
     } catch (moveError) {
       showErrorFlash(getApiErrorMessage(moveError, "フォルダの移動に失敗しました。"));
+      return;
+    }
+    setArticles((currentArticles) =>
+      currentArticles.map((currentArticle) => (currentArticle.id === movedArticle.id ? movedArticle : currentArticle))
+    );
+    showSuccessFlash(`「${destinationFolder.name}」に移動しました。`);
+    // 件数を更新するため、フォルダだけ取り直す
+    try {
+      setFolders(await fetchFolders());
+    } catch {
+      showErrorFlash("フォルダの読み込みに失敗しました。");
     }
   };
 
